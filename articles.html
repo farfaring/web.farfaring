@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水岸手札・生活與工作觀察｜望舟小棧 farfaring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .editorial-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    @media (max-width: 880px) {
+      .editorial-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .notes-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: sticky;
+      top: 90px;
+    }
+
+    .note-tab {
+      background: #FFF;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .note-tab:hover {
+      border-color: var(--amber-pier);
+      transform: translateX(4px);
+    }
+
+    .note-tab.active {
+      background: #FFFDF9;
+      border-color: var(--amber-pier);
+      border-left: 4px solid var(--amber-pier);
+      box-shadow: 0 4px 16px rgba(184, 125, 75, 0.08);
+    }
+
+    .note-tab-cat {
+      font-size: 0.76rem;
+      color: var(--amber-pier);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .note-tab-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--ink-black);
+      line-height: 1.45;
+    }
+
+    .reading-canvas {
+      background: #FFFFFF;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      padding: 52px 56px;
+      box-shadow: 0 8px 32px rgba(28, 33, 39, 0.04);
+      min-height: 480px;
+    }
+
+    @media (max-width: 640px) {
+      .reading-canvas {
+        padding: 32px 24px;
+      }
+    }
+
+    .article-meta {
+      font-size: 0.82rem;
+      color: var(--amber-pier);
+      letter-spacing: 0.12em;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    .article-main-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: clamp(1.48rem, 2.5vw, 1.95rem);
+      font-weight: 600;
+      color: var(--ink-black);
+      line-height: 1.5;
+      margin-bottom: 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .article-prose {
+      font-size: 1.02rem;
+      color: var(--ink-body);
+      line-height: 2.05;
+      white-space: pre-line;
+      letter-spacing: 0.02em;
+    }
+
+    .article-closing {
+      margin-top: 36px;
+      padding: 18px 22px;
+      background: var(--paper-warm);
+      border-left: 3px solid var(--indigo-water);
+      border-radius: 0 10px 10px 0;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.94rem;
+      color: var(--indigo-water);
+      line-height: 1.7;
+    }
+
+    .vocus-bridge-box {
+      margin-top: 32px;
+      padding: 20px 24px;
+      background: #FAF8F5;
+      border: 1px dashed rgba(184, 125, 75, 0.4);
+      border-radius: var(--radius-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .vocus-bridge-text {
+      font-size: 0.88rem;
+      color: var(--ink-body);
+    }
+
+    .btn-vocus {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--amber-pier);
+      color: #FFF;
+      text-decoration: none;
+      padding: 7px 16px;
+      border-radius: 99px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .btn-vocus:hover {
+      background: var(--amber-dark);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <a href="./index.html" class="brand-mark">
+      <span class="brand-zh">望舟小棧</span>
+      <span class="brand-en">farfaring</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="./index.html">水岸首頁</a></li>
+      <li><a href="./resources.html">木棧道・課程活動</a></li>
+      <li><a href="./articles.html" class="active">水岸手札・生活觀察</a></li>
+      <li><a href="./about.html">關於望舟</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page Header -->
+  <header class="page-hero">
+    <div class="page-eyebrow">QUIET READINGS</div>
+    <h1 class="page-title">水岸手札・生活與工作觀察</h1>
+    <!-- 直擊讀者心境之溫柔副標題 -->
+    <p class="page-subtitle">
+      在步調緊湊的日常裡，為自己留一段安靜沉澱的時光<br>
+      聊聊那些職場裡沒說開的真心話、換個視角看生活，陪你慢慢找回屬於自己的節奏
+    </p>
+  </header>
+
+  <!-- Main Content -->
+  <main class="page-wrap">
+
+    <!-- 搜尋與文章分類（三大實務觀察分類：職場觀察、職涯探索、生活步調） -->
+    <div class="search-filter-box" style="margin-bottom:32px;">
+      <div class="search-input-wrapper" style="margin-bottom:14px;">
+        <input type="text" id="articleSearchInput" placeholder="🔍 搜尋你想聊的困惑、話題或靈感..." oninput="handleArticleSearch()">
+      </div>
+      <div class="filter-row" id="articleCategoryRow">
+        <span class="filter-row-label">手札主題</span>
+        <button class="filter-btn active" data-cat="all" onclick="filterArticles('all', this)">全部手札</button>
+        <button class="filter-btn" data-cat="workplace" onclick="filterArticles('workplace', this)">職場觀察</button>
+        <button class="filter-btn" data-cat="career" onclick="filterArticles('career', this)">職涯探索</button>
+        <button class="filter-btn" data-cat="lifestyle" onclick="filterArticles('lifestyle', this)">生活步調</button>
+      </div>
+    </div>
+
+    <!-- 雙欄版面：左側導讀清單 ＋ 右側安靜閱讀畫布 -->
+    <div class="editorial-layout">
+      <!-- Left: Article Tabs -->
+      <aside class="notes-sidebar">
+        <div id="sidebarList" style="display:flex; flex-direction:column; gap:12px;"></div>
+
+        <!-- 投稿小入口 -->
+        <div style="margin-top:12px; text-align:center;">
+          <button class="btn-open-submit" style="width:100%; justify-content:center;" onclick="openStoryModal()">
+            <span>分享你的故事</span>
+            <span>📮</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Right: Reading Canvas（純粹閱讀畫布，拔除做作金句框） -->
+      <article class="reading-canvas" id="readingCanvas">
+        <!-- 動態渲染當前文章 -->
+      </article>
+    </div>
+
+    <!-- 深度平台連動條（方格子 vocus 深入專欄） -->
+    <div class="vocus-bridge-box">
+      <div class="vocus-bridge-text">
+        📖 <strong>想要閱讀更具完整架構的系列專題？</strong><br>
+        除了日常的隨筆與微小觀察，若你想閱讀具備完整論述、案例拆解與系統性整理的深入專題，歡迎前往我們的<strong>方格子（vocus）專欄</strong>探索。
+      </div>
+      <a href="https://vocus.cc" target="_blank" rel="noopener" class="btn-vocus">
+        <span>前往方格子專欄閱讀 ↗</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-quote">
+      生活裡處處都是機會<br>
+      陪你挖掘，陪你發現<br>
+      陪你通往真正想要的生活
+    </div>
+
+    <div class="footer-social-bar">
+      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>📸 Instagram</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>🧵 Threads</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+    </div>
+
+    <div class="footer-links-row">
+      <a href="./index.html">水岸首頁</a>
+      <a href="./resources.html">木棧道・課程活動</a>
+      <a href="./articles.html">水岸手札・生活觀察</a>
+      <a href="./about.html">關於望舟</a>
+    </div>
+
+    <div class="footer-maintenance-stamp">
+      最後更新：<span id="autoMonthYearArt"></span> ｜ 相關資訊皆以各主辦單位公告為準 ｜ 望舟小棧 farfaring
+    </div>
+  </footer>
+
+  <!-- 故事投稿 Modal -->
+  <div id="storyModal" class="modal-overlay" onclick="if(event.target===this)closeStoryModal()">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeStoryModal()">×</button>
+      <h3 class="modal-title">分享你的故事 📮</h3>
+      <p class="modal-desc">
+        如果你也曾在職涯中走過轉彎處、在迷惘中找到過一小塊浮木，歡迎寫下你的真實體會。
+        小棧為非營利互助空間，經小棧長細讀後，會附上你的專屬筆名刊登分享，陪伴更多正在尋路的人。
+      </p>
+
+      <form onsubmit="handleStorySubmit(event)">
+        <!-- 蜜罐防護（防機器人自動填寫） -->
+        <input type="text" id="storyHpField" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off">
+
+        <div class="form-group">
+          <label>文章主題或故事核心：</label>
+          <input type="text" id="storyTitle" placeholder="例如：三十歲換跑道的那半年，我學會放過自己" required>
+        </div>
+        <div class="form-group">
+          <label>你想分享的文字內容：</label>
+          <textarea id="storyContent" rows="5" placeholder="寫下你的轉折過程、體會或給讀者的一句話..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>如何稱呼你：</label>
+          <input type="text" id="storyAuthor" placeholder="例如：水岸旅人（可留空，小棧將隨機指派旅人化名）">
+        </div>
+        <div class="form-group">
+          <label>聯絡信箱（選填，方便刊登時致謝）：</label>
+          <input type="email" id="storyEmail" placeholder="yourname@gmail.com">
+        </div>
+        <button type="submit" class="btn-submit-action">投遞給小棧長 📮</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 引用全站共享數據核心 -->
+  <script src="./data.js"></script>
+
+  <script>
+    // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
+    document.getElementById('autoMonthYearArt').innerText = SITE_DATA.siteInfo.lastUpdated;
+
+    // 讀取共享數據核心之手札庫（支援後台隨時發表、修改、刪除）
+    // 讀取共享數據核心之手札文章（過濾草稿，僅展示審核通過已上架之手札）
+    const notes = (SITE_DATA.articles || []).filter(a => !a.isDraft).map((n, idx) => ({
+      ...n,
+      cat: `${n.catName} ． 0${idx + 1}`
+    }));
+
+    let currentCat = "all";
+    let currentArticleId = "note-01";
+    let articleSearchKeyword = "";
+
+    function filterArticles(cat, btn) {
+      currentCat = cat;
+      document.querySelectorAll("#articleCategoryRow .filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderArticleList();
+    }
+
+    function handleArticleSearch() {
+      articleSearchKeyword = document.getElementById("articleSearchInput").value.trim().toLowerCase();
+      renderArticleList();
+    }
+
+    function getFilteredNotes() {
+      return notes.filter(n => {
+        if (currentCat !== "all" && n.catKey !== currentCat) return false;
+        if (articleSearchKeyword) {
+          const matchTitle = n.title.toLowerCase().includes(articleSearchKeyword);
+          const matchProse = n.prose.toLowerCase().includes(articleSearchKeyword);
+          const matchCat = n.cat.toLowerCase().includes(articleSearchKeyword);
+          if (!matchTitle && !matchProse && !matchCat) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderArticleList() {
+      const sidebar = document.getElementById("sidebarList");
+      sidebar.innerHTML = "";
+      const list = getFilteredNotes();
+
+      if (list.length === 0) {
+        sidebar.innerHTML = `<div style="padding:20px; color:var(--ink-muted); font-size:0.86rem; text-align:center;">未找到符合條件的手札。</div>`;
+        document.getElementById("readingCanvas").innerHTML = `
+          <div style="text-align:center; padding:64px 20px; color:var(--ink-muted);">
+            <div style="font-size:1.6rem; margin-bottom:12px;">📖</div>
+            <div style="font-family:'Noto Serif TC',serif; font-size:1.1rem; color:var(--ink-black); margin-bottom:8px;">無對應文章</div>
+            <p style="font-size:0.88rem;">請嘗試其他分類標籤或清除關鍵字。</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (!list.some(n => n.id === currentArticleId)) {
+        currentArticleId = list[0].id;
+      }
+
+      list.forEach(n => {
+        const tab = document.createElement("div");
+        tab.className = `note-tab ${n.id === currentArticleId ? 'active' : ''}`;
+        tab.onclick = () => {
+          currentArticleId = n.id;
+          renderArticleList();
+          // 平滑滾動至正文閱讀區（特別在手機版上提供清晰回饋）
+          const canvas = document.getElementById('readingCanvas');
+          if (canvas) {
+            canvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        };
+        tab.innerHTML = `
+          <div class="note-tab-cat">${n.cat}</div>
+          <div class="note-tab-title">${n.title}</div>
+        `;
+        sidebar.appendChild(tab);
+      });
+
+      renderActiveArticle();
+    }
+
+    function renderActiveArticle() {
+      const canvas = document.getElementById("readingCanvas");
+      const active = notes.find(n => n.id === currentArticleId);
+      if (!active) return;
+
+      canvas.innerHTML = `
+        <div class="article-meta">${active.cat} ｜ ${active.date}</div>
+        <h2 class="article-main-title">${active.title}</h2>
+        <div class="article-prose">${active.prose}</div>
+      `;
+    }
+
+    function openStoryModal() {
+      document.getElementById('storyModal').classList.add('open');
+    }
+
+    function closeStoryModal() {
+      document.getElementById('storyModal').classList.remove('open');
+    }
+
+    function handleStorySubmit(e) {
+      e.preventDefault();
+
+      // 1. 蜜罐防護
+      const hp = document.getElementById('storyHpField').value;
+      if (hp) {
+        closeStoryModal();
+        return;
+      }
+
+      const title = document.getElementById('storyTitle').value.trim();
+      const content = document.getElementById('storyContent').value.trim();
+      const author = document.getElementById('storyAuthor').value.trim() || '水岸旅人';
+      const email = document.getElementById('storyEmail').value.trim();
+
+      // 2. 字數防護
+      if (title.length < 3) {
+        alert('請填寫完整的故事主題（至少 3 個字）。');
+        return;
+      }
+      if (content.length < 15) {
+        alert('故事內容請至少填寫 15 個字以上，完整表達您的心路歷程。');
+        return;
+      }
+
+      // 3. 30 秒頻率限制（防連續刷單）
+      const lastSubmit = parseInt(localStorage.getItem('WANGZHOU_LAST_STORY_SUBMIT') || '0', 10);
+      const nowMs = Date.now();
+      if (nowMs - lastSubmit < 30000) {
+        const waitSec = Math.ceil((30000 - (nowMs - lastSubmit)) / 1000);
+        alert(`小棧已收到您的故事囉！為維護水岸安寧，請稍候 ${waitSec} 秒後再行投遞。`);
+        return;
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      const newSub = {
+        id: "sub-" + Date.now(),
+        type: "story",
+        typeName: "故事投稿",
+        title: title,
+        author: author,
+        contact: email || '未留信箱',
+        content: content,
+        extra: "",
+        createdAt: dateStr,
+        status: "unread"
+      };
+
+      if (!SITE_DATA.submissions) SITE_DATA.submissions = [];
+      SITE_DATA.submissions.unshift(newSub);
+
+      try {
+        localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
+        localStorage.setItem('WANGZHOU_LAST_STORY_SUBMIT', String(nowMs));
+      } catch (err) {}
+
+      alert(`非常感謝你的慷慨分享！小棧長已收到（${author}）的故事「${title}」，內容已送達後台審核箱。`);
+      document.getElementById('storyTitle').value = '';
+      document.getElementById('storyContent').value = '';
+      document.getElementById('storyEmail').value = '';
+      closeStoryModal();
+    }
+
+    renderArticleList();
+  </script>
+</body>
+</html>

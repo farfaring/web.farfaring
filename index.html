@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>望舟小棧 farfaring｜生活裡處處都是機會，陪你挖掘，陪你發現</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .home-hero {
+      position: relative;
+      min-height: 72vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 64px 24px 44px;
+      text-align: center;
+      border-bottom: 1px solid var(--hairline);
+      overflow: hidden;
+    }
+
+    .ink-wash-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 720px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-size: 0.82rem;
+      letter-spacing: 0.22em;
+      color: var(--amber-pier);
+      border-bottom: 1px solid rgba(184, 125, 75, 0.4);
+      padding-bottom: 4px;
+      margin-bottom: 22px;
+      font-weight: 500;
+    }
+
+    .hero-heading {
+      font-family: 'Noto Serif TC', serif;
+      font-size: clamp(2rem, 3.8vw, 2.85rem);
+      font-weight: 600;
+      color: var(--ink-black);
+      line-height: 1.5;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .hero-lead {
+      font-size: 1.02rem;
+      color: var(--ink-muted);
+      max-width: 600px;
+      margin: 0 auto 20px;
+      letter-spacing: 0.04em;
+      line-height: 1.95;
+    }
+
+    /* 導引四大木棧道卡片 */
+    .compass-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .compass-card {
+      background: #FFFFFF;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 26px 24px;
+      text-decoration: none;
+      color: var(--ink-body);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      position: relative;
+      box-shadow: 0 4px 16px rgba(28, 33, 39, 0.03);
+    }
+
+    .compass-card:hover {
+      border-color: var(--amber-pier);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(30, 36, 43, 0.08);
+    }
+
+    .compass-mood {
+      font-size: 0.76rem;
+      color: var(--amber-pier);
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .compass-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--ink-black);
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .compass-desc {
+      font-size: 0.88rem;
+      color: var(--ink-muted);
+      margin-bottom: 20px;
+      line-height: 1.8;
+      min-height: 52px; /* 統一卡片高度節奏 */
+    }
+
+    .compass-go {
+      font-size: 0.86rem;
+      color: var(--indigo-water);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: gap 0.2s;
+    }
+
+    .compass-card:hover .compass-go {
+      gap: 10px;
+      color: var(--amber-pier);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <a href="./index.html" class="brand-mark">
+      <span class="brand-zh">望舟小棧</span>
+      <span class="brand-en">farfaring</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="./index.html" class="active">水岸首頁</a></li>
+      <li><a href="./resources.html">木棧道・課程活動</a></li>
+      <li><a href="./articles.html">水岸手札・生活觀察</a></li>
+      <li><a href="./about.html">關於望舟</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="home-hero">
+    <svg class="ink-wash-svg" viewBox="0 0 1440 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <path d="M-100 460 C 280 410, 620 510, 1020 450 C 1250 415, 1400 460, 1540 440 L 1540 600 L -100 600 Z" fill="#2B4C65" fill-opacity="0.045"/>
+      <path d="M-100 500 C 340 460, 760 540, 1180 485 C 1350 465, 1460 495, 1540 490 L 1540 600 L -100 600 Z" fill="#466D56" fill-opacity="0.035"/>
+      <path d="M220 475 Q 520 455 820 480 T 1260 465" stroke="#2B4C65" stroke-opacity="0.16" stroke-width="1.2" fill="none"/>
+      <path d="M380 515 Q 680 500 980 520" stroke="#B87D4B" stroke-opacity="0.22" stroke-width="1" fill="none"/>
+    </svg>
+
+    <div class="hero-inner">
+      <!-- 乾淨大氣眉標（拔除自封頭銜） -->
+      <div class="hero-badge">望舟小棧 ． FARFARING</div>
+      <h1 class="hero-heading">
+        生活裡處處都是機會<br>
+        陪你挖掘，陪你發現
+      </h1>
+      <!-- 平視對談感小字（三行平穩對稱，絕不孤字換行） -->
+      <p class="hero-lead">
+        風浪很大的時候，不必硬要跟水流對抗<br>
+        先在水岸邊坐下來歇歇腳，看清了水流的走向<br>
+        心裡的帆，自然會知道何時該揚起
+      </p>
+    </div>
+
+    <!-- 小舟水岸意境舞台（木棧道碼頭 ＋ 水岸邊緣 ＋ 自動隨機自然漂動） -->
+    <div id="boatStage" class="boat-stage state-ambient">
+      <svg class="animated-boat-svg" viewBox="0 0 320 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- 木棧道碼頭與水岸邊緣（岸邊場景） -->
+        <g class="pier-dock-group">
+          <!-- 水岸斜坡土岸 -->
+          <path d="M0 78 Q 30 75 55 85 L 0 95 Z" fill="#D8D2C5" fill-opacity="0.6"/>
+          <!-- 延伸入水的木棧板平台 -->
+          <rect x="0" y="52" width="68" height="6" rx="2" fill="#8C5E35" fill-opacity="0.85"/>
+          <rect x="0" y="60" width="62" height="5" rx="2" fill="#754E2C" fill-opacity="0.9"/>
+          <!-- 木棧道垂直木樁 -->
+          <rect x="52" y="44" width="7" height="34" rx="2" fill="#5B3A1E"/>
+          <rect x="22" y="48" width="6" height="36" rx="2" fill="#5B3A1E"/>
+          <!-- 繫纜樁金屬/木質頂部 -->
+          <ellipse cx="55.5" cy="44" rx="4.5" ry="2" fill="#3D2613"/>
+          <!-- 垂落水中的繫船繩索 -->
+          <path d="M55 46 Q 66 58 72 68" stroke="#B87D4B" stroke-width="1.6" stroke-dasharray="2 1.5" fill="none"/>
+        </g>
+
+        <!-- 水面輕波紋線 -->
+        <path class="water-wave-1" d="M60 76 C 90 73, 130 79, 180 74 C 230 69, 270 77, 310 75" stroke="#2B4C65" stroke-opacity="0.22" stroke-width="1.4" stroke-linecap="round"/>
+        <path class="water-wave-2" d="M85 84 C 120 80, 160 86, 210 82 C 240 80, 275 83, 295 82" stroke="#B87D4B" stroke-opacity="0.2" stroke-width="1.2" stroke-linecap="round"/>
+
+        <!-- 動態小舟主體（支援自然靠泊、逐流、迎風揚帆多種隨機動態） -->
+        <g class="sailing-vessel" id="sailingVessel" title="水面微漾的小舟，點擊試試泛起微波">
+          <!-- 舟身 -->
+          <path d="M120 68 C 145 69, 195 69, 220 60 C 205 76, 145 76, 130 72 Z" fill="#1C2127" fill-opacity="0.85"/>
+          <!-- 桅杆與小帆 -->
+          <path d="M170 68 L 170 34" stroke="#B87D4B" stroke-width="2.2" stroke-linecap="round"/>
+          <path class="boat-sail" d="M170 36 Q 200 46 170 60 Z" fill="#2B4C65" fill-opacity="0.28" stroke="#2B4C65" stroke-opacity="0.55" stroke-width="1"/>
+          <!-- 水面小舟倒影 -->
+          <ellipse class="boat-reflection" cx="172" cy="79" rx="42" ry="3.5" fill="#2B4C65" fill-opacity="0.14"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 漂浮棧板（麻繩軸線 ＋ Hover即時展開 ＋ 排版無空白Bug） -->
+    <div class="boardwalk-container">
+      <div class="rope-axis"></div>
+
+      <div class="floating-stream-track">
+        <!-- 棧板 1: 琥珀暖木 -->
+        <div class="wood-plank plank-amber" onclick="this.classList.toggle('open')">
+          <div>
+            <div class="plank-top-meta">
+              <span class="plank-tag">🪵 陪伴停靠小語</span>
+            </div>
+            <div class="plank-quote">「累了就先靠岸，棧板一直都在」</div>
+          </div>
+          <div class="plank-expanded-text">
+            並不是每個季節都要用力划槳。先把呼吸調順了、把身心照顧好了，木棧板永遠在這裡為你留一個停靠處。
+          </div>
+        </div>
+
+        <!-- 棧板 2: 沉靜靛藍 -->
+        <div class="wood-plank plank-indigo" onclick="this.classList.toggle('open')">
+          <div>
+            <div class="plank-top-meta">
+              <span class="plank-tag">🌊 迷惘真實心聲</span>
+            </div>
+            <div class="plank-quote">「不知往哪走時，停下來也是一種選擇」</div>
+          </div>
+          <div class="plank-expanded-text">
+            大家都在急著往前趕路，但停下來重新看看地圖與自己真正的需要，才不會在不適合自己的河道上筋疲力竭。
+          </div>
+        </div>
+
+        <!-- 棧板 3: 淡墨竹葉青 -->
+        <div class="wood-plank plank-bamboo" onclick="this.classList.toggle('open')">
+          <div>
+            <div class="plank-top-meta">
+              <span class="plank-tag">🌿 帶得走的好觀點</span>
+            </div>
+            <div class="plank-quote">「職涯不是直線，轉彎也是累積底氣」</div>
+          </div>
+          <div class="plank-expanded-text">
+            當代生涯發展研究指出：人的成長本就是非線性的。過去走過的每一段嘗試，都能在未來轉化為專屬於你的底氣。
+          </div>
+        </div>
+      </div>
+
+      <!-- 投稿靠岸小句入口 -->
+      <div class="boardwalk-footer-bar">
+        <button class="btn-open-submit" onclick="openModal('submission')">
+          <span>棧道留言</span>
+          <span>✍️</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main: 四大功能探索區（回歸使用者目的，不預設時段，不設限形式） -->
+  <main class="page-wrap">
+    <div style="text-align:center; margin-bottom:38px;">
+      <div class="page-eyebrow">HARBOR PIERS</div>
+      <h2 style="font-family:'Noto Serif TC',serif; font-size:1.75rem; font-weight:600; color:var(--ink-black);">
+        今天想找什麼樣的資源？
+      </h2>
+      <p style="font-size:0.95rem; color:var(--ink-muted); margin-top:8px;">
+        依照你當下的需要與步調，挑選最適合的專區探索
+      </p>
+    </div>
+
+    <div class="compass-grid">
+      <!-- 卡片 1: 深度培訓 -->
+      <a href="./resources.html?type=deep" class="compass-card">
+        <div>
+          <div class="compass-mood">完整體系 ． 扎實培訓</div>
+          <h3 class="compass-title">深度培訓</h3>
+          <p class="compass-desc">
+            適合想投入完整時數深入精通實務專業、考取證照或跨領域培訓。<br>
+            彙整各界實務訓練專班、跨領域完整學程與各項培育專案。
+          </p>
+        </div>
+        <div class="compass-go">查看深度培訓課程 →</div>
+      </a>
+
+      <!-- 卡片 2: 技能增強 -->
+      <a href="./resources.html?type=upskill" class="compass-card">
+        <div>
+          <div class="compass-mood">實戰應用 ． 技能擴充</div>
+          <h3 class="compass-title">技能增強</h3>
+          <p class="compass-desc">
+            持續提升既有職場工具實力，開拓多元第二專長。<br>
+            整理各類實務技術進階課與具高實用性之進修資源。
+          </p>
+        </div>
+        <div class="compass-go">查看技能增強課程 →</div>
+      </a>
+
+      <!-- 卡片 3: 講座與工作坊 -->
+      <a href="./resources.html?type=events" class="compass-card">
+        <div>
+          <div class="compass-mood">多元觀點 ． 經驗交流</div>
+          <h3 class="compass-title">講座工作坊</h3>
+          <p class="compass-desc">
+            透過專題講座、實務工作坊與交流聚會拓展多元視野。<br>
+            精選豐富形式之實體與線上活動，長短皆具。
+          </p>
+        </div>
+        <div class="compass-go">查看近期講座活動 →</div>
+      </a>
+
+      <!-- 卡片 4: 水岸手札 -->
+      <a href="./articles.html" class="compass-card">
+        <div>
+          <div class="compass-mood">安靜閱讀 ． 思緒梳理</div>
+          <h3 class="compass-title">水岸手札</h3>
+          <p class="compass-desc">
+            聊聊那些職場裡的真心話、生活的留白與好觀點。<br>
+            人生本來就沒有標準答案，陪你慢慢梳理屬於自己的路。
+          </p>
+        </div>
+        <div class="compass-go">閱讀水岸手札 →</div>
+      </a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-quote">
+      生活裡處處都是機會<br>
+      陪你挖掘，陪你發現<br>
+      陪你通往真正想要的生活
+    </div>
+
+    <div class="footer-social-bar">
+      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>📸 Instagram</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>🧵 Threads</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+    </div>
+
+    <div class="footer-links-row">
+      <a href="./index.html">水岸首頁</a>
+      <a href="./resources.html">木棧道・課程活動</a>
+      <a href="./articles.html">水岸手札・生活觀察</a>
+      <a href="./about.html">關於望舟</a>
+    </div>
+
+    <div class="footer-maintenance-stamp">
+      最後更新：<span id="autoMonthYear"></span> ｜ 相關資訊皆以各主辦單位公告為準 ｜ 望舟小棧 farfaring
+    </div>
+  </footer>
+
+  <!-- 互動彈跳視窗（小棧長親審 ＋ 隨機水岸化名系統） -->
+  <!-- 互動彈跳視窗（小棧長親審 ＋ 隨機水岸化名系統） -->
+  <div id="generalModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeModal()">×</button>
+      <h3 id="modalTitle" class="modal-title">棧道留言 ✍️</h3>
+      <p id="modalDesc" class="modal-desc" style="line-height:1.8;">
+        每一則投遞的留言，小棧長都會親自細細閱讀。<br>
+        為了守護這片安靜互助的水岸，小棧保有篩選、潤飾與刊登之權限。<br>
+        <span style="display:block; margin-top:8px; font-size:0.75rem; color:#A0AEC0; line-height:1.6;">⚠️ 不接受任何商業推銷、營利廣告、敏感詞彙或人身攻擊等言論。</span>
+      </p>
+
+      <form onsubmit="handleModalSubmit(event)">
+        <!-- 蜜罐防護（防機器人自動刷單） -->
+        <input type="text" id="modalHpField" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off">
+
+        <div class="form-group">
+          <label>你想分享的心聲短句或回饋：</label>
+          <textarea id="modalText" rows="4" placeholder="寫下你的感想、困惑、生活觀察或想在棧道留下的話..." required></textarea>
+        </div>
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="margin:0;">如何稱呼你：</label>
+            <button type="button" onclick="rollRandomName()" style="background:none; border:none; color:var(--amber-pier); font-size:0.8rem; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:4px;" title="點擊讓小棧換一個隨機名籤">
+              <span>🎲</span>
+              <span>讓小棧為你取名</span>
+            </button>
+          </div>
+          <input type="text" id="modalAuthor" placeholder="留個代稱吧（留空由小棧為你隨機取名）">
+        </div>
+        <button type="submit" class="btn-submit-action">送出棧道留言 ✍️</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 引用全站共享數據核心 -->
+  <script src="./data.js"></script>
+
+  <script>
+    // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
+    document.getElementById('autoMonthYear').innerText = SITE_DATA.siteInfo.lastUpdated;
+
+    // 動態渲染漂浮棧板（支援後台隨時增減與分類，移除右上角十字星號）
+    function renderBoardwalkPlanks() {
+      const track = document.querySelector('.floating-stream-track');
+      if (!track || !SITE_DATA.planks) return;
+      track.innerHTML = '';
+
+      SITE_DATA.planks.forEach(p => {
+        const plank = document.createElement('div');
+        plank.className = `wood-plank plank-${p.categoryKey}`;
+        plank.onclick = function() { this.classList.toggle('open'); };
+        plank.innerHTML = `
+          <div>
+            <div class="plank-top-meta">
+              <span class="plank-tag">${p.categoryName}</span>
+            </div>
+            <div class="plank-quote">${p.quote}</div>
+          </div>
+          <div class="plank-expanded-text">
+            ${p.expanded}
+          </div>
+        `;
+        track.appendChild(plank);
+      });
+    }
+
+    renderBoardwalkPlanks();
+
+    // ============================================================
+    // 1. 小舟水岸動態隨機呈現引擎（多種自然水流與小舟姿態，隨機切換）
+    // ============================================================
+    const boatModes = ['anim-docked', 'anim-drift', 'anim-breeze', 'anim-calm'];
+    const vessel = document.getElementById('sailingVessel');
+    const stage = document.getElementById('boatStage');
+
+    function setRandomBoatAnimation() {
+      if (!vessel) return;
+      const currentMode = boatModes.find(m => vessel.classList.contains(m));
+      const availableModes = boatModes.filter(m => m !== currentMode);
+      const chosenMode = availableModes[Math.floor(Math.random() * availableModes.length)];
+
+      boatModes.forEach(m => vessel.classList.remove(m));
+      vessel.classList.add(chosenMode);
+
+      // 隨機賦予 8.5s ~ 15.5s 的自然呼吸漂動週期
+      const randomDuration = (8.5 + Math.random() * 7).toFixed(1) + 's';
+      vessel.style.animationDuration = randomDuration;
+    }
+
+    // 頁面載入時即隨機決定動態情境
+    setRandomBoatAnimation();
+
+    // 每隔 18~28 秒自然變換一次水流模式與小舟姿態
+    setInterval(() => {
+      setRandomBoatAnimation();
+    }, 18000 + Math.random() * 10000);
+
+    // 點擊小舟或水面時，觸發水波漣漪晃動反應
+    if (stage) {
+      stage.addEventListener('click', () => {
+        if (!vessel) return;
+        vessel.classList.remove('boat-rippled');
+        void vessel.offsetWidth;
+        vessel.classList.add('boat-rippled');
+        setTimeout(() => {
+          vessel.classList.remove('boat-rippled');
+          setRandomBoatAnimation();
+        }, 1600);
+      });
+    }
+
+    // ============================================================
+    // 2. 豐富水岸隨機名籤庫（超過 1,200 種詩意組合，留空由小棧隨機）
+    // ============================================================
+    const aliasPrefixes = [
+      "晨光中的", "微風裡的", "黃昏靠岸的", "夜航中的", "雨後散步的", "清晨繫纜的",
+      "晴空下的", "坐在岸邊的", "逆風划行的", "等待起風的", "暫時歇槳的", "帶本書來的",
+      "喝口熱茶的", "看夕陽落下的", "整理行囊的", "迎著潮汐的", "月光映照的", "剛解開纜繩的",
+      "在棧道吹風的", "帶著新念頭的", "慢慢前行的", "卸下包袱的", "遠道而來的", "深呼吸停頓的",
+      "尋找下個河道的", "望著水面波紋的", "停下來看雲的", "把腳浸在水裡的", "靠著木樁歇息的",
+      "起早看日出的", "提著一盞燈火的", "隨波慢慢漂的", "等待水霧散去的", "把心事放下的",
+      "剛調好呼吸的", "靜聽水聲的", "換上輕裝的", "在渡口沉思的", "向遠方眺望的", "在樹蔭下歇涼的"
+    ];
+
+    const aliasNouns = [
+      "舟子", "旅人", "漫步者", "靠岸人", "夜航者", "過客", "採貝人", "看雲人",
+      "尋風者", "聽濤者", "歇腳客", "擺渡人", "踏浪者", "溯流客", "探路人", "行路者",
+      "歸帆者", "觀星人", "思索者", "寄信人", "泊舟人", "水岸朋友", "看水旅者", "解纜者",
+      "拾光者", "問路人", "獨木舟手", "守港人", "岸邊知己", "掌燈人"
+    ];
+
+    const specialAliases = [
+      "暫時停靠的鹿", "湖邊那棵柳樹", "水岸木棧板的一角", "微風裡的一片落葉", "石階上的旅人筆記",
+      "岸邊那葉小木舟", "江心那朵白浪", "棧道上的半杯溫茶", "水邊靜靜發呆的石子", "渡口等待起航的風",
+      "江畔那一彎新月", "蘆葦叢裡的白鷺", "帶著茶香的微風", "清晨的第一聲水鳥", "斜陽下的一道波光",
+      "守候港灣的老燈塔", "木樁上打盹的蜻蜓", "緩緩沉澱的漣漪", "木棧道的一抹暖陽", "河畔安靜的旅人"
+    ];
+
+    function getRandomAlias() {
+      // 5% 機率抽中特殊單句名籤，95% 機率從 40x30 = 1,200 種前綴+角色組合隨機產生
+      if (Math.random() < 0.05) {
+        return specialAliases[Math.floor(Math.random() * specialAliases.length)];
+      }
+      const p = aliasPrefixes[Math.floor(Math.random() * aliasPrefixes.length)];
+      const n = aliasNouns[Math.floor(Math.random() * aliasNouns.length)];
+      return p + n;
+    }
+
+    function rollRandomName() {
+      const name = getRandomAlias();
+      const input = document.getElementById('modalAuthor');
+      input.value = name;
+      input.style.transition = 'background 0.3s';
+      input.style.background = '#FFFDF5';
+      setTimeout(() => { input.style.background = ''; }, 300);
+    }
+
+    function openModal(type) {
+      const modal = document.getElementById('generalModal');
+      const title = document.getElementById('modalTitle');
+      const desc = document.getElementById('modalDesc');
+      if (type === 'submission') {
+        title.innerText = '棧道留言 ✍️';
+        desc.innerHTML = `每一則投遞的留言，小棧長都會親自細細閱讀。<br>為了守護這片安靜互助的水岸，小棧保有篩選、潤飾與刊登之權限。<br><span style="display:block; margin-top:8px; font-size:0.75rem; color:#A0AEC0; line-height:1.6;">⚠️ 不接受任何商業推銷、營利廣告、敏感詞彙或人身攻擊等言論。</span>`;
+      }
+      modal.classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('generalModal').classList.remove('open');
+    }
+
+    // 訪客投稿：留空由小棧隨機取名，並具備防惡意刷單機制，真實存入後台審核箱
+    function handleModalSubmit(e) {
+      e.preventDefault();
+
+      // 1. 蜜罐防護（防機器人自動填寫）
+      const hp = document.getElementById('modalHpField').value;
+      if (hp) {
+        closeModal();
+        return;
+      }
+
+      const txt = document.getElementById('modalText').value.trim();
+
+      // 2. 邊界與字數防護
+      if (txt.length < 4) {
+        alert('請至少填寫 4 個字以上的心聲或短句喔！');
+        return;
+      }
+      if (txt.length > 500) {
+        alert('留言字數上限為 500 字，請稍作精簡。');
+        return;
+      }
+
+      // 3. 30 秒頻率限制（防連續刷單惡意洗版）
+      const lastSubmit = parseInt(localStorage.getItem('WANGZHOU_LAST_QUOTE_SUBMIT') || '0', 10);
+      const nowMs = Date.now();
+      if (nowMs - lastSubmit < 30000) {
+        const waitSec = Math.ceil((30000 - (nowMs - lastSubmit)) / 1000);
+        alert(`小棧已收到您的心意囉！為了維護水岸安寧，請稍候 ${waitSec} 秒後再行留言。`);
+        return;
+      }
+
+      // 4. 重複內容防護
+      const lastContent = localStorage.getItem('WANGZHOU_LAST_QUOTE_TEXT') || '';
+      if (lastContent === txt) {
+        alert('這則留言您剛才已經投遞過囉，請勿重複送出！');
+        return;
+      }
+
+      let author = document.getElementById('modalAuthor').value.trim();
+      let isRandomlyAssigned = false;
+
+      // 留空由小棧隨機取名
+      if (!author) {
+        author = getRandomAlias();
+        isRandomlyAssigned = true;
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      const newSub = {
+        id: "sub-" + Date.now(),
+        type: "quote",
+        typeName: "棧道留言",
+        title: txt.slice(0, 24) + (txt.length > 24 ? "..." : ""),
+        author: author,
+        contact: "",
+        content: txt,
+        extra: "",
+        createdAt: dateStr,
+        status: "unread"
+      };
+
+      if (!SITE_DATA.submissions) SITE_DATA.submissions = [];
+      SITE_DATA.submissions.unshift(newSub);
+
+      try {
+        localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
+        localStorage.setItem('WANGZHOU_LAST_QUOTE_SUBMIT', String(nowMs));
+        localStorage.setItem('WANGZHOU_LAST_QUOTE_TEXT', txt);
+      } catch (err) {}
+
+      if (isRandomlyAssigned) {
+        alert(`謝謝你的心意！小棧已為你隨機取好名籤「${author}」，棧道留言已妥善送達後台審核箱。`);
+      } else {
+        alert(`謝謝你（${author}）的心意！小棧長已收到你的棧道留言，已妥善送達後台審核箱。`);
+      }
+
+      document.getElementById('modalText').value = '';
+      document.getElementById('modalAuthor').value = '';
+      closeModal();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>木棧道・課程活動｜望舟小棧 farfaring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <a href="./index.html" class="brand-mark">
+      <span class="brand-zh">望舟小棧</span>
+      <span class="brand-en">farfaring</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="./index.html">水岸首頁</a></li>
+      <li><a href="./resources.html" class="active">木棧道・課程活動</a></li>
+      <li><a href="./articles.html">水岸手札・生活觀察</a></li>
+      <li><a href="./about.html">關於望舟</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page Header -->
+  <header class="page-hero">
+    <div class="page-eyebrow">COURSES & WORKSHOPS</div>
+    <h1 class="page-title">木棧道・課程活動</h1>
+    <!-- 對話感溫柔副標題（標點符號修復：中間逗號，句末驚嘆號） -->
+    <p class="page-subtitle">
+      想為自己添一點新底氣，或是單純想找個地方換換空氣？<br>
+      這裡的每一塊棧板都為你留著，挑一個此刻讓你感到踏實的方向，走過去看看吧！
+    </p>
+  </header>
+
+  <!-- Main Content -->
+  <main class="page-wrap">
+
+    <!-- 搜尋與精準分類篩選 -->
+    <div class="search-filter-box">
+      <!-- 即時關鍵字搜尋列 -->
+      <div class="search-input-wrapper">
+        <input type="text" id="searchInput" placeholder="🔍 搜尋你想學的技能、課程名稱、辦訓單位或地點..." oninput="handleSearch()">
+      </div>
+
+      <!-- 類型維度（四大客觀功能分類，杜絕標籤化與生硬名詞） -->
+      <div class="filter-row" id="typeFilterRow">
+        <span class="filter-row-label">課程活動</span>
+        <button class="filter-btn active" data-type="all" onclick="filterByType('all', this)">全部資源</button>
+        <button class="filter-btn" data-type="deep" onclick="filterByType('deep', this)">深度培訓</button>
+        <button class="filter-btn" data-type="upskill" onclick="filterByType('upskill', this)">技能增強</button>
+        <button class="filter-btn" data-type="events" onclick="filterByType('events', this)">講座工作坊</button>
+      </div>
+
+      <!-- 地點維度（涵蓋線上、東部與離島，廣義中性） -->
+      <div class="filter-row" id="regionFilterRow">
+        <span class="filter-row-label">參與地點</span>
+        <button class="filter-btn active" data-region="all" onclick="filterByRegion('all', this)">不限地點</button>
+        <button class="filter-btn" data-region="線上" onclick="filterByRegion('線上', this)">線上</button>
+        <button class="filter-btn" data-region="北部" onclick="filterByRegion('北部', this)">北部</button>
+        <button class="filter-btn" data-region="中部" onclick="filterByRegion('中部', this)">中部</button>
+        <button class="filter-btn" data-region="南部" onclick="filterByRegion('南部', this)">南部</button>
+        <button class="filter-btn" data-region="東部" onclick="filterByRegion('東部', this)">東部</button>
+        <button class="filter-btn" data-region="離島" onclick="filterByRegion('離島', this)">離島</button>
+      </div>
+    </div>
+
+    <!-- 客觀中性、不浮誇之收錄說明提示條 -->
+    <div class="notice-strip">
+      <div class="notice-strip-text">
+        ✦ <strong>收錄說明</strong>：本區整理各界公開之技能培育與學習資源，相關開課資訊請以各主辦單位公告為準。
+      </div>
+      <div class="notice-strip-actions">
+        <a href="javascript:void(0)" class="notice-action-link" onclick="openResourceModal('error')">
+          <span>⚠️ 回報資訊有誤</span>
+        </a>
+        <span style="color:var(--hairline)">｜</span>
+        <a href="javascript:void(0)" class="notice-action-link" onclick="openResourceModal('recommend')">
+          <span>📮 推薦好資源</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 課程與活動卡片容器 -->
+    <div class="resources-grid" id="resourcesContainer"></div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-quote">
+      生活裡處處都是機會<br>
+      陪你挖掘，陪你發現<br>
+      陪你通往真正想要的生活
+    </div>
+
+    <div class="footer-social-bar">
+      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>📸 Instagram</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>🧵 Threads</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+    </div>
+
+    <div class="footer-links-row">
+      <a href="./index.html">水岸首頁</a>
+      <a href="./resources.html">木棧道・課程活動</a>
+      <a href="./articles.html">水岸手札・生活觀察</a>
+      <a href="./about.html">關於望舟</a>
+    </div>
+
+    <div class="footer-maintenance-stamp">
+      最後更新：<span id="autoMonthYearRes"></span> ｜ 相關資訊皆以各主辦單位公告為準 ｜ 望舟小棧 farfaring
+    </div>
+  </footer>
+
+  <!-- 彈出式表單（勘誤 / 推薦好資源） -->
+  <div id="resModal" class="modal-overlay" onclick="if(event.target===this)closeResourceModal()">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeResourceModal()">×</button>
+      <h3 id="resModalTitle" class="modal-title">推薦好資源 📮</h3>
+      <p id="resModalDesc" class="modal-desc" style="line-height:1.75; margin-bottom:18px;">
+        若你發現了優質的公開課程、實務工作坊或交流活動，<br>
+        歡迎告訴小棧長，審核後會協助收錄分享。
+      </p>
+
+      <form onsubmit="handleResourceModalSubmit(event)">
+        <!-- 蜜罐防護（防機器人自動填寫） -->
+        <input type="text" id="resHpField" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off">
+
+        <div class="form-group">
+          <label id="resTargetLabel">課程或活動名稱：</label>
+          <input type="text" id="resTargetName" placeholder="例如：AI 財務與 Gemini 應用班" required>
+        </div>
+        <div class="form-group" id="resTargetUrlGroup">
+          <label id="resUrlLabel">官方報名或介紹連結：</label>
+          <input type="url" id="resTargetUrl" placeholder="https://..." required>
+        </div>
+        <div class="form-group">
+          <label id="resDetailLabel">課程活動簡介：</label>
+          <textarea id="resModalDetail" rows="3" placeholder="請簡要介紹這門課程的內容或培訓方向..." required></textarea>
+        </div>
+        <div class="form-group" id="resOrganizerNoteGroup">
+          <label id="resNoteLabel">課程特色 / 提醒（選填）：</label>
+          <input type="text" id="resOrganizerNote" placeholder="例如：結訓安排媒合面試、具備證照輔導、適合零基礎...">
+        </div>
+        <div class="form-group">
+          <label id="resEmailLabel">聯絡信箱（選填，方便向你致謝或核實）：</label>
+          <input type="email" id="resModalEmail" placeholder="yourname@gmail.com">
+        </div>
+        <button type="submit" id="resSubmitBtn" class="btn-submit-action">送出推薦給小棧長 📮</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 引用全站共享數據核心 -->
+  <script src="./data.js"></script>
+
+  <script>
+    // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
+    document.getElementById('autoMonthYearRes').innerText = SITE_DATA.siteInfo.lastUpdated;
+
+    // 讀取共享數據核心之課程庫（過濾草稿，僅展示審核通過已上架之課程）
+    const resources = (SITE_DATA.courses || []).filter(c => !c.isDraft);
+
+    let currentType = "all";
+    let currentRegion = "all";
+    let searchKeyword = "";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("type")) {
+      currentType = urlParams.get("type");
+      document.querySelectorAll("#typeFilterRow .filter-btn").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-type") === currentType);
+      });
+    }
+
+    function getDaysLeft(deadlineStr) {
+      const expiry = new Date(`${deadlineStr}T23:59:59+08:00`).getTime();
+      const now = new Date().getTime();
+      return Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+    }
+
+    function handleSearch() {
+      searchKeyword = document.getElementById("searchInput").value.trim().toLowerCase();
+      renderResources();
+    }
+
+    function filterByType(t, btn) {
+      currentType = t;
+      document.querySelectorAll("#typeFilterRow .filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderResources();
+    }
+
+    function filterByRegion(r, btn) {
+      currentRegion = r;
+      document.querySelectorAll("#regionFilterRow .filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderResources();
+    }
+
+    function renderResources() {
+      const container = document.getElementById("resourcesContainer");
+      container.innerHTML = "";
+
+      const filtered = resources.filter(item => {
+        if (item.active === false) return false;
+        const days = getDaysLeft(item.deadline);
+        if (days < 0) return false;
+        if (currentType !== "all" && !item.types.includes(currentType)) return false;
+        if (currentRegion !== "all" && item.region !== currentRegion) return false;
+        if (searchKeyword) {
+          const matchTitle = item.title.toLowerCase().includes(searchKeyword);
+          const matchProvider = item.provider.toLowerCase().includes(searchKeyword);
+          const matchSummary = item.summary.toLowerCase().includes(searchKeyword);
+          const matchLocation = item.locationLabel.toLowerCase().includes(searchKeyword);
+          if (!matchTitle && !matchProvider && !matchSummary && !matchLocation) return false;
+        }
+        return true;
+      });
+
+      filtered.sort((a, b) => getDaysLeft(a.deadline) - getDaysLeft(b.deadline));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding:64px 20px; color:var(--ink-muted); background:#FFF; border-radius:16px; border:1px solid var(--hairline);">
+            <div style="font-size:1.8rem; margin-bottom:12px;">🌊</div>
+            <div style="font-size:1.05rem; font-family:'Noto Serif TC',serif; color:var(--ink-black); margin-bottom:8px;">
+              目前未找到符合條件的課程活動
+            </div>
+            <p style="font-size:0.88rem;">請嘗試清除關鍵字，或切換上方「全部資源」與「不限地點」查看其他機會。</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const days = getDaysLeft(item.deadline);
+        const isUrgent = days <= 5;
+        const card = document.createElement("article");
+        card.className = "res-card";
+
+        card.innerHTML = `
+          <div>
+            <!-- 頂部標籤 -->
+            <div class="res-top-row">
+              <span class="res-type-pill">${item.locationLabel}</span>
+              <span class="res-status-pill ${isUrgent ? 'status-urgent' : 'status-open'}">
+                ${isUrgent ? `⚡ 報名倒數中（剩 ${days} 天）` : `📅 報名截止：${item.deadline}`}
+              </span>
+            </div>
+
+            <!-- 辦訓單位 -->
+            <div style="margin-bottom:12px;">
+              <span class="res-provider-badge">
+                <span>🏛️ 辦訓單位：</span>
+                <strong>${item.provider}</strong>
+              </span>
+            </div>
+
+            <!-- 標題 -->
+            <h2 class="res-card-title">${item.title}</h2>
+
+            <!-- 推薦看點（親切短句，去黑話） -->
+            <div class="wangzhou-note">
+              <span class="wangzhou-note-label">✦ 推薦看點</span>
+              ${item.whisper}
+              ${item.organizerNote ? `<div class="organizer-optional-note">📢 備註：${item.organizerNote}</div>` : ''}
+            </div>
+
+            <!-- 核心資訊（嚴格排版對齊，禁止腰斬斷字） -->
+            <ul class="res-info-table">
+              <li class="res-info-item">
+                <span class="res-info-label">🎯 學習內容：</span>
+                <span>${item.summary}</span>
+              </li>
+              <li class="res-info-item">
+                <span class="res-info-label">⏰ 上課時間：</span>
+                <span>${item.timeCycle}</span>
+              </li>
+              <li class="res-info-item">
+                <span class="res-info-label">📍 上課地點：</span>
+                <span>${item.address}</span>
+              </li>
+              <li class="res-info-item">
+                <span class="res-info-label">💰 費用說明：</span>
+                <span style="color:var(--amber-dark); font-weight:500;">${item.cost}</span>
+              </li>
+              <li class="res-info-item">
+                <span class="res-info-label">📋 報名途徑：</span>
+                <span>${item.how}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 底部直通官方按鈕（徹底移除編號字眼） -->
+          <div class="res-card-footer">
+            <a href="${item.url}" target="_blank" rel="noopener" class="btn-official-link">
+              <span>前往官方頁面</span>
+              <span>↗</span>
+            </a>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openResourceModal(type) {
+      const modal = document.getElementById('resModal');
+      const title = document.getElementById('resModalTitle');
+      const desc = document.getElementById('resModalDesc');
+      const targetLabel = document.getElementById('resTargetLabel');
+      const urlLabel = document.getElementById('resUrlLabel');
+      const urlInput = document.getElementById('resTargetUrl');
+      const detailLabel = document.getElementById('resDetailLabel');
+      const detailInput = document.getElementById('resModalDetail');
+      const noteGroup = document.getElementById('resOrganizerNoteGroup');
+      const noteLabel = document.getElementById('resNoteLabel');
+      const emailLabel = document.getElementById('resEmailLabel');
+      const submitBtn = document.getElementById('resSubmitBtn');
+
+      if (type === 'error') {
+        title.innerText = '回報資訊有誤 ⚠️';
+        desc.innerHTML = '發現哪一門課程活動資訊已提早額滿或連結失效？<br>請告訴小棧長，我們會前往核實並修正。';
+        targetLabel.innerText = '有誤的課程或活動名稱：';
+        urlLabel.innerText = '頁面連結或失效網址（選填）：';
+        urlInput.required = false;
+        urlInput.placeholder = 'https://...（若無可留空）';
+        detailLabel.innerText = '狀況說明（如：已額滿、連結失效或資訊有誤）：';
+        detailInput.placeholder = '請簡短說明需要勘誤或修正的地方...';
+        noteGroup.style.display = 'none'; // 勘誤模式下隱藏課程特色與提醒
+        emailLabel.innerText = '聯絡信箱（選填，方便向您回報修正結果）：';
+        submitBtn.innerText = '送出勘誤回報 ⚠️';
+      } else {
+        title.innerText = '推薦好資源 📮';
+        desc.innerHTML = '若你發現了優質的公開課程、實務工作坊或交流活動，<br>歡迎告訴小棧長，審核後會協助收錄分享。';
+        targetLabel.innerText = '課程或活動名稱：';
+        urlLabel.innerText = '官方報名或介紹連結：';
+        urlInput.required = true;
+        urlInput.placeholder = 'https://...';
+        detailLabel.innerText = '課程活動簡介：';
+        detailInput.placeholder = '請簡要介紹這門課程的內容或培訓方向...';
+        noteGroup.style.display = 'block'; // 推薦模式下顯示課程特色與提醒
+        noteLabel.innerText = '課程特色 / 提醒（選填）：';
+        emailLabel.innerText = '聯絡信箱（選填，方便向你致謝或核實）：';
+        submitBtn.innerText = '送出推薦給小棧長 📮';
+      }
+
+      modal.setAttribute('data-submit-type', type);
+      modal.classList.add('open');
+    }
+
+    function closeResourceModal() {
+      document.getElementById('resModal').classList.remove('open');
+    }
+
+    function handleResourceModalSubmit(e) {
+      e.preventDefault();
+
+      // 1. 蜜罐防護
+      const hp = document.getElementById('resHpField').value;
+      if (hp) {
+        closeResourceModal();
+        return;
+      }
+
+      const modal = document.getElementById('resModal');
+      const submitType = modal.getAttribute('data-submit-type') || 'recommend';
+      const target = document.getElementById('resTargetName').value.trim();
+      const url = document.getElementById('resTargetUrl').value.trim();
+      const detail = document.getElementById('resModalDetail').value.trim();
+      const note = document.getElementById('resOrganizerNote').value.trim();
+      const email = document.getElementById('resModalEmail').value.trim();
+
+      // 2. 字數防護
+      if (target.length < 2) {
+        alert('請填寫完整的課程或活動名稱。');
+        return;
+      }
+      if (detail.length < 5) {
+        alert('請至少提供 5 個字以上的簡要說明，方便小棧長前往核實。');
+        return;
+      }
+
+      // 3. 30 秒頻率限制（防連續刷單）
+      const lastSubmit = parseInt(localStorage.getItem('WANGZHOU_LAST_RES_SUBMIT') || '0', 10);
+      const nowMs = Date.now();
+      if (nowMs - lastSubmit < 30000) {
+        const waitSec = Math.ceil((30000 - (nowMs - lastSubmit)) / 1000);
+        alert(`小棧已收到您的回報囉！為防止重覆送出，請稍候 ${waitSec} 秒後再行操作。`);
+        return;
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      const extraItems = [];
+      if (url) extraItems.push(`官方連結：${url}`);
+      if (submitType !== 'error' && note) extraItems.push(`特色/提醒：${note}`);
+
+      const newSub = {
+        id: "sub-" + Date.now(),
+        type: submitType === 'error' ? 'error' : 'course',
+        typeName: submitType === 'error' ? '資訊勘誤回報' : '課程活動推薦',
+        title: target,
+        url: url,
+        author: email ? email.split('@')[0] : '熱心訪客',
+        contact: email || '未留信箱',
+        content: detail,
+        extra: extraItems.join(' ｜ '),
+        createdAt: dateStr,
+        status: 'unread'
+      };
+
+      if (!SITE_DATA.submissions) SITE_DATA.submissions = [];
+      SITE_DATA.submissions.unshift(newSub);
+
+      try {
+        localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
+        localStorage.setItem('WANGZHOU_LAST_RES_SUBMIT', String(nowMs));
+      } catch (err) {}
+
+      if (submitType === 'error') {
+        alert(`非常感謝你的熱心回報！小棧長已收到關於「${target}」的勘誤資訊，我們會前往核實修正。`);
+      } else {
+        alert(`非常感謝你的熱心推薦！小棧長已收到關於「${target}」的課程推薦，資料已妥善送達後台審核箱。`);
+      }
+
+      document.getElementById('resTargetName').value = '';
+      document.getElementById('resTargetUrl').value = '';
+      document.getElementById('resModalDetail').value = '';
+      document.getElementById('resOrganizerNote').value = '';
+      document.getElementById('resModalEmail').value = '';
+      closeResourceModal();
+    }
+
+    renderResources();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>望舟小棧｜真實營運管理後台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    :root {
+      --admin-bg: #F4F6F8;
+      --admin-card: #FFFFFF;
+      --admin-border: #E1E6EB;
+      --admin-primary: #2B4C65;
+      --admin-accent: #B87D4B;
+    }
+
+    body {
+      background-color: var(--admin-bg);
+      background-image: none;
+      font-family: 'Noto Sans TC', sans-serif;
+      color: #1E242B;
+    }
+
+    .admin-header {
+      background: #1C2127;
+      color: #FFF;
+      padding: 16px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .admin-brand h1 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.08em;
+    }
+
+    .admin-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-front-preview {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FFF;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 6px 16px;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn-front-preview:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-export-data {
+      background: var(--admin-accent);
+      color: #FFF;
+      border: none;
+      padding: 7px 18px;
+      border-radius: 99px;
+      font-size: 0.86rem;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(184, 125, 75, 0.4);
+      transition: opacity 0.2s;
+    }
+
+    .btn-export-data:hover {
+      opacity: 0.9;
+    }
+
+    .admin-layout {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .admin-table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 10px;
+      border: 1px solid var(--admin-border);
+      border-radius: 8px;
+      background: #FFF;
+    }
+
+    @media (max-width: 900px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .admin-header {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .admin-brand {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .admin-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .admin-actions button,
+      .admin-actions a {
+        flex: 1 1 calc(50% - 8px);
+        text-align: center;
+        justify-content: center;
+        font-size: 0.82rem;
+        padding: 8px 10px;
+      }
+      .admin-layout {
+        margin: 16px auto;
+        padding: 0 12px;
+        gap: 16px;
+      }
+      .admin-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 8px;
+        gap: 6px;
+      }
+      .admin-nav-item {
+        white-space: nowrap;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+      }
+      .admin-panel {
+        padding: 18px 14px;
+        border-radius: var(--radius-md);
+      }
+      .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .stat-card {
+        padding: 14px;
+      }
+      .stat-num {
+        font-size: 1.5rem;
+      }
+      .update-time-box {
+        padding: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stat-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .admin-actions button,
+      .admin-actions a {
+        flex: 1 1 100%;
+      }
+    }
+
+    /* 側邊導航 */
+    .admin-nav {
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .admin-nav-item {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #4A5568;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-nav-item:hover {
+      background: #F0F4F8;
+      color: var(--admin-primary);
+    }
+
+    .admin-nav-item.active {
+      background: var(--admin-primary);
+      color: #FFF;
+      font-weight: 500;
+    }
+
+    /* 內容工作區 */
+    .admin-panel {
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      display: none;
+    }
+
+    .admin-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--admin-border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.35rem;
+      color: #1A202C;
+    }
+
+    .btn-create-item {
+      background: var(--admin-primary);
+      color: #FFF;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-create-item:hover {
+      background: #1E374B;
+    }
+
+    /* 表格樣式 */
+    .admin-table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .admin-table th {
+      background: #F8FAFC;
+      color: #4A5568;
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--admin-border);
+    }
+
+    .admin-table td {
+      padding: 14px;
+      border-bottom: 1px solid var(--admin-border);
+      vertical-align: middle;
+    }
+
+    .admin-table tr:hover {
+      background: #FAFBFC;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-table-sm {
+      background: #EDF2F7;
+      border: 1px solid #CBD5E0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: #2D3748;
+    }
+
+    .btn-table-sm:hover {
+      background: #E2E8F0;
+    }
+
+    .btn-table-sm.active {
+      background: var(--admin-primary);
+      color: #FFF;
+      border-color: var(--admin-primary);
+    }
+
+    .btn-table-convert {
+      background: #EBF8FF;
+      color: #2B6CB0;
+      border-color: #BEE3F8;
+      font-weight: 600;
+    }
+
+    .btn-table-convert:hover {
+      background: #BEE3F8;
+    }
+
+    .btn-table-delete {
+      color: #E53E3E;
+      border-color: #FEB2B2;
+      background: #FFF5F5;
+    }
+
+    .btn-table-delete:hover {
+      background: #FED7D7;
+    }
+
+    /* 審核箱標籤與狀態樣式 */
+    .sub-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .sub-badge-course { background: #EBF8FF; color: #2B6CB0; border: 1px solid #BEE3F8; }
+    .sub-badge-story  { background: #FEFCBF; color: #744210; border: 1px solid #FAF089; }
+    .sub-badge-letter { background: #EDF2F7; color: #4A5568; border: 1px solid #E2E8F0; }
+    .sub-badge-error  { background: #FED7D7; color: #9B2C2C; border: 1px solid #FEB2B2; }
+    .sub-badge-quote  { background: #F0FFF4; color: #22543D; border: 1px solid #C6F6D5; }
+
+    .sub-status-unread {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 1px 7px;
+      border-radius: 99px;
+      background: #FFF5F5;
+      color: #E53E3E;
+      border: 1px solid #FEB2B2;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+    .sub-status-reviewed {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 1px 7px;
+      border-radius: 99px;
+      background: #F7FAFC;
+      color: #718096;
+      border: 1px solid #E2E8F0;
+      margin-left: 4px;
+    }
+
+    /* 狀態卡片 */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #F8FAFC;
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .stat-num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--admin-primary);
+      margin-top: 6px;
+    }
+
+    .stat-desc {
+      font-size: 0.82rem;
+      color: #718096;
+    }
+
+    .update-time-box {
+      background: #FFFDF9;
+      border: 1px solid rgba(184, 125, 75, 0.3);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .time-badge {
+      font-family: monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--admin-accent);
+      background: rgba(184, 125, 75, 0.1);
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 後台頂部 -->
+  <header class="admin-header">
+    <div class="admin-brand">
+      <h1>望舟小棧 ． 小棧長管理後台</h1>
+      <span style="font-size:0.8rem; color:rgba(255,255,255,0.65);">真實營運管理控制台</span>
+    </div>
+    <div class="admin-actions">
+      <button class="btn-front-preview" onclick="openCloudConfigModal()" title="設定 GitHub 雲端一鍵發布金鑰">🔑 雲端金鑰綁定</button>
+      <a href="./index.html" target="_blank" class="btn-front-preview">🌐 檢視前台網站</a>
+      <button id="btnCloudPublish" class="btn-export-data" onclick="publishToGitHub()" title="自動透過 GitHub API 推送發布，免下載檔案">🚀 一鍵雲端發布</button>
+      <button class="btn-front-preview" style="font-size:0.8rem; opacity:0.85;" onclick="exportDataJs()" title="離線備份並下載 data.js 檔案">💾 離線備份</button>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+
+    <!-- 側邊分頁導航（依全站動線重整：儀表板 ➔ 首頁木棧板 ➔ 課程 ➔ 手札 ➔ 審核收件箱） -->
+    <aside class="admin-nav">
+      <div class="admin-nav-item active" data-panel="dashboard" onclick="switchPanel('dashboard', this)">
+        <span>📊</span>
+        <span>營運概況與時間</span>
+      </div>
+      <div class="admin-nav-item" data-panel="planks" onclick="switchPanel('planks', this)">
+        <span>🪵</span>
+        <span>漂浮棧板短句</span>
+      </div>
+      <div class="admin-nav-item" data-panel="courses" onclick="switchPanel('courses', this)">
+        <span>📋</span>
+        <span>課程活動管理</span>
+        <span id="badgeCourseDraft" style="background:#D69E2E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="待審核草稿數">0</span>
+      </div>
+      <div class="admin-nav-item" data-panel="articles" onclick="switchPanel('articles', this)">
+        <span>📖</span>
+        <span>水岸手札管理</span>
+        <span id="badgeArticleDraft" style="background:#D69E2E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="待審核草稿數">0</span>
+      </div>
+      <div class="admin-nav-item" data-panel="submissions" onclick="switchPanel('submissions', this)">
+        <span>📬</span>
+        <span>訪客投稿審核箱</span>
+        <span id="badgeSubNavCount" style="background:#E53E3E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700;">0</span>
+      </div>
+    </aside>
+
+    <!-- 主面板 1: 營運概況與維護時間 -->
+    <main id="panel-dashboard" class="admin-panel active">
+      <div class="panel-header">
+        <h2 class="panel-title">小棧即時營運概況</h2>
+      </div>
+
+      <!-- 真實最後更新時間控制 -->
+      <div class="update-time-box">
+        <div>
+          <strong style="color:#2D3748; font-size:1rem; display:block; margin-bottom:4px;">全站真實最後維護日期</strong>
+          <span style="font-size:0.86rem; color:#718096;">此日期烙印在前台全站頁尾。只有當你在後台實際完成更動時才進行更新，誠實透明。</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="currentStampDisplay" class="time-badge">2026 年 10 月 20 日</span>
+          <button class="btn-table-sm" onclick="stampTodayDate()">🕒 標記為今日</button>
+          <button class="btn-table-sm" style="color:#718096;" onclick="resetToDefaultData()">🔄 還原 data.js</button>
+        </div>
+      </div>
+
+      <!-- 統計數據 -->
+      <div class="stat-cards-grid">
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('submissions')">
+          <div class="stat-desc">待審訪客投稿</div>
+          <div id="statSubsCount" class="stat-num" style="color:#E53E3E;">0</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('planks')">
+          <div class="stat-desc">水面漂浮棧板</div>
+          <div id="statPlanksCount" class="stat-num">0</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('courses')">
+          <div class="stat-desc">上架課程活動</div>
+          <div id="statCoursesCount" class="stat-num">0</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('articles')">
+          <div class="stat-desc">水岸手札篇數</div>
+          <div id="statArticlesCount" class="stat-num">0</div>
+        </div>
+      </div>
+
+      <div style="background:#FFFDF9; border:1px solid rgba(184, 125, 75, 0.35); border-radius:12px; padding:22px; font-size:0.92rem; line-height:1.8; margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+          <h3 style="font-size:1.05rem; margin:0; color:var(--admin-primary); display:flex; align-items:center; gap:8px;">
+            <span>🚀 雲端發布狀態：</span>
+            <span id="cloudStatusBadge" style="font-size:0.85rem; padding:3px 10px; border-radius:99px; background:#EDF2F7; color:#4A5568;">尚未綁定 GitHub</span>
+          </h3>
+          <button class="btn-table-sm" onclick="openCloudConfigModal()">⚙️ 變更綁定設定</button>
+        </div>
+        <p style="margin-bottom:6px;"><strong>✨ 小棧長最省事的日常發布工作流：</strong></p>
+        <p style="margin:2px 0;">1. 隨時進入後台新增課程、撰寫手札短文、審核訪客投稿或調整木棧板（更動會即時反映在本機瀏覽器）。</p>
+        <p style="margin:2px 0;">2. 整理好後，直接點擊右上角橘色 <strong>【🚀 一鍵雲端發布】</strong> 按鈕。</p>
+        <p style="margin:2px 0;">3. 系統將自動透過 GitHub API 將最新資料同步至雲端，<strong>完全不需要手動下載檔案、也不用打開 GitHub 網頁</strong>，約 30 秒至 1 分鐘後全球讀者便能看到最新內容！</p>
+      </div>
+    </main>
+
+    <!-- 主面板 2: 漂浮棧板管理（首頁木棧道短句與心聲） -->
+    <main id="panel-planks" class="admin-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">漂浮棧板短句管理</h2>
+        <button class="btn-create-item" onclick="openPlankEditModal()">➕ 新增棧板短句</button>
+      </div>
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>短句內容</th>
+              <th>色系分類</th>
+              <th>署名</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="plankTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- 主面板 3: 課程活動管理（兼具審稿與過期過濾） -->
+    <main id="panel-courses" class="admin-panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h2 class="panel-title">課程活動管理</h2>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn-table-sm active" id="courseFilter-all" onclick="filterCourses('all')">全部 (<span id="cnt-course-all">0</span>)</button>
+            <button class="btn-table-sm" id="courseFilter-published" onclick="filterCourses('published')">🟢 已上架 (<span id="cnt-course-pub">0</span>)</button>
+            <button class="btn-table-sm" id="courseFilter-draft" onclick="filterCourses('draft')">🟡 待審草稿 (<span id="cnt-course-draft">0</span>)</button>
+            <button class="btn-table-sm" id="courseFilter-expired" onclick="filterCourses('expired')">⚠️ 已截止 (<span id="cnt-course-expired">0</span>)</button>
+          </div>
+        </div>
+        <button class="btn-create-item" onclick="openCourseEditModal()">➕ 新增課程活動</button>
+      </div>
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:115px;">審核狀態</th>
+              <th>名稱 / 辦訓單位</th>
+              <th>地點</th>
+              <th>截止日期 / 時效</th>
+              <th>費用屬性</th>
+              <th style="width:190px;">審核與操作</th>
+            </tr>
+          </thead>
+          <tbody id="courseTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- 主面板 4: 水岸手札管理（兼具隨筆撰寫與草稿審核） -->
+    <main id="panel-articles" class="admin-panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h2 class="panel-title">水岸手札管理</h2>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-table-sm active" id="artFilter-all" onclick="filterArticles('all')">全部 (<span id="cnt-art-all">0</span>)</button>
+            <button class="btn-table-sm" id="artFilter-published" onclick="filterArticles('published')">🟢 已上架 (<span id="cnt-art-pub">0</span>)</button>
+            <button class="btn-table-sm" id="artFilter-draft" onclick="filterArticles('draft')">🟡 待審草稿 (<span id="cnt-art-draft">0</span>)</button>
+          </div>
+        </div>
+        <button class="btn-create-item" onclick="openArticleEditModal()">➕ 發表新手札</button>
+      </div>
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:115px;">審核狀態</th>
+              <th>標題</th>
+              <th>手札分類</th>
+              <th>發表月份</th>
+              <th style="width:190px;">審核與操作</th>
+            </tr>
+          </thead>
+          <tbody id="articleTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- 主面板 5: 訪客投稿審核箱（集中收納所有前台推薦、故事、來信與勘誤） -->
+    <main id="panel-submissions" class="admin-panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+        <h2 class="panel-title">📬 訪客投稿審核箱</h2>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-table-sm active" id="subBtn-all" onclick="filterSubmissions('all')">全部 (<span id="cnt-sub-all">0</span>)</button>
+          <button class="btn-table-sm" id="subBtn-unread" onclick="filterSubmissions('unread')">待處理 (<span id="cnt-sub-unread">0</span>)</button>
+          <button class="btn-table-sm" id="subBtn-course" onclick="filterSubmissions('course')">課程推薦 (<span id="cnt-sub-course">0</span>)</button>
+          <button class="btn-table-sm" id="subBtn-story" onclick="filterSubmissions('story')">故事投稿 (<span id="cnt-sub-story">0</span>)</button>
+          <button class="btn-table-sm" id="subBtn-letter" onclick="filterSubmissions('letter')">讀者來信 (<span id="cnt-sub-letter">0</span>)</button>
+          <button class="btn-table-sm" id="subBtn-error" onclick="filterSubmissions('error')">資訊勘誤 (<span id="cnt-sub-error">0</span>)</button>
+          <button class="btn-table-sm" id="subBtn-quote" onclick="filterSubmissions('quote')">棧道留言 (<span id="cnt-sub-quote">0</span>)</button>
+          <button class="btn-table-sm" onclick="markAllSubsRead()" title="批次標記當前所有投稿為已審">✓ 全部標記為已審</button>
+        </div>
+      </div>
+
+      <!-- 今日投稿集中摘要提示條（無擾模式：自動歸納，不發垃圾提醒信） -->
+      <div id="subDailySummaryBox" style="background:#FFFDF9; border:1px solid rgba(184,125,75,0.35); border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:0.9rem; line-height:1.75; color:#2D3748;">
+        <!-- 動態由 JS 渲染完整歸納摘要 -->
+      </div>
+
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:130px;">類型與狀態</th>
+              <th>內容主旨 / 摘要</th>
+              <th style="width:180px;">投稿人 / 聯絡</th>
+              <th style="width:140px;">時間</th>
+              <th style="width:230px;">審核操作</th>
+            </tr>
+          </thead>
+          <tbody id="submissionTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- 訪客投稿詳情 Modal -->
+  <div id="subDetailModal" class="modal-overlay" onclick="if(event.target===this)closeModal('subDetailModal')">
+    <div class="modal-content" style="max-width:620px;">
+      <button class="modal-close-btn" onclick="closeModal('subDetailModal')">×</button>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+        <span id="subDetailBadge" class="sub-badge"></span>
+        <span id="subDetailStatusBadge"></span>
+      </div>
+      <h3 id="subDetailTitle" class="modal-title" style="margin-bottom:8px; font-size:1.2rem;"></h3>
+      <div style="font-size:0.84rem; color:#718096; margin-bottom:14px; line-height:1.6;" id="subDetailMeta"></div>
+      <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:16px; font-size:0.94rem; line-height:1.85; color:#2D3748; white-space:pre-wrap; margin-bottom:14px;" id="subDetailContent"></div>
+      <div id="subDetailExtraBox" style="background:#FFFDF9; border:1px solid rgba(184,125,75,0.3); border-radius:8px; padding:12px; font-size:0.86rem; color:#8C5E35; margin-bottom:16px; display:none;"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div id="subDetailConvertBtn"></div>
+        <button class="btn-table-sm" onclick="closeModal('subDetailModal')">關閉視窗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 課程編輯 Modal -->
+  <div id="courseModal" class="modal-overlay" onclick="if(event.target===this)closeModal('courseModal')">
+    <div class="modal-content" style="max-width:620px;">
+      <button class="modal-close-btn" onclick="closeModal('courseModal')">×</button>
+      <h3 id="courseModalTitle" class="modal-title">新增課程活動</h3>
+      <form onsubmit="handleSaveCourse(event)">
+        <input type="hidden" id="editCourseId">
+        <div class="form-group">
+          <label>課程活動名稱：</label>
+          <input type="text" id="courseTitleInput" required placeholder="例如：AI 財務與 Gemini 應用班">
+        </div>
+        <div class="form-group">
+          <label>辦訓單位（實際開課機構）：</label>
+          <input type="text" id="courseProviderInput" required placeholder="例如：社團法人台灣產學職涯發展協會">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>地點區域：</label>
+            <select id="courseRegionInput">
+              <option value="線上">線上</option>
+              <option value="北部">北部</option>
+              <option value="中部">中部</option>
+              <option value="南部">南部</option>
+              <option value="東部">東部</option>
+              <option value="離島">離島</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>報名截止日 (YYYY-MM-DD)：</label>
+            <input type="date" id="courseDeadlineInput" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>推薦看點（親切短句，寫給讀者看的亮點）：</label>
+          <textarea id="courseWhisperInput" rows="2" placeholder="例如：適合已有行政基礎者，將既有溝通優勢接軌至新工具..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>主辦單位備註（選填）：</label>
+          <input type="text" id="courseOrganizerNoteInput" placeholder="例如：結訓安排企業媒合面試">
+        </div>
+        <div class="form-group">
+          <label>費用說明：</label>
+          <input type="text" id="courseCostInput" required placeholder="例如：政府補助 80%~100% / 免費">
+        </div>
+        <div class="form-group">
+          <label>上課地點詳細：</label>
+          <input type="text" id="courseAddressInput" required placeholder="例如：桃園市中壢區復興路 46 號 8 樓">
+        </div>
+        <div class="form-group">
+          <label>上課時間與週期：</label>
+          <input type="text" id="courseTimeCycleInput" required placeholder="例如：每週二、四 18:30-21:30，共 48 小時">
+        </div>
+        <div class="form-group">
+          <label>官方真實報名網址：</label>
+          <input type="url" id="courseUrlInput" required placeholder="https://its.taiwanjobs.gov.tw/...">
+        </div>
+        <div class="form-group">
+          <label>發布與審核狀態：</label>
+          <select id="courseIsDraftInput">
+            <option value="false">🟢 正式上架（前台讀者可見）</option>
+            <option value="true">🟡 暫存草稿（僅後台審核可見，前台隱藏）</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-submit-action">儲存並套用</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 手札編輯 Modal -->
+  <div id="articleModal" class="modal-overlay" onclick="if(event.target===this)closeModal('articleModal')">
+    <div class="modal-content" style="max-width:640px;">
+      <button class="modal-close-btn" onclick="closeModal('articleModal')">×</button>
+      <h3 id="articleModalTitle" class="modal-title">發表水岸手札</h3>
+      <form onsubmit="handleSaveArticle(event)">
+        <input type="hidden" id="editArticleId">
+        <div class="form-group">
+          <label>手札標題：</label>
+          <input type="text" id="artTitleInput" required placeholder="例如：當你試了好多新方向，卻覺得還在原地打轉時">
+        </div>
+        <div class="form-group">
+          <label>手札主題分類：</label>
+          <select id="artCatInput">
+            <option value="workplace">職場觀察</option>
+            <option value="career">職涯探索</option>
+            <option value="lifestyle">生活步調</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>手札內文（建議 300～500 字日常短隨筆，支援段落換行）：</label>
+          <textarea id="artProseInput" rows="8" required placeholder="寫下你的溫暖陪伴隨筆..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>發布與審核狀態：</label>
+          <select id="artIsDraftInput">
+            <option value="false">🟢 正式上架（前台讀者可見）</option>
+            <option value="true">🟡 暫存草稿（僅後台審核可見，前台隱藏）</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-submit-action">儲存手札</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 木棧板編輯 Modal -->
+  <div id="plankModal" class="modal-overlay" onclick="if(event.target===this)closeModal('plankModal')">
+    <div class="modal-content" style="max-width:520px;">
+      <button class="modal-close-btn" onclick="closeModal('plankModal')">×</button>
+      <h3 id="plankModalTitle" class="modal-title">新增木棧板短句</h3>
+      <form onsubmit="handleSavePlank(event)">
+        <input type="hidden" id="editPlankId">
+        <div class="form-group">
+          <label>三色分類：</label>
+          <select id="plankCatInput">
+            <option value="amber">🪵 琥珀暖木（陪伴停靠小語）</option>
+            <option value="indigo">🌊 沉靜靛藍（迷惘真實心聲）</option>
+            <option value="bamboo">🌿 淡墨竹葉青（帶得走的好觀點）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>浮木短句（顯示於首頁上層）：</label>
+          <input type="text" id="plankQuoteInput" required placeholder="例如：「累了就先靠岸，棧板一直都在」">
+        </div>
+        <div class="form-group">
+          <label>展開深入小記（滑過或點開時浮現）：</label>
+          <textarea id="plankExpandedInput" rows="3" required placeholder="寫下兩三句溫柔陪伴的文字..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>署名（可填小棧長或旅人稱謂）：</label>
+          <input type="text" id="plankAuthorInput" placeholder="小棧長">
+        </div>
+        <button type="submit" class="btn-submit-action">儲存木棧板</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- GitHub 雲端一鍵發布設定 Modal -->
+  <div id="cloudModal" class="modal-overlay" onclick="if(event.target===this)closeModal('cloudModal')">
+    <div class="modal-content" style="max-width:540px;">
+      <button class="modal-close-btn" onclick="closeModal('cloudModal')">×</button>
+      <h3 class="modal-title">🔑 GitHub 雲端一鍵發布設定</h3>
+      <p class="modal-desc">
+        只需設定一次，往後在後台寫好文章或增修課程，點擊「🚀 一鍵雲端發布」即可自動更新全站，完全不需手動下載檔案或開啟 GitHub。
+      </p>
+      <form onsubmit="handleSaveCloudConfig(event)">
+        <div class="form-group">
+          <label>GitHub 使用者名稱與儲存庫（格式：帳號/專案名）：</label>
+          <input type="text" id="ghRepoInput" required placeholder="例如：yourname/farfaring">
+        </div>
+        <div class="form-group">
+          <label>主要分支名稱（通常為 main）：</label>
+          <input type="text" id="ghBranchInput" required value="main" placeholder="main">
+        </div>
+        <div class="form-group">
+          <label>GitHub 個人存取權杖（Personal Access Token，需勾選 repo 權限）：</label>
+          <input type="password" id="ghTokenInput" required placeholder="ghp_xxxxxxxxxxxxxx">
+          <small style="color:#718096; display:block; margin-top:4px; font-size:0.8rem;">
+            📌 此金鑰僅安全保存在您這台電腦的瀏覽器中，絕不會外流。
+          </small>
+        </div>
+        <div style="background:#FFFDF9; border:1px solid rgba(184,125,75,0.3); border-radius:8px; padding:12px; font-size:0.82rem; color:#718096; line-height:1.6; margin-bottom:16px;">
+          💡 <strong>如何取得 Token？</strong>（只需 1 分鐘）<br>
+          1. 登入 GitHub ➔ 點右上角頭像 ➔ Settings ➔ 最下方 Developer Settings。<br>
+          2. Personal access tokens ➔ Tokens (classic) ➔ Generate new token。<br>
+          3. 勾選 <code>repo</code> 權限，點擊 Generate 複製代碼貼至上方即可。
+        </div>
+        <button type="submit" class="btn-submit-action">確認儲存綁定</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 引用共享核心數據 -->
+  <script src="./data.js"></script>
+
+  <script>
+    // 切換面板
+    function switchPanel(panelId, btn = null) {
+      document.querySelectorAll('.admin-nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+      if (btn && btn.classList && btn.classList.contains('admin-nav-item')) {
+        btn.classList.add('active');
+      } else {
+        const targetNav = document.querySelector(`.admin-nav-item[data-panel="${panelId}"]`);
+        if (targetNav) targetNav.classList.add('active');
+      }
+      const targetPanel = document.getElementById('panel-' + panelId);
+      if (targetPanel) targetPanel.classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    // 確保 submissions 結構存在
+    if (!SITE_DATA.submissions) {
+      SITE_DATA.submissions = [];
+    }
+
+    let currentSubFilter = 'all';
+    let currentCourseFilter = 'all';
+    let currentArticleFilter = 'all';
+
+    // HTML 跳脫防護
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // 重新計算並渲染所有後台介面
+    function refreshAdminView() {
+      // 雲端綁定狀態
+      updateCloudStatusBadge();
+
+      // 1. 維護日期
+      document.getElementById('currentStampDisplay').innerText = SITE_DATA.siteInfo.lastUpdated;
+
+      // 2. 統計數據
+      document.getElementById('statCoursesCount').innerText = SITE_DATA.courses.length;
+      document.getElementById('statArticlesCount').innerText = SITE_DATA.articles.length;
+      document.getElementById('statPlanksCount').innerText = SITE_DATA.planks.length;
+
+      // 計算投稿統計
+      const subs = SITE_DATA.submissions || [];
+      let unreadCount = 0;
+      let courseCount = 0;
+      let storyCount = 0;
+      let letterCount = 0;
+      let errorCount = 0;
+      let quoteCount = 0;
+
+      subs.forEach(s => {
+        if (s.status === 'unread') unreadCount++;
+        if (s.type === 'course') courseCount++;
+        else if (s.type === 'story') storyCount++;
+        else if (s.type === 'letter') letterCount++;
+        else if (s.type === 'error') errorCount++;
+        else if (s.type === 'quote') quoteCount++;
+      });
+
+      // 後台指標卡與導航紅點標籤
+      const statSubsElem = document.getElementById('statSubsCount');
+      if (statSubsElem) statSubsElem.innerText = unreadCount;
+
+      const badgeNavElem = document.getElementById('badgeSubNavCount');
+      if (badgeNavElem) {
+        badgeNavElem.innerText = unreadCount;
+        badgeNavElem.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+      }
+
+      // 篩選按鈕數量
+      const setCnt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+      setCnt('cnt-sub-all', subs.length);
+      setCnt('cnt-sub-unread', unreadCount);
+      setCnt('cnt-sub-course', courseCount);
+      setCnt('cnt-sub-story', storyCount);
+      setCnt('cnt-sub-letter', letterCount);
+      setCnt('cnt-sub-error', errorCount);
+      setCnt('cnt-sub-quote', quoteCount);
+
+      // 渲染投稿集中摘要提示條
+      renderSubmissionSummary();
+
+      // 渲染投稿表格
+      renderSubmissionsTable(currentSubFilter);
+
+      // 3. 課程數據統計、待審草稿與過期計算
+      const courseAll = SITE_DATA.courses || [];
+      const courseDrafts = courseAll.filter(c => c.isDraft);
+      const courseExpired = courseAll.filter(c => {
+        const t = new Date(`${c.deadline}T23:59:59+08:00`).getTime();
+        return !isNaN(t) && t < Date.now();
+      });
+      const coursePubs = courseAll.filter(c => !c.isDraft && !(new Date(`${c.deadline}T23:59:59+08:00`).getTime() < Date.now()));
+      setCnt('cnt-course-all', courseAll.length);
+      setCnt('cnt-course-pub', coursePubs.length);
+      setCnt('cnt-course-draft', courseDrafts.length);
+      setCnt('cnt-course-expired', courseExpired.length);
+      const badgeCourseDraft = document.getElementById('badgeCourseDraft');
+      if (badgeCourseDraft) {
+        badgeCourseDraft.innerText = courseDrafts.length;
+        badgeCourseDraft.style.display = courseDrafts.length > 0 ? 'inline-block' : 'none';
+      }
+
+      // 4. 手札數據統計與待審草稿計算
+      const artAll = SITE_DATA.articles || [];
+      const artDrafts = artAll.filter(a => a.isDraft);
+      const artPubs = artAll.filter(a => !a.isDraft);
+      setCnt('cnt-art-all', artAll.length);
+      setCnt('cnt-art-pub', artPubs.length);
+      setCnt('cnt-art-draft', artDrafts.length);
+      const badgeArticleDraft = document.getElementById('badgeArticleDraft');
+      if (badgeArticleDraft) {
+        badgeArticleDraft.innerText = artDrafts.length;
+        badgeArticleDraft.style.display = artDrafts.length > 0 ? 'inline-block' : 'none';
+      }
+
+      // 渲染課程與手札表格
+      renderCoursesTable(currentCourseFilter);
+      renderArticlesTable(currentArticleFilter);
+
+      // 5. 渲染木棧板表格
+      const plankTbody = document.getElementById('plankTableBody');
+      plankTbody.innerHTML = '';
+      SITE_DATA.planks.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong>${escapeHtml(p.quote)}</strong><br>
+            <span style="font-size:0.8rem; color:#718096;">${escapeHtml((p.expanded || '').slice(0, 30))}...</span>
+          </td>
+          <td>${escapeHtml(p.categoryName)}</td>
+          <td>${escapeHtml(p.author || '小棧長')}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-table-sm" onclick="editPlank(${idx})">編輯</button>
+              <button class="btn-table-sm btn-table-delete" onclick="deletePlank(${idx})">刪除</button>
+            </div>
+          </td>
+        `;
+        plankTbody.appendChild(tr);
+      });
+    }
+
+    // 渲染今日與本週投稿集中摘要
+    function renderSubmissionSummary() {
+      const box = document.getElementById('subDailySummaryBox');
+      if (!box) return;
+
+      const subs = SITE_DATA.submissions || [];
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      let unreadCount = 0;
+      let todayCount = 0;
+      let weekCount = 0;
+
+      const typeCounts = {
+        course: 0,
+        story: 0,
+        letter: 0,
+        error: 0,
+        quote: 0
+      };
+
+      subs.forEach(s => {
+        if (s.status === 'unread') unreadCount++;
+        if (s.createdAt && s.createdAt.startsWith(todayStr)) {
+          todayCount++;
+        }
+        if (s.createdAt) {
+          const subDate = new Date(s.createdAt.replace(/-/g, '/'));
+          if (subDate >= sevenDaysAgo) {
+            weekCount++;
+          }
+        }
+        if (typeCounts[s.type] !== undefined) {
+          typeCounts[s.type]++;
+        }
+      });
+
+      const notifyPref = localStorage.getItem('WANGZHOU_NOTIFY_PREF') || 'quiet';
+      const notifyBatchCount = parseInt(localStorage.getItem('WANGZHOU_NOTIFY_BATCH_COUNT') || '5', 10);
+      const isBatchMode = (notifyPref === 'batch' || notifyPref === 'batch5');
+
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+          <div>
+            <span style="font-weight:700; color:var(--admin-primary); font-size:1.02rem; display:flex; align-items:center; gap:6px;">
+              <span>📊</span>
+              <span>投稿集中歸納（無擾彙整模式）</span>
+            </span>
+            <div style="font-size:0.85rem; color:#718096; margin-top:2px;">
+              🔕 系統已停用單筆即時打擾信，全站投稿自動彙整在此。小棧長可從容批次審閱或轉為發布草稿。
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+              <label style="font-size:0.8rem; color:#4A5568; font-weight:600;">信件通知偏好：</label>
+              <select id="notifyPrefSelect" style="padding:4px 8px; border-radius:6px; border:1px solid #CBD5E0; font-size:0.8rem; background:#FFF;" onchange="handleNotifyPrefChange(this.value)">
+                <option value="quiet" ${notifyPref === 'quiet' ? 'selected' : ''}>安靜模式（不發信，進入後台查看）</option>
+                <option value="batch" ${isBatchMode ? 'selected' : ''}>批次累積通知（自訂則數提醒）</option>
+                <option value="weekly" ${notifyPref === 'weekly' ? 'selected' : ''}>每週一提醒（每週一上午彙整通知）</option>
+                <option value="daily" ${notifyPref === 'daily' ? 'selected' : ''}>每日下班提醒（18:00 集中彙整）</option>
+              </select>
+              <span id="batchCountSettingSpan" style="display:${isBatchMode ? 'inline-flex' : 'none'}; align-items:center; gap:4px; font-size:0.8rem; color:#4A5568; background:#EDF2F7; padding:2px 8px; border-radius:4px;">
+                每累積
+                <input type="number" id="notifyBatchInput" min="1" max="100" value="${notifyBatchCount}" style="width:48px; text-align:center; padding:2px 4px; border:1px solid #CBD5E0; border-radius:4px; font-weight:600;" onchange="handleBatchCountChange(this.value)" title="輸入您想累積滿幾則才收到信件通知">
+                則未讀提醒
+              </span>
+            </div>
+            <span style="font-size:0.73rem; color:#A0AEC0;">※ 投稿存儲無上限，訪客通道永遠暢通；此偏好僅決定何時發信提醒小棧長。</span>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:16px; padding:12px 16px; background:#FFF; border:1px solid rgba(184,125,75,0.25); border-radius:8px; align-items:center;">
+          <div style="display:flex; gap:18px; align-items:center; border-right:1px solid #E2E8F0; padding-right:18px;">
+            <div>
+              <span style="font-size:0.78rem; color:#718096;">今日新投稿</span>
+              <div style="font-size:1.25rem; font-weight:700; color:${todayCount > 0 ? '#E53E3E' : '#2D3748'};">${todayCount} <span style="font-size:0.78rem; font-weight:normal;">筆</span></div>
+            </div>
+            <div>
+              <span style="font-size:0.78rem; color:#718096;">待處理總數</span>
+              <div style="font-size:1.25rem; font-weight:700; color:${unreadCount > 0 ? '#C53030' : '#38A169'};">${unreadCount} <span style="font-size:0.78rem; font-weight:normal;">筆</span></div>
+            </div>
+            <div>
+              <span style="font-size:0.78rem; color:#718096;">本週累積</span>
+              <div style="font-size:1.25rem; font-weight:700; color:#2B4C65;">${weekCount} <span style="font-size:0.78rem; font-weight:normal;">筆</span></div>
+            </div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:0.8rem;">
+            <span style="color:#718096;">類型分佈：</span>
+            <span class="sub-badge sub-badge-course">課程推薦 ${typeCounts.course}</span>
+            <span class="sub-badge sub-badge-story">故事投稿 ${typeCounts.story}</span>
+            <span class="sub-badge sub-badge-letter">讀者來信 ${typeCounts.letter}</span>
+            <span class="sub-badge sub-badge-error">資訊勘誤 ${typeCounts.error}</span>
+            <span class="sub-badge sub-badge-quote">棧道留言 ${typeCounts.quote}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 篩選投稿
+    function filterSubmissions(type) {
+      currentSubFilter = type;
+      const filterBtnIds = ['all', 'unread', 'course', 'story', 'letter', 'error', 'quote'];
+      filterBtnIds.forEach(id => {
+        const btn = document.getElementById('subBtn-' + id);
+        if (btn) btn.classList.toggle('active', id === type);
+      });
+      renderSubmissionsTable(currentSubFilter);
+    }
+
+    // 渲染投稿審核表格
+    function renderSubmissionsTable(filterType = 'all') {
+      currentSubFilter = filterType;
+      const tbody = document.getElementById('submissionTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const list = SITE_DATA.submissions || [];
+      let filtered = list;
+
+      if (filterType === 'unread') {
+        filtered = list.filter(s => s.status === 'unread');
+      } else if (filterType !== 'all') {
+        filtered = list.filter(s => s.type === filterType);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px; color:#A0AEC0;">目前沒有符合此分類的投稿資料。</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(s => {
+        const tr = document.createElement('tr');
+        if (s.status === 'unread') {
+          tr.style.background = '#FFFDF7';
+        }
+
+        const typeBadgeClass = {
+          course: 'sub-badge-course',
+          story: 'sub-badge-story',
+          letter: 'sub-badge-letter',
+          error: 'sub-badge-error',
+          quote: 'sub-badge-quote'
+        }[s.type] || 'sub-badge-letter';
+
+        const statusBadge = s.status === 'unread' 
+          ? '<span class="sub-status-unread">待處理</span>'
+          : '<span class="sub-status-reviewed">已審閱</span>';
+
+        let convertBtnHtml = '';
+        if (s.type === 'course') {
+          convertBtnHtml = `<button class="btn-table-sm btn-table-convert" onclick="convertSubToCourse('${s.id}')">➕ 轉課程</button>`;
+        } else if (s.type === 'story') {
+          convertBtnHtml = `<button class="btn-table-sm btn-table-convert" onclick="convertSubToArticle('${s.id}')">➕ 轉手札</button>`;
+        } else if (s.type === 'quote') {
+          convertBtnHtml = `<button class="btn-table-sm btn-table-convert" onclick="convertSubToPlank('${s.id}')">➕ 轉棧板</button>`;
+        }
+
+        tr.innerHTML = `
+          <td>
+            <span class="sub-badge ${typeBadgeClass}">${escapeHtml(s.typeName || s.type)}</span><br>
+            ${statusBadge}
+          </td>
+          <td>
+            <div style="font-weight:600; color:#2D3748; cursor:pointer;" onclick="viewSubmissionDetail('${s.id}')" title="點擊查看完整內容">
+              ${escapeHtml(s.title || '無標題')}
+            </div>
+            <div style="font-size:0.8rem; color:#718096; margin-top:3px; max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${escapeHtml(s.content || '')}
+            </div>
+          </td>
+          <td>
+            <strong>${escapeHtml(s.author || '訪客')}</strong><br>
+            <span style="font-size:0.78rem; color:#718096;">${escapeHtml(s.contact || '未留聯絡方式')}</span>
+          </td>
+          <td style="font-size:0.8rem; color:#718096; font-family:monospace;">
+            ${escapeHtml(s.createdAt || '')}
+          </td>
+          <td>
+            <div class="table-actions" style="flex-wrap:wrap; gap:6px;">
+              ${convertBtnHtml}
+              <button class="btn-table-sm" onclick="viewSubmissionDetail('${s.id}')">詳情</button>
+              <button class="btn-table-sm" onclick="toggleSubStatus('${s.id}')">${s.status === 'unread' ? '標記已審' : '設為未審'}</button>
+              <button class="btn-table-sm btn-table-delete" onclick="deleteSub('${s.id}')">刪除</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 查看投稿完整詳情 Modal
+    function viewSubmissionDetail(subId) {
+      const sub = (SITE_DATA.submissions || []).find(s => s.id === subId);
+      if (!sub) return;
+
+      const badgeElem = document.getElementById('subDetailBadge');
+      const typeBadgeClass = {
+        course: 'sub-badge-course',
+        story: 'sub-badge-story',
+        letter: 'sub-badge-letter',
+        error: 'sub-badge-error',
+        quote: 'sub-badge-quote'
+      }[sub.type] || 'sub-badge-letter';
+      badgeElem.className = `sub-badge ${typeBadgeClass}`;
+      badgeElem.innerText = sub.typeName || sub.type;
+
+      const statusBadge = document.getElementById('subDetailStatusBadge');
+      statusBadge.innerHTML = sub.status === 'unread'
+        ? '<span class="sub-status-unread">待處理</span>'
+        : '<span class="sub-status-reviewed">已審閱</span>';
+
+      document.getElementById('subDetailTitle').innerText = sub.title || '無標題';
+      document.getElementById('subDetailMeta').innerHTML = `
+        投稿者：<strong>${escapeHtml(sub.author || '訪客')}</strong> ｜ 聯絡方式：${escapeHtml(sub.contact || '未留')} ｜ 投遞時間：${sub.createdAt || '近期'}
+      `;
+      document.getElementById('subDetailContent').innerText = sub.content || '';
+
+      const extraBox = document.getElementById('subDetailExtraBox');
+      if (sub.extra) {
+        extraBox.style.display = 'block';
+        extraBox.innerText = sub.extra;
+      } else {
+        extraBox.style.display = 'none';
+      }
+
+      const convertBtnContainer = document.getElementById('subDetailConvertBtn');
+      if (sub.type === 'course') {
+        convertBtnContainer.innerHTML = `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToCourse('${sub.id}')">➕ 直接載入至課程草稿</button>`;
+      } else if (sub.type === 'story') {
+        convertBtnContainer.innerHTML = `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToArticle('${sub.id}')">➕ 直接載入至手札草稿</button>`;
+      } else if (sub.type === 'quote') {
+        convertBtnContainer.innerHTML = `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToPlank('${sub.id}')">➕ 直接載入至木棧板短句</button>`;
+      } else {
+        convertBtnContainer.innerHTML = `<button class="btn-table-sm" onclick="toggleSubStatus('${sub.id}'); closeModal('subDetailModal');">${sub.status === 'unread' ? '✓ 標記為已審閱' : '設為未審'}</button>`;
+      }
+
+      document.getElementById('subDetailModal').classList.add('open');
+    }
+
+    // 一鍵將投稿轉為課程草稿
+    function convertSubToCourse(subId) {
+      const sub = (SITE_DATA.submissions || []).find(s => s.id === subId);
+      if (!sub) return;
+
+      switchPanel('courses', document.querySelectorAll('.admin-nav-item')[2]);
+      openCourseEditModal();
+
+      document.getElementById('courseTitleInput').value = sub.title || '';
+      if (sub.url) {
+        document.getElementById('courseUrlInput').value = sub.url;
+      }
+      document.getElementById('courseWhisperInput').value = sub.content || '';
+      document.getElementById('courseOrganizerNoteInput').value = sub.extra || (sub.contact ? `推薦人聯絡：${sub.contact}` : '');
+      
+      if (sub.extra && sub.extra.includes('主辦單位：')) {
+        document.getElementById('courseProviderInput').value = sub.extra.replace('主辦單位：', '').trim();
+      }
+
+      sub.status = 'reviewed';
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    // 一鍵將投稿轉為手札草稿
+    function convertSubToArticle(subId) {
+      const sub = (SITE_DATA.submissions || []).find(s => s.id === subId);
+      if (!sub) return;
+
+      switchPanel('articles', document.querySelectorAll('.admin-nav-item')[3]);
+      openArticleEditModal();
+
+      document.getElementById('artTitleInput').value = sub.title || '';
+      document.getElementById('artProseInput').value = sub.content || '';
+      document.getElementById('artCatInput').value = 'workplace';
+
+      sub.status = 'reviewed';
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    // 一鍵將投稿轉為木棧板
+    function convertSubToPlank(subId) {
+      const sub = (SITE_DATA.submissions || []).find(s => s.id === subId);
+      if (!sub) return;
+
+      switchPanel('planks', document.querySelectorAll('.admin-nav-item')[4]);
+      openPlankEditModal();
+
+      document.getElementById('plankQuoteInput').value = sub.title || (sub.content ? sub.content.slice(0, 24) : '');
+      document.getElementById('plankExpandedInput').value = sub.content || '';
+      document.getElementById('plankAuthorInput').value = sub.author || '小棧長';
+
+      sub.status = 'reviewed';
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    // 切換已審/未審狀態
+    function toggleSubStatus(subId) {
+      const sub = (SITE_DATA.submissions || []).find(s => s.id === subId);
+      if (!sub) return;
+      sub.status = (sub.status === 'unread') ? 'reviewed' : 'unread';
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    // 刪除投稿
+    function deleteSub(subId) {
+      const idx = (SITE_DATA.submissions || []).findIndex(s => s.id === subId);
+      if (idx === -1) return;
+      if (confirm(`確定要刪除這筆來自「${SITE_DATA.submissions[idx].author || '訪客'}」的投稿嗎？`)) {
+        SITE_DATA.submissions.splice(idx, 1);
+        saveDataToLocalStorage();
+        refreshAdminView();
+      }
+    }
+
+    // 批次全部標記已讀
+    function markAllSubsRead() {
+      if (!SITE_DATA.submissions || SITE_DATA.submissions.length === 0) return;
+      SITE_DATA.submissions.forEach(s => s.status = 'reviewed');
+      saveDataToLocalStorage();
+      refreshAdminView();
+      alert('✅ 已將當前所有投稿標記為已審閱！');
+    }
+
+    // 更改通知頻率偏好
+    function handleNotifyPrefChange(val) {
+      localStorage.setItem('WANGZHOU_NOTIFY_PREF', val);
+      const count = localStorage.getItem('WANGZHOU_NOTIFY_BATCH_COUNT') || '5';
+      const labels = {
+        quiet: '已設定為【安靜模式】：不發送任何即時打擾信，由小棧長隨時在後台查看。',
+        batch: `已設定為【批次累積通知】：每累積達 ${count} 則未讀投稿時發信提醒。（存儲無上限，訪客永遠投得進來）`,
+        batch5: `已設定為【批次累積通知】：每累積達 ${count} 則未讀投稿時發信提醒。（存儲無上限，訪客永遠投得進來）`,
+        weekly: '已設定為【每週一提醒】：每週一為您彙整過去一週的投稿總量。',
+        daily: '已設定為【每日下班提醒】：每日 18:00 統一彙整當日投稿。'
+      };
+      alert(labels[val] || '設定已儲存！');
+      refreshAdminView();
+    }
+
+    // 自訂批次通知累積則數
+    function handleBatchCountChange(val) {
+      const num = parseInt(val, 10);
+      if (isNaN(num) || num < 1) {
+        alert('請輸入大於 0 的有效則數！');
+        return;
+      }
+      localStorage.setItem('WANGZHOU_NOTIFY_BATCH_COUNT', num);
+      localStorage.setItem('WANGZHOU_NOTIFY_PREF', 'batch');
+      alert(`已將批次發信提醒設定為：每累積達 ${num} 則未讀投稿時發信提醒！`);
+      refreshAdminView();
+    }
+
+    // 還原為 data.js 原始檔案數據（清除本地暫存）
+    function resetToDefaultData() {
+      if (confirm('確定要清除瀏覽器本地暫存，還原為原始 data.js 檔案內容嗎？')) {
+        localStorage.removeItem('WANGZHOU_SITE_DATA_OVERRIDE');
+        location.reload();
+      }
+    }
+
+    // 將真實維護日期標記為今日
+    function stampTodayDate() {
+      const d = new Date();
+      SITE_DATA.siteInfo.lastUpdated = `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`;
+      saveDataToLocalStorage();
+      refreshAdminView();
+      alert(`已將全站最後維護時間更新為：${SITE_DATA.siteInfo.lastUpdated}`);
+    }
+
+    // 儲存至本地快照（即時影響同一台電腦上的前台預覽）
+    function saveDataToLocalStorage() {
+      localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
+    }
+
+    // 雲端設定管理
+    function openCloudConfigModal() {
+      document.getElementById('cloudModal').classList.add('open');
+      document.getElementById('ghRepoInput').value = localStorage.getItem('WANGZHOU_GH_REPO') || '';
+      document.getElementById('ghBranchInput').value = localStorage.getItem('WANGZHOU_GH_BRANCH') || 'main';
+      document.getElementById('ghTokenInput').value = localStorage.getItem('WANGZHOU_GH_TOKEN') || '';
+    }
+
+    function handleSaveCloudConfig(e) {
+      e.preventDefault();
+      const repo = document.getElementById('ghRepoInput').value.trim();
+      const branch = document.getElementById('ghBranchInput').value.trim() || 'main';
+      const token = document.getElementById('ghTokenInput').value.trim();
+
+      localStorage.setItem('WANGZHOU_GH_REPO', repo);
+      localStorage.setItem('WANGZHOU_GH_BRANCH', branch);
+      localStorage.setItem('WANGZHOU_GH_TOKEN', token);
+
+      updateCloudStatusBadge();
+      closeModal('cloudModal');
+      alert('✅ GitHub 雲端發布設定已成功儲存！往後只要點擊【🚀 一鍵雲端發布】即可在背景自動更新！');
+    }
+
+    function updateCloudStatusBadge() {
+      const badge = document.getElementById('cloudStatusBadge');
+      const repo = localStorage.getItem('WANGZHOU_GH_REPO');
+      const token = localStorage.getItem('WANGZHOU_GH_TOKEN');
+      if (badge) {
+        if (repo && token) {
+          badge.innerText = `✅ 已綁定：${repo}`;
+          badge.style.background = '#E6FFFA';
+          badge.style.color = '#234E52';
+          badge.style.fontWeight = '500';
+        } else {
+          badge.innerText = '⚠️ 尚未綁定 GitHub（點此設定）';
+          badge.style.background = '#FFF5F5';
+          badge.style.color = '#C53030';
+          badge.style.cursor = 'pointer';
+          badge.onclick = openCloudConfigModal;
+        }
+      }
+    }
+
+    // 🚀 一鍵雲端發布（直接呼叫 GitHub API，小棧長完全不需開啟 GitHub 網頁）
+    async function publishToGitHub() {
+      const repo = localStorage.getItem('WANGZHOU_GH_REPO');
+      const token = localStorage.getItem('WANGZHOU_GH_TOKEN');
+      const branch = localStorage.getItem('WANGZHOU_GH_BRANCH') || 'main';
+
+      if (!repo || !token) {
+        alert('💡 尚未設定 GitHub 雲端連線資訊。請先填寫您的 GitHub 儲存庫與 Token（只需設定一次）。');
+        openCloudConfigModal();
+        return;
+      }
+
+      const btn = document.getElementById('btnCloudPublish');
+      const originalText = btn.innerText;
+      btn.innerText = '⏳ 正在推播至雲端...';
+      btn.disabled = true;
+
+      try {
+        const d = new Date();
+        SITE_DATA.siteInfo.lastUpdated = `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`;
+        saveDataToLocalStorage();
+        refreshAdminView();
+
+        const fileContent = `/**
+ * 《望舟小棧 farfaring》共享數據核心
+ * 自動發布時間：${SITE_DATA.siteInfo.lastUpdated}
+ */
+
+const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
+
+(function initializeData() {
+  try {
+    const localOverride = localStorage.getItem("WANGZHOU_SITE_DATA_OVERRIDE");
+    if (localOverride) {
+      const parsed = JSON.parse(localOverride);
+      Object.assign(SITE_DATA, parsed);
+    }
+  } catch (e) {
+    console.warn("使用 data.js 原始資料", e);
+  }
+})();
+`;
+
+        const base64Content = btoa(unescape(encodeURIComponent(fileContent)));
+
+        let sha = '';
+        const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/data.js?ref=${branch}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+
+        if (getRes.ok) {
+          const getData = await getRes.json();
+          sha = getData.sha;
+        }
+
+        const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/data.js`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `小棧長雲端發布：${SITE_DATA.siteInfo.lastUpdated}`,
+            content: base64Content,
+            sha: sha || undefined,
+            branch: branch
+          })
+        });
+
+        if (!putRes.ok) {
+          const errData = await putRes.json();
+          throw new Error(errData.message || 'GitHub API 回應錯誤');
+        }
+
+        alert(`🎉 雲端發布成功！\n全站最後維護日期已更新為：【${SITE_DATA.siteInfo.lastUpdated}】\n\nGitHub 已收到更新，前台網頁約 30 秒至 1 分鐘內會自動反映最新內容！`);
+      } catch (err) {
+        alert(`發布未完成：${err.message}\n\n可能原因：Token 逾期、權限未勾選 repo、或儲存庫名稱填寫有誤。\n您也可以隨時點擊「💾 離線備份」手動儲存 data.js。`);
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // 匯出真實 data.js 檔案
+    function exportDataJs() {
+      const d = new Date();
+      SITE_DATA.siteInfo.lastUpdated = `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`;
+      saveDataToLocalStorage();
+      refreshAdminView();
+
+      const fileContent = `/**
+ * 《望舟小棧 farfaring》共享數據核心
+ * 自動發布時間：${SITE_DATA.siteInfo.lastUpdated}
+ */
+
+const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
+
+(function initializeData() {
+  try {
+    const localOverride = localStorage.getItem("WANGZHOU_SITE_DATA_OVERRIDE");
+    if (localOverride) {
+      const parsed = JSON.parse(localOverride);
+      Object.assign(SITE_DATA, parsed);
+    }
+  } catch (e) {
+    console.warn("使用 data.js 原始資料", e);
+  }
+})();
+`;
+
+      const blob = new Blob([fileContent], { type: "application/javascript;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "data.js";
+      a.click();
+
+      alert(`✅ 已完成發布！最新更新時間已烙印為【${SITE_DATA.siteInfo.lastUpdated}】。\n已為您下載最新「data.js」檔案，將它放入資料夾取代舊檔即可永久生效！`);
+    }
+
+    // 課程 CRUD
+    function openCourseEditModal(idx = null) {
+      document.getElementById('courseModal').classList.add('open');
+      if (idx !== null) {
+        const c = SITE_DATA.courses[idx];
+        document.getElementById('courseModalTitle').innerText = '編輯課程活動';
+        document.getElementById('editCourseId').value = idx;
+        document.getElementById('courseTitleInput').value = c.title;
+        document.getElementById('courseProviderInput').value = c.provider;
+        document.getElementById('courseRegionInput').value = c.region || '北部';
+        document.getElementById('courseDeadlineInput').value = c.deadline;
+        document.getElementById('courseWhisperInput').value = c.whisper;
+        document.getElementById('courseOrganizerNoteInput').value = c.organizerNote || '';
+        document.getElementById('courseCostInput').value = c.cost;
+        document.getElementById('courseAddressInput').value = c.address;
+        document.getElementById('courseTimeCycleInput').value = c.timeCycle;
+        document.getElementById('courseUrlInput').value = c.url;
+      } else {
+        document.getElementById('courseModalTitle').innerText = '新增課程活動';
+        document.getElementById('editCourseId').value = '';
+        document.getElementById('courseTitleInput').value = '';
+        document.getElementById('courseProviderInput').value = '';
+        document.getElementById('courseRegionInput').value = '北部';
+        document.getElementById('courseDeadlineInput').value = '';
+        document.getElementById('courseWhisperInput').value = '';
+        document.getElementById('courseOrganizerNoteInput').value = '';
+        document.getElementById('courseCostInput').value = '';
+        document.getElementById('courseAddressInput').value = '';
+        document.getElementById('courseTimeCycleInput').value = '';
+        document.getElementById('courseUrlInput').value = '';
+      }
+    }
+
+    // 課程活動審核與篩選（支援已上架、草稿與已過期過濾）
+    function filterCourses(filter) {
+      currentCourseFilter = filter;
+      ['all', 'published', 'draft', 'expired'].forEach(f => {
+        const btn = document.getElementById('courseFilter-' + f);
+        if (btn) btn.classList.toggle('active', f === filter);
+      });
+      renderCoursesTable(currentCourseFilter);
+    }
+
+    function renderCoursesTable(filter = 'all') {
+      const courseTbody = document.getElementById('courseTableBody');
+      if (!courseTbody) return;
+      courseTbody.innerHTML = '';
+      const list = SITE_DATA.courses || [];
+      let count = 0;
+      list.forEach((c, idx) => {
+        const expiryTime = new Date(`${c.deadline}T23:59:59+08:00`).getTime();
+        const isExpired = !isNaN(expiryTime) && expiryTime < Date.now();
+
+        if (filter === 'published' && (c.isDraft || isExpired)) return;
+        if (filter === 'draft' && !c.isDraft) return;
+        if (filter === 'expired' && !isExpired) return;
+        count++;
+
+        const tr = document.createElement('tr');
+        let statusBadge = '';
+        if (c.isDraft) {
+          statusBadge = `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟡 待審草稿</span>`;
+        } else if (isExpired) {
+          statusBadge = `<span style="background:#FFF5F5; color:#E53E3E; border:1px solid #FEB2B2; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">⚠️ 已截止</span>`;
+        } else {
+          statusBadge = `<span style="background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟢 已上架</span>`;
+        }
+
+        const approveBtn = c.isDraft
+          ? `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleCoursePublish(${idx})">✓ 通過上架</button>`
+          : `<button class="btn-table-sm" onclick="toggleCoursePublish(${idx})">${isExpired ? '重新上架' : '轉草稿'}</button>`;
+
+        const deadlineDisplay = isExpired
+          ? `<span style="color:#E53E3E; font-weight:600;">${escapeHtml(c.deadline)}</span><br><span style="font-size:0.72rem; color:#E53E3E; white-space:nowrap;">（前台已自動隱藏）</span>`
+          : `<span>${escapeHtml(c.deadline)}</span>`;
+
+        tr.innerHTML = `
+          <td>${statusBadge}</td>
+          <td>
+            <strong>${escapeHtml(c.title)}</strong><br>
+            <span style="font-size:0.78rem; color:#718096;">🏛️ ${escapeHtml(c.provider)}</span>
+          </td>
+          <td>${escapeHtml(c.locationLabel)}</td>
+          <td>${deadlineDisplay}</td>
+          <td>${escapeHtml(c.cost)}</td>
+          <td>
+            <div class="table-actions">
+              ${approveBtn}
+              <button class="btn-table-sm" onclick="editCourse(${idx})">編輯</button>
+              <button class="btn-table-sm btn-table-delete" onclick="deleteCourse(${idx})">刪除</button>
+            </div>
+          </td>
+        `;
+        courseTbody.appendChild(tr);
+      });
+      if (count === 0) {
+        courseTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:#A0AEC0;">暫無符合條件之課程活動</td></tr>`;
+      }
+    }
+
+    function toggleCoursePublish(idx) {
+      const c = SITE_DATA.courses[idx];
+      if (!c) return;
+      c.isDraft = !c.isDraft;
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    // 課程 CRUD
+    function openCourseEditModal(idx = null) {
+      document.getElementById('courseModal').classList.add('open');
+      if (idx !== null) {
+        const c = SITE_DATA.courses[idx];
+        document.getElementById('courseModalTitle').innerText = '編輯課程活動';
+        document.getElementById('editCourseId').value = idx;
+        document.getElementById('courseTitleInput').value = c.title;
+        document.getElementById('courseProviderInput').value = c.provider;
+        document.getElementById('courseRegionInput').value = c.region || '北部';
+        document.getElementById('courseDeadlineInput').value = c.deadline;
+        document.getElementById('courseWhisperInput').value = c.whisper;
+        document.getElementById('courseOrganizerNoteInput').value = c.organizerNote || '';
+        document.getElementById('courseCostInput').value = c.cost;
+        document.getElementById('courseAddressInput').value = c.address;
+        document.getElementById('courseTimeCycleInput').value = c.timeCycle;
+        document.getElementById('courseUrlInput').value = c.url;
+        document.getElementById('courseIsDraftInput').value = c.isDraft ? 'true' : 'false';
+      } else {
+        document.getElementById('courseModalTitle').innerText = '新增課程活動';
+        document.getElementById('editCourseId').value = '';
+        document.getElementById('courseTitleInput').value = '';
+        document.getElementById('courseProviderInput').value = '';
+        document.getElementById('courseRegionInput').value = '北部';
+        document.getElementById('courseDeadlineInput').value = '';
+        document.getElementById('courseWhisperInput').value = '';
+        document.getElementById('courseOrganizerNoteInput').value = '';
+        document.getElementById('courseCostInput').value = '';
+        document.getElementById('courseAddressInput').value = '';
+        document.getElementById('courseTimeCycleInput').value = '';
+        document.getElementById('courseUrlInput').value = '';
+        document.getElementById('courseIsDraftInput').value = 'false';
+      }
+    }
+
+    function editCourse(idx) {
+      openCourseEditModal(idx);
+    }
+
+    function deleteCourse(idx) {
+      if (confirm(`確定要刪除「${SITE_DATA.courses[idx].title}」嗎？`)) {
+        SITE_DATA.courses.splice(idx, 1);
+        saveDataToLocalStorage();
+        refreshAdminView();
+      }
+    }
+
+    function handleSaveCourse(e) {
+      e.preventDefault();
+      const editIdx = document.getElementById('editCourseId').value;
+      const courseObj = {
+        id: editIdx !== '' ? SITE_DATA.courses[editIdx].id : "course-" + Date.now(),
+        title: document.getElementById('courseTitleInput').value.trim(),
+        provider: document.getElementById('courseProviderInput').value.trim(),
+        region: document.getElementById('courseRegionInput').value,
+        locationLabel: `${document.getElementById('courseRegionInput').value} ． 培訓交流`,
+        deadline: document.getElementById('courseDeadlineInput').value,
+        whisper: document.getElementById('courseWhisperInput').value.trim(),
+        organizerNote: document.getElementById('courseOrganizerNoteInput').value.trim(),
+        cost: document.getElementById('courseCostInput').value.trim(),
+        address: document.getElementById('courseAddressInput').value.trim(),
+        timeCycle: document.getElementById('courseTimeCycleInput').value.trim(),
+        url: document.getElementById('courseUrlInput').value.trim(),
+        isDraft: document.getElementById('courseIsDraftInput').value === 'true',
+        types: ["deep", "upskill"],
+        statusType: "open",
+        statusText: "開放報名",
+        active: true
+      };
+
+      if (editIdx !== '') {
+        SITE_DATA.courses[editIdx] = courseObj;
+      } else {
+        SITE_DATA.courses.unshift(courseObj);
+      }
+
+      saveDataToLocalStorage();
+      refreshAdminView();
+      closeModal('courseModal');
+    }
+
+    // 水岸手札審核與篩選
+    function filterArticles(filter) {
+      currentArticleFilter = filter;
+      ['all', 'published', 'draft'].forEach(f => {
+        const btn = document.getElementById('artFilter-' + f);
+        if (btn) btn.classList.toggle('active', f === filter);
+      });
+      renderArticlesTable(currentArticleFilter);
+    }
+
+    function renderArticlesTable(filter = 'all') {
+      const artTbody = document.getElementById('articleTableBody');
+      if (!artTbody) return;
+      artTbody.innerHTML = '';
+      const list = SITE_DATA.articles || [];
+      let count = 0;
+      list.forEach((a, idx) => {
+        if (filter === 'published' && a.isDraft) return;
+        if (filter === 'draft' && !a.isDraft) return;
+        count++;
+
+        const tr = document.createElement('tr');
+        const statusBadge = a.isDraft
+          ? `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟡 待審草稿</span>`
+          : `<span style="background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟢 已上架</span>`;
+
+        const approveBtn = a.isDraft
+          ? `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleArticlePublish(${idx})">✓ 通過上架</button>`
+          : `<button class="btn-table-sm" onclick="toggleArticlePublish(${idx})">轉草稿</button>`;
+
+        tr.innerHTML = `
+          <td>${statusBadge}</td>
+          <td><strong>${escapeHtml(a.title)}</strong></td>
+          <td><span style="padding:2px 8px; background:#EDF2F7; border-radius:4px;">${escapeHtml(a.catName)}</span></td>
+          <td>${escapeHtml(a.date)}</td>
+          <td>
+            <div class="table-actions">
+              ${approveBtn}
+              <button class="btn-table-sm" onclick="editArticle(${idx})">編輯</button>
+              <button class="btn-table-sm btn-table-delete" onclick="deleteArticle(${idx})">刪除</button>
+            </div>
+          </td>
+        `;
+        artTbody.appendChild(tr);
+      });
+      if (count === 0) {
+        artTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:24px; color:#A0AEC0;">暫無符合條件之手札文章</td></tr>`;
+      }
+    }
+
+    function toggleArticlePublish(idx) {
+      const a = SITE_DATA.articles[idx];
+      if (!a) return;
+      a.isDraft = !a.isDraft;
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    // 手札 CRUD
+    function openArticleEditModal(idx = null) {
+      document.getElementById('articleModal').classList.add('open');
+      if (idx !== null) {
+        const a = SITE_DATA.articles[idx];
+        document.getElementById('articleModalTitle').innerText = '編輯水岸手札';
+        document.getElementById('editArticleId').value = idx;
+        document.getElementById('artTitleInput').value = a.title;
+        document.getElementById('artCatInput').value = a.catKey || 'workplace';
+        document.getElementById('artProseInput').value = a.prose;
+        document.getElementById('artIsDraftInput').value = a.isDraft ? 'true' : 'false';
+      } else {
+        document.getElementById('articleModalTitle').innerText = '發表水岸手札';
+        document.getElementById('editArticleId').value = '';
+        document.getElementById('artTitleInput').value = '';
+        document.getElementById('artCatInput').value = 'workplace';
+        document.getElementById('artProseInput').value = '';
+        document.getElementById('artIsDraftInput').value = 'false';
+      }
+    }
+
+    function editArticle(idx) {
+      openArticleEditModal(idx);
+    }
+
+    function deleteArticle(idx) {
+      if (confirm(`確定要刪除手札「${SITE_DATA.articles[idx].title}」嗎？`)) {
+        SITE_DATA.articles.splice(idx, 1);
+        saveDataToLocalStorage();
+        refreshAdminView();
+      }
+    }
+
+    function handleSaveArticle(e) {
+      e.preventDefault();
+      const editIdx = document.getElementById('editArticleId').value;
+      const catKey = document.getElementById('artCatInput').value;
+      const catMap = {
+        workplace: '職場觀察',
+        career: '職涯探索',
+        lifestyle: '生活步調'
+      };
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}.${now.getMonth() + 1}`;
+
+      const artObj = {
+        id: editIdx !== '' ? SITE_DATA.articles[editIdx].id : "note-" + Date.now(),
+        title: document.getElementById('artTitleInput').value.trim(),
+        catKey: catKey,
+        catName: catMap[catKey] || '水岸手札',
+        date: dateStr,
+        prose: document.getElementById('artProseInput').value.trim(),
+        isDraft: document.getElementById('artIsDraftInput').value === 'true'
+      };
+
+      if (editIdx !== '') {
+        SITE_DATA.articles[editIdx] = artObj;
+      } else {
+        SITE_DATA.articles.unshift(artObj);
+      }
+
+      saveDataToLocalStorage();
+      refreshAdminView();
+      closeModal('articleModal');
+    }
+
+    // 木棧板 CRUD
+    function openPlankEditModal(idx = null) {
+      document.getElementById('plankModal').classList.add('open');
+      if (idx !== null) {
+        const p = SITE_DATA.planks[idx];
+        document.getElementById('plankModalTitle').innerText = '編輯木棧板短句';
+        document.getElementById('editPlankId').value = idx;
+        document.getElementById('plankCatInput').value = p.categoryKey;
+        document.getElementById('plankQuoteInput').value = p.quote;
+        document.getElementById('plankExpandedInput').value = p.expanded;
+        document.getElementById('plankAuthorInput').value = p.author || '小棧長';
+      } else {
+        document.getElementById('plankModalTitle').innerText = '新增木棧板短句';
+        document.getElementById('editPlankId').value = '';
+        document.getElementById('plankCatInput').value = 'amber';
+        document.getElementById('plankQuoteInput').value = '';
+        document.getElementById('plankExpandedInput').value = '';
+        document.getElementById('plankAuthorInput').value = '小棧長';
+      }
+    }
+
+    function editPlank(idx) {
+      openPlankEditModal(idx);
+    }
+
+    function deletePlank(idx) {
+      if (confirm(`確定要刪除這塊木棧板嗎？`)) {
+        SITE_DATA.planks.splice(idx, 1);
+        saveDataToLocalStorage();
+        refreshAdminView();
+      }
+    }
+
+    function handleSavePlank(e) {
+      e.preventDefault();
+      const editIdx = document.getElementById('editPlankId').value;
+      const catKey = document.getElementById('plankCatInput').value;
+      const catMap = {
+        amber: '🪵 琥珀暖木（陪伴停靠小語）',
+        indigo: '🌊 沉靜靛藍（迷惘真實心聲）',
+        bamboo: '🌿 淡墨竹葉青（帶得走的好觀點）'
+      };
+
+      const plankObj = {
+        id: editIdx !== '' ? SITE_DATA.planks[editIdx].id : "plank-" + Date.now(),
+        categoryKey: catKey,
+        categoryName: catMap[catKey] || '🪵 陪伴停靠小語',
+        quote: document.getElementById('plankQuoteInput').value.trim(),
+        expanded: document.getElementById('plankExpandedInput').value.trim(),
+        author: document.getElementById('plankAuthorInput').value.trim() || '小棧長'
+      };
+
+      if (editIdx !== '') {
+        SITE_DATA.planks[editIdx] = plankObj;
+      } else {
+        SITE_DATA.planks.push(plankObj);
+      }
+
+      saveDataToLocalStorage();
+      refreshAdminView();
+      closeModal('plankModal');
+    }
+
+    refreshAdminView();
+  </script>
+</body>
+</html>

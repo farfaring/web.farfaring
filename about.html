@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>關於望舟｜望舟小棧 farfaring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .about-cards-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    .about-card {
+      background: #FFF;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      padding: 44px 44px;
+      box-shadow: 0 8px 30px rgba(28, 33, 39, 0.03);
+    }
+
+    @media (max-width: 640px) {
+      .about-card {
+        padding: 28px 20px;
+      }
+    }
+
+    .about-card-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.35rem;
+      color: var(--ink-black);
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--hairline);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .about-text {
+      font-size: 1.02rem;
+      line-height: 2.1;
+      color: var(--ink-body);
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .about-text:last-of-type {
+      margin-bottom: 0;
+    }
+
+    /* 一則真誠的小記專用區塊 */
+    .collab-confession-box {
+      background: var(--paper-warm);
+      border-left: 3px solid var(--amber-pier);
+      border-radius: 0 12px 12px 0;
+      padding: 22px 26px;
+      margin-top: 26px;
+    }
+
+    .collab-confession-title {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.02rem;
+      color: var(--amber-dark);
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .collab-confession-text {
+      font-size: 0.94rem;
+      line-height: 1.95;
+      color: var(--ink-body);
+    }
+
+    /* 公益諮詢專用條列 */
+    .consult-rules {
+      list-style: none;
+      font-size: 0.92rem;
+      color: var(--ink-body);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 20px 0 24px;
+      background: #F9FBFC;
+      border: 1px solid rgba(43, 76, 101, 0.12);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+    }
+
+    .consult-rules li::before {
+      content: "✦ ";
+      color: var(--amber-pier);
+    }
+
+    .btn-consult-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--indigo-water);
+      color: #FFF;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 99px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-consult-action:hover {
+      background: var(--amber-pier);
+    }
+
+    /* 各區導流說明提示條 */
+    .routing-notice-box {
+      background: #FFFDF9;
+      border: 1px solid rgba(184, 125, 75, 0.35);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      font-size: 0.88rem;
+      line-height: 1.85;
+      color: var(--ink-body);
+    }
+
+    .about-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .about-form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <a href="./index.html" class="brand-mark">
+      <span class="brand-zh">望舟小棧</span>
+      <span class="brand-en">farfaring</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="./index.html">水岸首頁</a></li>
+      <li><a href="./resources.html">木棧道・課程活動</a></li>
+      <li><a href="./articles.html">水岸手札・生活觀察</a></li>
+      <li><a href="./about.html" class="active">關於望舟</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page Header（純化為 ABOUT FARFARING，副標題置中且無行尾標點） -->
+  <header class="page-hero">
+    <div class="page-eyebrow">ABOUT FARFARING</div>
+    <h1 class="page-title">關於望舟・一個短暫停靠的地方</h1>
+    <p class="page-subtitle">
+      這裡是短暫停靠的水岸小棧，陪你在迷惘時看清前方的路<br>
+      當你整理好腳步、蓄滿能量，隨時都能從容啟航，通往真正想要的生活
+    </p>
+  </header>
+
+  <!-- Main Content（三大獨立主題卡片佈局：空間初心、公益諮詢、專屬私密信箱） -->
+  <main class="page-wrap">
+    <div class="about-cards-container">
+
+      <!-- 第一大區塊：【空間初心與協作小記】 -->
+      <section class="about-card" id="section-intro">
+        <h2 class="about-card-title">
+          <span>🌿</span>
+          <span>在小棧停靠，你能獲得什麼？</span>
+        </h2>
+        <p class="about-text">
+          在生涯的河道上，很少有人是一路筆直划到底的。<br>
+          更多的時候，會遇到水霧、會覺得手臂痠痛，或是發現原本想去的地方，好像已經跟現在的自己不太一樣了。
+        </p>
+        <p class="about-text">
+          「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟。<br>
+          當你覺得累了、不知道下一步該往哪裡走的時候，可以先在這裡靠岸停一下。來這裡看看新事物，發現一點新靈感。<br>
+          等充好電了、看清楚方向了，隨時可以解開纜繩，帶著踏實的心情再次啟航。
+        </p>
+
+        <!-- 協作透明說明 -->
+        <div class="collab-confession-box">
+          <div class="collab-confession-title">
+            <span>🌿</span>
+            <span>一則真誠的小記：關於這裡的產出</span>
+          </div>
+          <p class="collab-confession-text">
+            身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。<br>
+            「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。<br><br>
+            這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。<br><br>
+            <strong>科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。</strong>
+          </p>
+        </div>
+      </section>
+
+      <!-- 第二大區塊：【一對一公益職涯諮詢】 -->
+      <section class="about-card" id="section-consult">
+        <h2 class="about-card-title">
+          <span>🛶</span>
+          <span>一對一公益職涯諮詢</span>
+        </h2>
+        <p class="about-text">
+          如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：
+        </p>
+        <ul class="consult-rules">
+          <li><strong>參與費用</strong>：公益性質，不收取任何諮詢費用。</li>
+          <li><strong>深談時間</strong>：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。</li>
+          <li><strong>進行方式</strong>：線上視訊會談（Google Meet 或約定工具）。</li>
+          <li><strong>善循環回饋</strong>：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。</li>
+        </ul>
+        <div style="margin-top:20px;">
+          <button class="btn-consult-action" onclick="scrollToContact('consult')">
+            <span>📅 填寫諮詢預約意向 ↓</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 第三大區塊：【聯絡小棧長・專屬私密信箱】 -->
+      <section class="about-card" id="section-contact">
+        <h2 class="about-card-title">
+          <span>✉️</span>
+          <span>聯絡小棧長・專屬私密信箱</span>
+        </h2>
+
+        <!-- 明確導流與去處說明（徹底劃分公開投稿與私密信箱） -->
+        <div class="routing-notice-box">
+          <strong style="color:var(--amber-pier); font-size:0.92rem; display:block; margin-bottom:6px;">📌 投稿與回報導流說明：</strong>
+          ・若您想<strong>推薦好課程或回報失效連結</strong> ➔ 請前往 <a href="./resources.html" style="color:var(--indigo-water); font-weight:500;">[木棧道・課程活動]</a>（直接送進後台審核上架）<br>
+          ・若您想留下<strong>漂浮棧板短句</strong> ➔ 請前往 <a href="./index.html" style="color:var(--indigo-water); font-weight:500;">[水岸首頁]</a> 點擊「棧道留言 ✍️」<br>
+          ・若您想<strong>分享個人職涯或生活故事</strong> ➔ 請前往 <a href="./articles.html" style="color:var(--indigo-water); font-weight:500;">[水岸手札]</a> 點擊「分享你的故事」<br><br>
+          🔒 <strong>本信箱專屬用途</strong>：此處為與小棧長的<strong>一對一私密聯絡通道</strong>（諮詢預約、演講合作或個人悄悄話）。信件直達小棧長個人 Email，<strong>絕不會</strong>公開刊登在網站任何角落，請安心填寫。
+        </div>
+
+        <form onsubmit="handleAboutSubmit(event)">
+          <!-- 蜜罐防護（防機器人自動填寫） -->
+          <input type="text" id="aboutHpField" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off">
+
+          <div class="form-group">
+            <label>信件主旨類別：</label>
+            <select id="aboutLetterCategory" style="padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--hairline); width:100%; font-family:inherit; font-size:0.9rem;">
+              <option value="consult">🛶 預約一對一公益職涯諮詢</option>
+              <option value="collab">🤝 演講、專欄或跨界合作交流</option>
+              <option value="private">💌 給小棧長的悄悄話 / 閱讀回饋</option>
+              <option value="feedback">💡 其他個人建議與交流</option>
+            </select>
+          </div>
+
+          <div class="about-form-grid">
+            <div class="form-group">
+              <label>如何稱呼你：</label>
+              <input type="text" id="aboutFeedbackAuthor" placeholder="你的稱呼或筆名" required>
+            </div>
+            <div class="form-group">
+              <label>聯絡信箱（必填，供小棧長親自回覆）：</label>
+              <input type="email" id="aboutFeedbackEmail" placeholder="yourname@gmail.com" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label id="aboutTextareaLabel">想聊聊的事或諮詢需求：</label>
+            <textarea id="aboutFeedbackText" rows="5" placeholder="若是預約諮詢，請簡要說明您目前遇到的職涯瓶頸或想梳理的困惑；若是其他交流，歡迎在此暢所欲言..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit-action" style="margin-top:6px;">寄出私密信件給小棧長 ✉️</button>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-quote">
+      生活裡處處都是機會<br>
+      陪你挖掘，陪你發現<br>
+      陪你通往真正想要的生活
+    </div>
+
+    <!-- 社交帳號真實可點擊按鈕 -->
+    <div class="footer-social-bar">
+      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>📸 Instagram</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+        <span>🧵 Threads</span>
+        <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+    </div>
+
+    <div class="footer-links-row">
+      <a href="./index.html">水岸首頁</a>
+      <a href="./resources.html">木棧道・課程活動</a>
+      <a href="./articles.html">水岸手札・生活觀察</a>
+      <a href="./about.html">關於望舟</a>
+    </div>
+
+    <div class="footer-maintenance-stamp">
+      最後更新：<span id="autoMonthYearAbt"></span> ｜ 相關資訊皆以各主辦單位公告為準 ｜ 望舟小棧 farfaring
+    </div>
+  </footer>
+
+  <!-- 引用全站共享數據核心 -->
+  <script src="./data.js"></script>
+
+  <script>
+    // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
+    document.getElementById('autoMonthYearAbt').innerText = SITE_DATA.siteInfo.lastUpdated;
+
+    // 平滑滾動至私密聯絡信箱並切換類別
+    function scrollToContact(category = 'consult') {
+      const select = document.getElementById('aboutLetterCategory');
+      if (select) select.value = category;
+      const target = document.getElementById('section-contact');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          const textarea = document.getElementById('aboutFeedbackText');
+          if (textarea) textarea.focus();
+        }, 500);
+      }
+    }
+
+    // 訪客私密信件：防惡意刷單 ＋ 依主旨類別歸類存入後台審核箱
+    function handleAboutSubmit(e) {
+      e.preventDefault();
+
+      // 1. 蜜罐防護（防機器人自動填寫）
+      const hp = document.getElementById('aboutHpField').value;
+      if (hp) return;
+
+      const catSelect = document.getElementById('aboutLetterCategory');
+      const catVal = catSelect ? catSelect.value : 'feedback';
+      const catText = catSelect ? catSelect.options[catSelect.selectedIndex].text : '私密信件';
+
+      const content = document.getElementById('aboutFeedbackText').value.trim();
+      const author = document.getElementById('aboutFeedbackAuthor').value.trim() || '水岸訪客';
+      const email = document.getElementById('aboutFeedbackEmail').value.trim();
+
+      // 2. 字數防護
+      if (content.length < 8) {
+        alert('請至少填寫 8 個字以上的內容，讓小棧長能清楚理解您的需求或想法。');
+        return;
+      }
+
+      // 3. 30 秒頻率限制（防連續刷單惡意洗版）
+      const lastSubmit = parseInt(localStorage.getItem('WANGZHOU_LAST_ABOUT_SUBMIT') || '0', 10);
+      const nowMs = Date.now();
+      if (nowMs - lastSubmit < 30000) {
+        const waitSec = Math.ceil((30000 - (nowMs - lastSubmit)) / 1000);
+        alert(`小棧已收到您的信件囉！為維護信箱安全，請稍候 ${waitSec} 秒後再寄送下一封信。`);
+        return;
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      const newSub = {
+        id: "sub-" + Date.now(),
+        type: "letter",
+        typeName: `私密信件 ． ${catText.replace(/^[^\s]+\s*/, '')}`,
+        title: `【${catText}】${content.slice(0, 20)}${content.length > 20 ? '...' : ''}`,
+        author: author,
+        contact: email || '未留信箱',
+        content: content,
+        extra: `信件主旨類別：${catText}`,
+        createdAt: dateStr,
+        status: "unread"
+      };
+
+      if (!SITE_DATA.submissions) SITE_DATA.submissions = [];
+      SITE_DATA.submissions.unshift(newSub);
+
+      try {
+        localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
+        localStorage.setItem('WANGZHOU_LAST_ABOUT_SUBMIT', String(nowMs));
+      } catch (err) {}
+
+      alert(`謝謝你（${author}）的真摯來信！小棧長已收到，此為專屬私密信件，絕不公開刊登，小棧長會透過 Email（${email}）親自與你聯繫。`);
+      document.getElementById('aboutFeedbackText').value = '';
+      document.getElementById('aboutFeedbackEmail').value = '';
+    }
+  </script>
+</body>
+</html>

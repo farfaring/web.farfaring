@@ -85,23 +85,43 @@
     }
 
     .admin-layout {
-      max-width: 1200px;
-      margin: 32px auto;
-      padding: 0 24px;
+      max-width: 1560px;
+      width: 95%;
+      margin: 20px auto;
+      padding: 0 16px;
       display: grid;
-      grid-template-columns: 240px 1fr;
-      gap: 28px;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 20px;
       align-items: start;
     }
 
     .admin-table-container {
       width: 100%;
+      max-width: 100%;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       margin-top: 10px;
       border: 1px solid var(--admin-border);
       border-radius: 8px;
       background: #FFF;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    /* 增強可視性與滑動體驗之橫向滾動條 */
+    .admin-table-container::-webkit-scrollbar {
+      height: 9px;
+    }
+    .admin-table-container::-webkit-scrollbar-track {
+      background: #F1F5F9;
+      border-radius: 6px;
+    }
+    .admin-table-container::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 6px;
+      border: 2px solid #F1F5F9;
+    }
+    .admin-table-container::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
     }
 
     @media (max-width: 900px) {
@@ -185,23 +205,30 @@
       background: var(--admin-card);
       border: 1px solid var(--admin-border);
       border-radius: var(--radius-md);
-      padding: 16px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
     .admin-nav-item {
-      padding: 12px 16px;
+      padding: 11px 14px;
       border-radius: 8px;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       color: #4A5568;
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 10px;
+      white-space: nowrap !important;
+      word-break: keep-all !important;
+    }
+
+    .admin-nav-item span:nth-child(2) {
+      white-space: nowrap !important;
+      word-break: keep-all !important;
     }
 
     .admin-nav-item:hover {
@@ -220,9 +247,11 @@
       background: var(--admin-card);
       border: 1px solid var(--admin-border);
       border-radius: var(--radius-lg);
-      padding: 32px;
+      padding: 22px 24px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.03);
       display: none;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .admin-panel.active {
@@ -234,8 +263,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
       border-bottom: 1px solid var(--admin-border);
       flex-wrap: wrap;
       gap: 12px;
@@ -272,6 +301,10 @@
       font-size: 0.88rem;
     }
 
+    #panel-social .admin-table {
+      min-width: 960px;
+    }
+
     .admin-table th {
       background: #F8FAFC;
       color: #4A5568;
@@ -293,17 +326,26 @@
 
     .table-actions {
       display: flex;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
     }
 
     .btn-table-sm {
       background: #EDF2F7;
       border: 1px solid #CBD5E0;
-      padding: 4px 10px;
+      padding: 5px 10px;
       border-radius: 6px;
       font-size: 0.78rem;
       cursor: pointer;
       color: #2D3748;
+      white-space: nowrap !important;
+      word-break: keep-all !important;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.35;
+      text-decoration: none;
     }
 
     .btn-table-sm:hover {
@@ -435,7 +477,8 @@
     </div>
     <div class="admin-actions">
       <button class="btn-front-preview" onclick="openCloudConfigModal()" title="設定 GitHub 雲端一鍵發布金鑰">🔑 雲端金鑰綁定</button>
-      <a href="./index.html" target="_blank" class="btn-front-preview">🌐 檢視前台網站</a>
+      <a href="https://farfaring.github.io/web.farfaring/" target="_blank" class="btn-front-preview" title="開啟已上線的正式網站">🌐 檢視正式網站 ↗</a>
+      <a href="./index.html" target="_blank" class="btn-front-preview" style="opacity:0.8;" title="開啟本機最新預覽">💻 本機預覽</a>
       <button id="btnCloudPublish" class="btn-export-data" onclick="publishToGitHub()" title="自動透過 GitHub API 推送發布，免下載檔案">🚀 一鍵雲端發布</button>
       <button class="btn-front-preview" style="font-size:0.8rem; opacity:0.85;" onclick="exportDataJs()" title="離線備份並下載 data.js 檔案">💾 離線備份</button>
     </div>
@@ -443,30 +486,35 @@
 
   <div class="admin-layout">
 
-    <!-- 側邊分頁導航（依全站動線重整：儀表板 ➔ 首頁木棧板 ➔ 課程 ➔ 手札 ➔ 審核收件箱） -->
+    <!-- 側邊分頁導航（全新直觀架構：儀表板 ➔ 訪客收件 ➔ 手札隨筆 ➔ 社群排程 ➔ 課程活動 ➔ 漂浮棧板） -->
     <aside class="admin-nav">
       <div class="admin-nav-item active" data-panel="dashboard" onclick="switchPanel('dashboard', this)">
         <span>📊</span>
         <span>營運概況與時間</span>
       </div>
-      <div class="admin-nav-item" data-panel="planks" onclick="switchPanel('planks', this)">
-        <span>🪵</span>
-        <span>漂浮棧板短句</span>
+      <div class="admin-nav-item" data-panel="submissions" onclick="switchPanel('submissions', this)">
+        <span>📬</span>
+        <span>訪客投稿審核箱</span>
+        <span id="badgeSubNavCount" style="background:#E53E3E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700;">0</span>
+      </div>
+      <div class="admin-nav-item" data-panel="articles" onclick="switchPanel('articles', this)">
+        <span>📖</span>
+        <span>水岸手札隨筆</span>
+        <span id="badgeArticleDraft" style="background:#D69E2E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="待審核草稿數">0</span>
+      </div>
+      <div class="admin-nav-item" data-panel="social" onclick="switchPanel('social', this)">
+        <span>📱</span>
+        <span>社群貼文與排程</span>
+        <span id="badgeSocialScheduled" style="background:#805AD5; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="排程待發數">0</span>
       </div>
       <div class="admin-nav-item" data-panel="courses" onclick="switchPanel('courses', this)">
         <span>📋</span>
         <span>課程活動管理</span>
         <span id="badgeCourseDraft" style="background:#D69E2E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="待審核草稿數">0</span>
       </div>
-      <div class="admin-nav-item" data-panel="articles" onclick="switchPanel('articles', this)">
-        <span>📖</span>
-        <span>水岸手札管理</span>
-        <span id="badgeArticleDraft" style="background:#D69E2E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="待審核草稿數">0</span>
-      </div>
-      <div class="admin-nav-item" data-panel="submissions" onclick="switchPanel('submissions', this)">
-        <span>📬</span>
-        <span>訪客投稿審核箱</span>
-        <span id="badgeSubNavCount" style="background:#E53E3E; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700;">0</span>
+      <div class="admin-nav-item" data-panel="planks" onclick="switchPanel('planks', this)">
+        <span>🪵</span>
+        <span>漂浮棧板短句</span>
       </div>
     </aside>
 
@@ -489,27 +537,37 @@
         </div>
       </div>
 
-      <!-- 統計數據 -->
-      <div class="stat-cards-grid">
+      <!-- 統計數據（一站掌握全站動態） -->
+      <div class="stat-cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));">
         <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('submissions')">
           <div class="stat-desc">待審訪客投稿</div>
           <div id="statSubsCount" class="stat-num" style="color:#E53E3E;">0</div>
-        </div>
-        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('planks')">
-          <div class="stat-desc">水面漂浮棧板</div>
-          <div id="statPlanksCount" class="stat-num">0</div>
-        </div>
-        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('courses')">
-          <div class="stat-desc">上架課程活動</div>
-          <div id="statCoursesCount" class="stat-num">0</div>
         </div>
         <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('articles')">
           <div class="stat-desc">水岸手札篇數</div>
           <div id="statArticlesCount" class="stat-num">0</div>
         </div>
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('social')">
+          <div class="stat-desc">社群待發排程</div>
+          <div id="statSocialCount" class="stat-num" style="color:#805AD5;">0</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('courses')">
+          <div class="stat-desc">上架課程活動</div>
+          <div id="statCoursesCount" class="stat-num">0</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('planks')">
+          <div class="stat-desc">水面漂浮棧板</div>
+          <div id="statPlanksCount" class="stat-num">0</div>
+        </div>
       </div>
 
       <div style="background:#FFFDF9; border:1px solid rgba(184, 125, 75, 0.35); border-radius:12px; padding:22px; font-size:0.92rem; line-height:1.8; margin-bottom:24px;">
+        <div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            🌐 <strong>正式對外公開網址</strong>：<a href="https://farfaring.github.io/web.farfaring/" target="_blank" style="color:#22543D; font-weight:700; text-decoration:underline;">https://farfaring.github.io/web.farfaring/</a>
+          </div>
+          <a href="https://farfaring.github.io/web.farfaring/" target="_blank" class="btn-table-sm" style="background:#22543D; color:#FFF; font-weight:600; text-decoration:none;">前往造訪正式網站 ↗</a>
+        </div>
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
           <h3 style="font-size:1.05rem; margin:0; color:var(--admin-primary); display:flex; align-items:center; gap:8px;">
             <span>🚀 雲端發布狀態：</span>
@@ -524,88 +582,7 @@
       </div>
     </main>
 
-    <!-- 主面板 2: 漂浮棧板管理（首頁木棧道短句與心聲） -->
-    <main id="panel-planks" class="admin-panel">
-      <div class="panel-header">
-        <h2 class="panel-title">漂浮棧板短句管理</h2>
-        <button class="btn-create-item" onclick="openPlankEditModal()">➕ 新增棧板短句</button>
-      </div>
-      <div class="admin-table-container">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>短句內容</th>
-              <th>色系分類</th>
-              <th>署名</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="plankTableBody"></tbody>
-        </table>
-      </div>
-    </main>
-
-    <!-- 主面板 3: 課程活動管理（兼具審稿與過期過濾） -->
-    <main id="panel-courses" class="admin-panel">
-      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <h2 class="panel-title">課程活動管理</h2>
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button class="btn-table-sm active" id="courseFilter-all" onclick="filterCourses('all')">全部 (<span id="cnt-course-all">0</span>)</button>
-            <button class="btn-table-sm" id="courseFilter-published" onclick="filterCourses('published')">🟢 已上架 (<span id="cnt-course-pub">0</span>)</button>
-            <button class="btn-table-sm" id="courseFilter-draft" onclick="filterCourses('draft')">🟡 待審草稿 (<span id="cnt-course-draft">0</span>)</button>
-            <button class="btn-table-sm" id="courseFilter-expired" onclick="filterCourses('expired')">⚠️ 已截止 (<span id="cnt-course-expired">0</span>)</button>
-          </div>
-        </div>
-        <button class="btn-create-item" onclick="openCourseEditModal()">➕ 新增課程活動</button>
-      </div>
-      <div class="admin-table-container">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th style="width:115px;">審核狀態</th>
-              <th>名稱 / 辦訓單位</th>
-              <th>地點</th>
-              <th>截止日期 / 時效</th>
-              <th>費用屬性</th>
-              <th style="width:190px;">審核與操作</th>
-            </tr>
-          </thead>
-          <tbody id="courseTableBody"></tbody>
-        </table>
-      </div>
-    </main>
-
-    <!-- 主面板 4: 水岸手札管理（兼具隨筆撰寫與草稿審核） -->
-    <main id="panel-articles" class="admin-panel">
-      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <h2 class="panel-title">水岸手札管理</h2>
-          <div style="display:flex; gap:6px;">
-            <button class="btn-table-sm active" id="artFilter-all" onclick="filterArticles('all')">全部 (<span id="cnt-art-all">0</span>)</button>
-            <button class="btn-table-sm" id="artFilter-published" onclick="filterArticles('published')">🟢 已上架 (<span id="cnt-art-pub">0</span>)</button>
-            <button class="btn-table-sm" id="artFilter-draft" onclick="filterArticles('draft')">🟡 待審草稿 (<span id="cnt-art-draft">0</span>)</button>
-          </div>
-        </div>
-        <button class="btn-create-item" onclick="openArticleEditModal()">➕ 發表新手札</button>
-      </div>
-      <div class="admin-table-container">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th style="width:115px;">審核狀態</th>
-              <th>標題</th>
-              <th>手札分類</th>
-              <th>發表月份</th>
-              <th style="width:190px;">審核與操作</th>
-            </tr>
-          </thead>
-          <tbody id="articleTableBody"></tbody>
-        </table>
-      </div>
-    </main>
-
-    <!-- 主面板 5: 訪客投稿審核箱（集中收納所有前台推薦、故事、來信與勘誤） -->
+    <!-- 主面板 2: 訪客投稿審核箱（集中收納所有前台推薦、故事、來信與勘誤） -->
     <main id="panel-submissions" class="admin-panel">
       <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
         <h2 class="panel-title">📬 訪客投稿審核箱</h2>
@@ -641,6 +618,143 @@
         </table>
       </div>
     </main>
+
+    <!-- 主面板 3: 水岸手札隨筆（官網深度長篇寫作與審核） -->
+    <main id="panel-articles" class="admin-panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h2 class="panel-title">📖 水岸手札隨筆管理</h2>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-table-sm active" id="artFilter-all" onclick="filterArticles('all')">全部 (<span id="cnt-art-all">0</span>)</button>
+            <button class="btn-table-sm" id="artFilter-published" onclick="filterArticles('published')">🟢 已上架 (<span id="cnt-art-pub">0</span>)</button>
+            <button class="btn-table-sm" id="artFilter-draft" onclick="filterArticles('draft')">🟡 待審草稿 (<span id="cnt-art-draft">0</span>)</button>
+          </div>
+        </div>
+        <button class="btn-create-item" onclick="openArticleEditModal()">➕ 發表新手札</button>
+      </div>
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:115px;">審核狀態</th>
+              <th>標題</th>
+              <th>手札主題</th>
+              <th>發表月份</th>
+              <th style="width:190px;">審核與操作</th>
+            </tr>
+          </thead>
+          <tbody id="articleTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- 主面板 4: 社群貼文與排程（Threads / IG 獨立稿件庫與時間排程） -->
+    <main id="panel-social" class="admin-panel">
+      <!-- 頂部標題與主動作區 -->
+      <div class="panel-header" style="margin-bottom:12px; padding-bottom:12px;">
+        <h2 class="panel-title" style="margin:0;">📱 社群貼文與排程管理</h2>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn-table-sm" onclick="openBufferConfigModal()" style="background:#F0FFF4; border-color:#C6F6D5; color:#22543D; font-weight:600;" title="檢視 Buffer 串接狀態與說明">✅ Buffer 狀態：已就緒</button>
+          <button class="btn-create-item" onclick="openSocialPostModal()">➕ 起草新社群貼文</button>
+        </div>
+      </div>
+
+      <!-- 次級工具列：狀態過濾與平台選擇（排版規整不再折行擠壓） -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#F8FAFC; border:1px solid #E2E8F0; padding:8px 12px; border-radius:8px;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:0.78rem; color:#718096; font-weight:600; margin-right:4px;">狀態：</span>
+          <button class="btn-table-sm active" id="socFilter-all" onclick="filterSocialStatus('all')">全部 (<span id="cnt-soc-all">0</span>)</button>
+          <button class="btn-table-sm" id="socFilter-scheduled" onclick="filterSocialStatus('scheduled')">🟡 預約排程 (<span id="cnt-soc-sched">0</span>)</button>
+          <button class="btn-table-sm" id="socFilter-draft" onclick="filterSocialStatus('draft')">⚪ 構思草稿 (<span id="cnt-soc-draft">0</span>)</button>
+          <button class="btn-table-sm" id="socFilter-published" onclick="filterSocialStatus('published')">🟢 已發布 (<span id="cnt-soc-pub">0</span>)</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:0.78rem; color:#718096; font-weight:600;">發布平台：</span>
+          <select id="socPlatformFilter" style="padding:4px 8px; border-radius:6px; border:1px solid #CBD5E0; font-size:0.8rem; background:#FFF;" onchange="filterSocialPlatform(this.value)">
+            <option value="all">全部平台</option>
+            <option value="threads">🧵 Threads</option>
+            <option value="ig">📸 Instagram</option>
+            <option value="facebook">📘 Facebook</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 提示條（文字精簡流暢，杜絕孤字與按鈕斷行） -->
+      <div style="background:#FAF5FF; border:1px solid #E9D8FD; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:0.84rem; color:#553C9A; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div style="line-height:1.5;">
+          💡 <strong>排程工作流</strong>：專為 Threads 短文與 Instagram 輪播企劃設計。點擊右側 <strong>「⚡ Buffer」</strong> 即可自動帶入對應文案並預約發布。
+        </div>
+        <a href="https://buffer.com" target="_blank" rel="noopener" class="btn-table-sm" style="background:#2C7A7B; color:#FFF; font-weight:600; text-decoration:none; flex-shrink:0; white-space:nowrap;">
+          🌐 開啟 Buffer 官網 ↗
+        </a>
+      </div>
+
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:115px;">平台與狀態</th>
+              <th style="width:135px;">審核與關聯來源</th>
+              <th>貼文主題與多平台微調文案</th>
+              <th style="width:115px;">預定發布時間</th>
+              <th style="width:130px;">視覺企劃備註</th>
+              <th style="width:185px;">發布操作</th>
+            </tr>
+          </thead>
+          <tbody id="socialTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- 主面板 5: 課程活動管理（兼具審稿與過期過濾） -->
+    <main id="panel-courses" class="admin-panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <h2 class="panel-title">📋 課程活動管理</h2>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn-table-sm active" id="courseFilter-all" onclick="filterCourses('all')">全部 (<span id="cnt-course-all">0</span>)</button>
+            <button class="btn-table-sm" id="courseFilter-published" onclick="filterCourses('published')">🟢 已上架 (<span id="cnt-course-pub">0</span>)</button>
+            <button class="btn-table-sm" id="courseFilter-draft" onclick="filterCourses('draft')">🟡 待審草稿 (<span id="cnt-course-draft">0</span>)</button>
+            <button class="btn-table-sm" id="courseFilter-expired" onclick="filterCourses('expired')">⚠️ 已截止 (<span id="cnt-course-expired">0</span>)</button>
+          </div>
+        </div>
+        <button class="btn-create-item" onclick="openCourseEditModal()">➕ 新增課程活動</button>
+      </div>
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:115px;">審核狀態</th>
+              <th>名稱 / 辦訓單位</th>
+              <th>地點</th>
+              <th>截止日期 / 時效</th>
+              <th>費用屬性</th>
+              <th style="width:190px;">審核與操作</th>
+            </tr>
+          </thead>
+          <tbody id="courseTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- 主面板 6: 漂浮棧板短句管理（首頁木棧道短句與心聲） -->
+    <main id="panel-planks" class="admin-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">🪵 漂浮棧板短句管理</h2>
+        <button class="btn-create-item" onclick="openPlankEditModal()">➕ 新增棧板短句</button>
+      </div>
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>短句內容</th>
+              <th>色系分類</th>
+              <th>署名</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="plankTableBody"></tbody>
+        </table>
       </div>
     </main>
 
@@ -800,6 +914,266 @@
     </div>
   </div>
 
+  <!-- 社群貼文起草與產圖排程 Modal -->
+  <div id="socialPostModal" class="modal-overlay" onclick="if(event.target===this)closeModal('socialPostModal')">
+    <div class="modal-content" style="max-width:780px;">
+      <button class="modal-close-btn" onclick="closeModal('socialPostModal')">×</button>
+      <h3 id="socModalTitle" class="modal-title" style="margin-bottom:14px;">起草社群貼文</h3>
+      
+      <form onsubmit="handleSaveSocialPost(event)">
+        <input type="hidden" id="editSocialId">
+        <input type="hidden" id="socSourceId">
+        <input type="hidden" id="socSourceTypeSelect" value="none">
+        <select id="socSourceItemSelect" style="display:none;"></select>
+        <div id="socSourceCustomLabel" style="display:none;"></div>
+        
+        <!-- 若有來源時才顯示的輕量提醒條 -->
+        <div id="socSourceBanner" style="display:none; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:6px 12px; margin-bottom:12px; font-size:0.8rem; color:#4A5568;">
+          🔗 內容來源：<span id="socSourceDisplayLabel" style="font-weight:600; color:#2B4C65;"></span>
+        </div>
+
+        <!-- ✨ AI In-The-Loop 協作助理列 -->
+        <div id="aiCopilotBanner" style="background:linear-gradient(135deg, #FAF5FF 0%, #F0FFF4 100%); border:1px solid #D6BCFA; border-radius:8px; padding:10px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div style="font-size:0.84rem; color:#44337A; line-height:1.5;">
+            ✨ <strong>AI In-The-Loop 智能協作</strong>：讓 AI 讀懂全文，動態重構 Threads 鉤子短文、IG 5 頁輪播腳本與生圖提示詞。
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" id="btnRunAiCopilot" class="btn-create-item" style="background:#6B46C1; padding:6px 14px; font-size:0.8rem; box-shadow:0 2px 6px rgba(107,70,193,0.3);" onclick="triggerGeminiCopilot()">
+              ✨ 啟動 AI 智能拆解
+            </button>
+            <button type="button" class="btn-table-sm" style="background:#FFF;" onclick="openAiConfigModal()" title="設定 Gemini API Key">
+              ⚙️ AI 設定
+            </button>
+          </div>
+        </div>
+
+        <!-- 貼文主題與分類 -->
+        <div style="display:grid; grid-template-columns:2.5fr 1fr; gap:12px; margin-bottom:12px;">
+          <div class="form-group" style="margin:0;">
+            <label>貼文主題：</label>
+            <input type="text" id="socTitleInput" required placeholder="例如：下班走出公司門口的深呼吸" oninput="updateCardCanvas()">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>主題分類：</label>
+            <select id="socTopicInput" onchange="updateCardCanvas()">
+              <option value="生活步調">生活步調</option>
+              <option value="職涯探索">職涯探索</option>
+              <option value="職場觀察">職場觀察</option>
+              <option value="小棧公告">小棧公告</option>
+              <option value="問答交流">問答交流</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 目標平台與多平台文案微調 -->
+        <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <label style="margin:0; font-weight:700; color:#2D3748;">發布平台與微調版本：</label>
+            <div style="display:flex; gap:14px; font-size:0.82rem; color:#4A5568;">
+              <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <input type="checkbox" id="chkPlatformThreads" checked onchange="handlePlatformCheckboxChange()">
+                <span style="font-weight:600;">🧵 Threads</span>
+              </label>
+              <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <input type="checkbox" id="chkPlatformIg" checked onchange="handlePlatformCheckboxChange()">
+                <span style="font-weight:600;">📸 Instagram</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 分頁切換器 -->
+          <div style="display:flex; gap:6px; border-bottom:1px solid #E2E8F0; margin-bottom:8px;">
+            <button type="button" id="tabBtnThreads" class="btn-table-sm active" onclick="switchSocEditTab('threads')" style="padding:6px 14px;">🧵 Threads 專屬版本</button>
+            <button type="button" id="tabBtnIg" class="btn-table-sm" onclick="switchSocEditTab('ig')" style="padding:6px 14px;">📸 Instagram 專屬版本</button>
+            <button type="button" class="btn-table-sm" style="margin-left:auto; background:#EDF2F7; color:#4A5568;" onclick="syncSocTextBetweenTabs()" title="將目前分頁的文案快速同步至另一分頁作為底稿進行微調">⚡ 複製文案至另一平台微調</button>
+          </div>
+
+          <!-- Threads 編輯區 -->
+          <div id="socTabPaneThreads">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
+              <span id="socThreadsCharCount" style="font-size:0.75rem; color:#718096; font-weight:600;">0 字</span>
+            </div>
+            <textarea id="socThreadsContentInput" rows="6" placeholder="寫下專為 Threads 節奏設計的短文案..." oninput="updateSocThreadsCharCount(); updateCardCanvas();"></textarea>
+          </div>
+
+          <!-- Instagram 編輯區 -->
+          <div id="socTabPaneIg" style="display:none;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
+              <span id="socIgCharCount" style="font-size:0.75rem; color:#718096; font-weight:600;">0 字</span>
+            </div>
+            <textarea id="socIgContentInput" rows="6" placeholder="寫下專為 Instagram 排版設計的貼文內文與 #Hashtags..." oninput="updateSocIgCharCount(); updateCardCanvas();"></textarea>
+          </div>
+        </div>
+
+        <!-- 🎨 視覺字卡即時生成器（徹底解決無圖問題） -->
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <label style="margin:0; font-weight:700; color:#2D3748; display:flex; align-items:center; gap:6px;">
+              <span>🎨 社群視覺字卡產圖</span>
+              <span style="font-size:0.75rem; color:#718096; font-weight:normal;">（即時預覽，一鍵下載真實 1080p JPG 圖檔）</span>
+            </label>
+            <div style="display:flex; gap:6px;">
+              <select id="cardRatioSelect" style="padding:4px 8px; border-radius:6px; border:1px solid #CBD5E0; font-size:0.8rem; background:#FFF;" onchange="updateCardCanvas()">
+                <option value="story">📱 9:16 限時動態 (1080×1920)</option>
+                <option value="portrait" selected>🖼️ 4:5 直式貼文 (1080×1350)</option>
+                <option value="square">⏹️ 1:1 方形貼文 (1080×1080)</option>
+              </select>
+              <select id="cardThemeSelect" style="padding:4px 8px; border-radius:6px; border:1px solid #CBD5E0; font-size:0.8rem; background:#FFF;" onchange="updateCardCanvas()">
+                <option value="amber">🪵 琥珀暖木</option>
+                <option value="indigo">🌊 沉靜靛藍</option>
+                <option value="bamboo">🌿 淡墨竹青</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center;">
+            <div>
+              <div class="form-group" style="margin-bottom:6px;">
+                <label style="font-size:0.78rem; color:#4A5568;">字卡標題 / 金句引言：</label>
+                <input type="text" id="cardQuoteInput" placeholder="直接引用主題或自訂一句引言..." oninput="updateCardCanvas()">
+              </div>
+              <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:0.78rem; color:#4A5568;">字卡內文 / 重點摘要：</label>
+                <textarea id="cardSubInput" rows="2" style="font-size:0.82rem; padding:6px 10px;" placeholder="生活不是工作的附屬品，岸上的風景才是本體..." oninput="updateCardCanvas()"></textarea>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-create-item" style="padding:6px 14px; font-size:0.82rem; background:#2C7A7B;" onclick="downloadCardImage()">
+                  📥 下載高畫質圖片 (JPG)
+                </button>
+                <button type="button" class="btn-table-sm" style="background:#FFF;" onclick="updateCardCanvas()">
+                  🔄 重新預覽
+                </button>
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <canvas id="cardCanvas" style="max-height:210px; max-width:170px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.12); border:1px solid #CBD5E0; background:#FFF;"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <input type="hidden" id="socMediaInput">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div class="form-group" style="margin:0;">
+            <label>預定發布日期：</label>
+            <input type="date" id="socDateInput" required>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>發布時段：</label>
+            <select id="socTimeSlotInput">
+              <option value="morning">☀️ 晨間通勤 (08:30)</option>
+              <option value="noon">🍱 午休片刻 (12:15)</option>
+              <option value="evening" selected>🌙 晚間靠岸 (21:00)</option>
+              <option value="weekend">☕ 週末午後 (15:00)</option>
+              <option value="custom">⏱️ 自訂時間</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>排程發布狀態：</label>
+            <select id="socStatusInput">
+              <option value="draft">⚪ 構思草稿</option>
+              <option value="scheduled" selected>🟡 預約排程中</option>
+              <option value="published">🟢 已在社群發布</option>
+            </select>
+          </div>
+        </div>
+
+        <input type="hidden" id="socMetricsInput">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;">
+          <button type="submit" name="action" value="save" class="btn-submit-action" style="background:#4A5568; margin-top:0;">
+            💾 僅存入小棧稿庫（不佔用 Buffer 額度）
+          </button>
+          <button type="submit" name="action" value="buffer" class="btn-submit-action" style="background:#2C7A7B; margin-top:0;">
+            ⚡ 儲存並前往 Buffer 排程
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Buffer 串接狀態與說明 Modal -->
+  <div id="bufferModal" class="modal-overlay" onclick="if(event.target===this)closeModal('bufferModal')">
+    <div class="modal-content" style="max-width:580px;">
+      <button class="modal-close-btn" onclick="closeModal('bufferModal')">×</button>
+      <h3 class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="color:#2C7A7B;">⚡</span> 社群排程串接狀態中心
+      </h3>
+
+      <!-- 綠色大通知：直接告訴使用者已經串好，不用再填任何東西 -->
+      <div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:14px 16px; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#22543D; font-size:0.95rem; margin-bottom:6px;">
+          <span>✅ 恭喜！社群一鍵串接已就緒（無須任何額外設定）</span>
+        </div>
+        <div style="font-size:0.84rem; color:#276749; line-height:1.65;">
+          您在 Buffer 上已經成功綁定 Threads 與 Instagram 帳號。小棧後台已全面啟用<strong>「瀏覽器一鍵喚醒技術」</strong>，您<strong>不需要填寫任何 API Key、密碼或 Webhook</strong>，隨時可以直接預約發布！
+        </div>
+      </div>
+
+      <!-- 運作步驟說明 -->
+      <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:14px; margin-bottom:16px; font-size:0.85rem; line-height:1.7; color:#2D3748;">
+        <strong style="color:#2B4C65;">🎯 平常如何將貼文送至社群排程？</strong><br>
+        1. <strong>起草與微調</strong>：在小棧後台撰寫好貼文（可分別微調 Threads 短文與 IG 輪播版）。<br>
+        2. <strong>一鍵前往排程</strong>：點擊「<strong>⚡ 儲存並前往 Buffer 排程</strong>」或列表上的「<strong>⚡ Buffer 🧵 / 📸</strong>」。<br>
+        3. <strong>自動代入發布</strong>：系統會自動帶入專屬文案並開啟 Buffer 視窗，點一下「<strong>Add to Queue</strong>」，定時發射就完成了！
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <button type="button" class="btn-submit-action" style="margin:0; background:#2C7A7B;" onclick="testBufferConnection()">
+          🧪 立即測試喚醒 Buffer 作曲器
+        </button>
+        <button type="button" class="btn-table-sm" onclick="closeModal('bufferModal')" style="padding:8px 16px;">
+          我知道了（關閉）
+        </button>
+      </div>
+
+      <!-- 進階開發者 Webhook（折疊收起，不干擾一般經營） -->
+      <details style="border-top:1px dashed #E2E8F0; padding-top:10px; margin-top:8px; font-size:0.78rem; color:#718096;">
+        <summary style="cursor:pointer; color:#A0AEC0; font-weight:600; outline:none;">⚙️ 進階開發者設定（非必要，一般經營請直接忽略）</summary>
+        <div style="margin-top:10px; background:#FAFAFA; padding:12px; border-radius:6px; border:1px solid #EDF2F7;">
+          <p style="margin:0 0 8px 0; line-height:1.5;">
+            若您未來有架設 Make / Zapier 進行背景無介面自動推送，才需要填寫 Webhook。一般情況下<strong>保持空白即可正常使用一鍵排程</strong>。
+          </p>
+          <form onsubmit="handleSaveBufferConfig(event)" style="display:flex; gap:8px;">
+            <input type="url" id="bufferWebhookInput" placeholder="https://hook.us1.make.com/... (留空即可)" style="font-size:0.8rem; padding:6px 10px; flex:1;">
+            <button type="submit" class="btn-table-sm" style="white-space:nowrap;">儲存</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- AI Copilot 設定 Modal -->
+  <div id="aiConfigModal" class="modal-overlay" onclick="if(event.target===this)closeModal('aiConfigModal')">
+    <div class="modal-content" style="max-width:540px;">
+      <button class="modal-close-btn" onclick="closeModal('aiConfigModal')">×</button>
+      <h3 class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="color:#6B46C1;">✨</span> Gemini AI 協作引擎設定
+      </h3>
+      <p class="modal-desc" style="font-size:0.86rem; line-height:1.7; color:#718096; margin-bottom:14px;">
+        將 Google Gemini API 連線至望舟後台，即可享受 <strong>真正的 AI In-The-Loop 內容協同</strong>：深度重構 Threads 鉤子短文、提煉 IG 5 頁輪播故事線與生成生圖 Prompt。
+      </p>
+
+      <div style="background:#FAF5FF; border:1px solid #E9D8FD; border-radius:8px; padding:12px 14px; margin-bottom:14px; font-size:0.82rem; line-height:1.6; color:#44337A;">
+        💡 <strong>如何取得 100% 免費的 Gemini API Key？</strong><br>
+        1. 前往 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:#6B46C1; font-weight:700;">Google AI Studio ↗</a>（使用一般 Google 帳號登入）。<br>
+        2. 點擊「Create API key」並複製（<strong>完全免費，無須綁定信用卡</strong>）。<br>
+        3. 貼到下方輸入框儲存即可！
+      </div>
+
+      <form onsubmit="handleSaveAiConfig(event)">
+        <div class="form-group">
+          <label>Google Gemini API Key：</label>
+          <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." style="font-size:0.85rem;">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+          <button type="submit" class="btn-submit-action" style="background:#6B46C1; margin:0;">💾 儲存 AI 設定</button>
+          <button type="button" class="btn-table-sm" onclick="closeModal('aiConfigModal')">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- GitHub 雲端一鍵發布設定 Modal -->
   <div id="cloudModal" class="modal-overlay" onclick="if(event.target===this)closeModal('cloudModal')">
     <div class="modal-content" style="max-width:540px;">
@@ -865,6 +1239,8 @@
     let currentSubFilter = 'all';
     let currentCourseFilter = 'all';
     let currentArticleFilter = 'all';
+    let currentSocialFilter = 'all';
+    let currentSocialPlatform = 'all';
 
     // HTML 跳脫防護
     function escapeHtml(str) {
@@ -888,6 +1264,8 @@
       document.getElementById('statCoursesCount').innerText = SITE_DATA.courses.length;
       document.getElementById('statArticlesCount').innerText = SITE_DATA.articles.length;
       document.getElementById('statPlanksCount').innerText = SITE_DATA.planks.length;
+      const statSocEl = document.getElementById('statSocialCount');
+      if (statSocEl) statSocEl.innerText = (SITE_DATA.socialPosts || []).filter(s => s.status === 'scheduled').length;
 
       // 計算投稿統計
       const subs = SITE_DATA.submissions || [];
@@ -989,6 +1367,28 @@
         `;
         plankTbody.appendChild(tr);
       });
+
+      // 6. 社群貼文數據統計與排程計算
+      const socAll = SITE_DATA.socialPosts || [];
+      const socSched = socAll.filter(s => s.status === 'scheduled');
+      const socDrafts = socAll.filter(s => s.status === 'draft');
+      const socPubs = socAll.filter(s => s.status === 'published');
+      setCnt('cnt-soc-all', socAll.length);
+      setCnt('cnt-soc-sched', socSched.length);
+      setCnt('cnt-soc-draft', socDrafts.length);
+      setCnt('cnt-soc-pub', socPubs.length);
+
+      const statSocialElem = document.getElementById('statSocialCount');
+      if (statSocialElem) statSocialElem.innerText = socSched.length;
+
+      const badgeSocialScheduled = document.getElementById('badgeSocialScheduled');
+      if (badgeSocialScheduled) {
+        badgeSocialScheduled.innerText = socSched.length;
+        badgeSocialScheduled.style.display = socSched.length > 0 ? 'inline-block' : 'none';
+      }
+
+      // 渲染社群貼文表格
+      renderSocialTable(currentSocialFilter, currentSocialPlatform);
     }
 
     // 渲染今日與本週投稿集中摘要
@@ -1218,15 +1618,17 @@
       }
 
       const convertBtnContainer = document.getElementById('subDetailConvertBtn');
+      let actBtns = '';
       if (sub.type === 'course') {
-        convertBtnContainer.innerHTML = `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToCourse('${sub.id}')">➕ 直接載入至課程草稿</button>`;
+        actBtns += `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToCourse('${sub.id}')">➕ 直接載入至課程草稿</button>`;
       } else if (sub.type === 'story') {
-        convertBtnContainer.innerHTML = `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToArticle('${sub.id}')">➕ 直接載入至手札草稿</button>`;
+        actBtns += `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToArticle('${sub.id}')">➕ 直接載入至手札草稿</button>`;
       } else if (sub.type === 'quote') {
-        convertBtnContainer.innerHTML = `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToPlank('${sub.id}')">➕ 直接載入至木棧板短句</button>`;
-      } else {
-        convertBtnContainer.innerHTML = `<button class="btn-table-sm" onclick="toggleSubStatus('${sub.id}'); closeModal('subDetailModal');">${sub.status === 'unread' ? '✓ 標記為已審閱' : '設為未審'}</button>`;
+        actBtns += `<button class="btn-create-item" style="padding:6px 14px; font-size:0.85rem;" onclick="closeModal('subDetailModal'); convertSubToPlank('${sub.id}')">➕ 直接載入至木棧板短句</button>`;
       }
+      actBtns += ` <button class="btn-table-sm" style="background:#FAF5FF; color:#6B46C1; border-color:#E9D8FD; font-weight:600; padding:6px 12px;" onclick="closeModal('subDetailModal'); convertSubToSocialPost('${sub.id}')">📱 轉為社群擬稿</button>`;
+      actBtns += ` <button class="btn-table-sm" onclick="toggleSubStatus('${sub.id}'); closeModal('subDetailModal');">${sub.status === 'unread' ? '✓ 標記為已審閱' : '設為未審'}</button>`;
+      convertBtnContainer.innerHTML = actBtns;
 
       document.getElementById('subDetailModal').classList.add('open');
     }
@@ -1371,7 +1773,7 @@
     // 雲端設定管理
     function openCloudConfigModal() {
       document.getElementById('cloudModal').classList.add('open');
-      document.getElementById('ghRepoInput').value = localStorage.getItem('WANGZHOU_GH_REPO') || '';
+      document.getElementById('ghRepoInput').value = localStorage.getItem('WANGZHOU_GH_REPO') || 'farfaring/web.farfaring';
       document.getElementById('ghBranchInput').value = localStorage.getItem('WANGZHOU_GH_BRANCH') || 'main';
       document.getElementById('ghTokenInput').value = localStorage.getItem('WANGZHOU_GH_TOKEN') || '';
     }
@@ -1622,6 +2024,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           <td>
             <div class="table-actions">
               ${approveBtn}
+              <button class="btn-table-sm" style="background:#FAF5FF; color:#6B46C1; border-color:#E9D8FD;" onclick="createSocialFromCourse(${idx})" title="以此課程為來源，起草社群宣傳貼文">📱 擬定社群貼文</button>
               <button class="btn-table-sm" onclick="editCourse(${idx})">編輯</button>
               <button class="btn-table-sm btn-table-delete" onclick="deleteCourse(${idx})">刪除</button>
             </div>
@@ -1761,6 +2164,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           <td>
             <div class="table-actions">
               ${approveBtn}
+              <button class="btn-table-sm" style="background:#FAF5FF; color:#6B46C1; border-color:#E9D8FD;" onclick="createSocialFromArticle(${idx})" title="以此手札為來源，起草社群宣傳貼文">📱 擬定社群貼文</button>
               <button class="btn-table-sm" onclick="editArticle(${idx})">編輯</button>
               <button class="btn-table-sm btn-table-delete" onclick="deleteArticle(${idx})">刪除</button>
             </div>
@@ -1848,6 +2252,1028 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       closeModal('articleModal');
     }
 
+    // 📱 社群貼文與排程管理
+    let currentSocActiveTab = 'threads';
+
+    function filterSocialStatus(val) {
+      currentSocialFilter = val;
+      ['all', 'scheduled', 'draft', 'published'].forEach(s => {
+        const btn = document.getElementById(`socFilter-${s}`);
+        if (btn) {
+          if (s === val) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+      renderSocialTable(currentSocialFilter, currentSocialPlatform);
+    }
+
+    function filterSocialPlatform(val) {
+      currentSocialPlatform = val;
+      renderSocialTable(currentSocialFilter, currentSocialPlatform);
+    }
+
+    function renderSocialTable(statusFilter = 'all', platformFilter = 'all') {
+      const tbody = document.getElementById('socialTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const list = SITE_DATA.socialPosts || [];
+      let count = 0;
+
+      list.forEach((post, idx) => {
+        if (statusFilter !== 'all' && post.status !== statusFilter) return;
+        
+        // 平台篩選支援多平台陣列與舊版相容
+        const targetPlats = post.targetPlatforms || (post.platform ? [post.platform] : ['threads']);
+        if (platformFilter !== 'all') {
+          if (!targetPlats.includes(platformFilter)) return;
+        }
+
+        count++;
+
+        const tr = document.createElement('tr');
+
+        // 1. 平台標籤
+        let platBadges = '';
+        if (targetPlats.includes('threads')) {
+          platBadges += `<span style="background:#000; color:#FFF; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; display:inline-block; margin:2px 2px 2px 0; white-space:nowrap;">🧵 Threads</span> `;
+        }
+        if (targetPlats.includes('ig')) {
+          platBadges += `<span style="background:#C13584; color:#FFF; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; display:inline-block; margin:2px 2px 2px 0; white-space:nowrap;">📸 Instagram</span> `;
+        }
+        if (!targetPlats.includes('threads') && !targetPlats.includes('ig')) {
+          platBadges = `<span style="background:#4A5568; color:#FFF; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; display:inline-block; white-space:nowrap;">🌐 跨平台</span>`;
+        }
+
+        // 狀態標籤
+        let statusBadge = '';
+        if (post.status === 'scheduled') {
+          statusBadge = `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap; margin-top:3px;">🟡 預約排程</span>`;
+        } else if (post.status === 'draft') {
+          statusBadge = `<span style="background:#EDF2F7; color:#4A5568; border:1px solid #CBD5E0; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap; margin-top:3px;">⚪ 構思草稿</span>`;
+        } else if (post.status === 'published') {
+          statusBadge = `<span style="background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap; margin-top:3px;">🟢 已在社群發布</span>`;
+        }
+
+        // 2. 審核與關聯來源（有重複才連結，無則獨立原創）
+        let sourceHtml = '';
+        if (post.sourceType === 'article') {
+          sourceHtml = `
+            <span class="sub-badge" style="background:#EBF8FF; color:#2B6CB0; border:1px solid #BEE3F8; font-size:0.75rem; margin-bottom:4px; display:inline-block; white-space:nowrap;">📖 關聯手札</span>
+            <div style="font-size:0.78rem; color:#4A5568; line-height:1.4; word-break:break-all;">${escapeHtml(post.sourceLabel || '水岸手札')}</div>
+          `;
+        } else if (post.sourceType === 'submission') {
+          sourceHtml = `
+            <span class="sub-badge" style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; font-size:0.75rem; margin-bottom:4px; display:inline-block; white-space:nowrap;">📬 來自讀者投稿</span>
+            <div style="font-size:0.78rem; color:#4A5568; line-height:1.4; word-break:break-all;">${escapeHtml(post.sourceLabel || '讀者投稿')}</div>
+          `;
+        } else if (post.sourceType === 'course') {
+          sourceHtml = `
+            <span class="sub-badge" style="background:#EBF8FF; color:#2B6CB0; border:1px solid #BEE3F8; font-size:0.75rem; margin-bottom:4px; display:inline-block; white-space:nowrap;">📋 關聯課程活動</span>
+            <div style="font-size:0.78rem; color:#4A5568; line-height:1.4; word-break:break-all;">${escapeHtml(post.sourceLabel || '精選課程')}</div>
+          `;
+        } else {
+          sourceHtml = `
+            <span class="sub-badge" style="background:#F7FAFC; color:#718096; border:1px solid #E2E8F0; font-size:0.75rem; margin-bottom:4px; display:inline-block; white-space:nowrap;">✨ 獨立原創靈感</span>
+            <div style="font-size:0.75rem; color:#A0AEC0;">無關聯網站內容</div>
+          `;
+        }
+
+        // 3. 多平台微調文案預覽
+        const threadsText = (post.versions && post.versions.threads) || (targetPlats.includes('threads') ? post.content : '');
+        const igText = (post.versions && post.versions.ig) || (targetPlats.includes('ig') ? post.content : '');
+
+        let previewBoxesHtml = '';
+
+        if (threadsText) {
+          const tLen = threadsText.length;
+          const tSnippet = threadsText.replace(/\n+/g, ' ').slice(0, 70);
+          previewBoxesHtml += `
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:6px 10px; margin-top:6px; font-size:0.8rem; line-height:1.45;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; color:#2D3748; font-weight:600; font-size:0.75rem;">
+                <span>🧵 Threads 微調版 <span style="font-weight:normal; color:#718096;">(${tLen} 字)</span></span>
+                <button type="button" class="btn-table-sm" style="padding:1px 6px; font-size:0.7rem; background:#FFF;" onclick="copySingleVersion(${idx}, 'threads')">📋 複製</button>
+              </div>
+              <div style="color:#4A5568;">${escapeHtml(tSnippet)}${threadsText.length > 70 ? '...' : ''}</div>
+            </div>
+          `;
+        }
+
+        if (igText) {
+          const iLen = igText.length;
+          const iSnippet = igText.replace(/\n+/g, ' ').slice(0, 70);
+          previewBoxesHtml += `
+            <div style="background:#FFF5F5; border:1px solid #FED7D7; border-radius:6px; padding:6px 10px; margin-top:6px; font-size:0.8rem; line-height:1.45;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; color:#9B2C2C; font-weight:600; font-size:0.75rem;">
+                <span>📸 IG 輪播微調版 <span style="font-weight:normal; color:#718096;">(${iLen} 字)</span></span>
+                <button type="button" class="btn-table-sm" style="padding:1px 6px; font-size:0.7rem; background:#FFF;" onclick="copySingleVersion(${idx}, 'ig')">📋 複製</button>
+              </div>
+              <div style="color:#742A2A;">${escapeHtml(iSnippet)}${igText.length > 70 ? '...' : ''}</div>
+            </div>
+          `;
+        }
+
+        if (!threadsText && !igText) {
+          const plainSnippet = (post.content || '').replace(/\n+/g, ' ').slice(0, 70);
+          previewBoxesHtml = `<div style="font-size:0.82rem; color:#718096; margin-top:4px;">${escapeHtml(plainSnippet)}</div>`;
+        }
+
+        // 4. 時間與時段
+        const timeSlotMap = {
+          morning: '☀️ 晨間 (08:30)',
+          noon: '🍱 午休 (12:15)',
+          evening: '🌙 晚間 (21:00)',
+          weekend: '☕ 週末 (15:00)',
+          custom: '⏱️ 自訂時間'
+        };
+        const timeSlotText = timeSlotMap[post.scheduledTimeSlot] || post.timeSlotLabel || '';
+        const dateDisplay = post.scheduledDate ? `${post.scheduledDate}<br><span style="font-size:0.78rem; color:#718096; white-space:nowrap;">${timeSlotText}</span>` : '<span style="color:#A0AEC0;">未排期</span>';
+
+        // 5. 操作按鈕（精準小尺寸雙列排版，杜絕單行溢出與直排擠壓）
+        let bufferBtns = '';
+        if (targetPlats.includes('threads') && targetPlats.includes('ig')) {
+          bufferBtns += `<button class="btn-table-sm" style="background:#000; color:#FFF; font-weight:600; padding:4px 8px; font-size:0.75rem;" onclick="sendSpecificPostToBuffer(${idx}, 'threads')" title="帶入 Threads 專屬微調文案至 Buffer">⚡ Buffer 🧵</button>`;
+          bufferBtns += `<button class="btn-table-sm" style="background:#C13584; color:#FFF; font-weight:600; padding:4px 8px; font-size:0.75rem;" onclick="sendSpecificPostToBuffer(${idx}, 'ig')" title="帶入 Instagram 專屬微調文案至 Buffer">⚡ Buffer 📸</button>`;
+        } else if (targetPlats.includes('ig')) {
+          bufferBtns += `<button class="btn-table-sm" style="background:#C13584; color:#FFF; font-weight:600; padding:4px 8px; font-size:0.75rem;" onclick="sendSpecificPostToBuffer(${idx}, 'ig')">⚡ Buffer 📸</button>`;
+        } else {
+          bufferBtns += `<button class="btn-table-sm" style="background:#000; color:#FFF; font-weight:600; padding:4px 8px; font-size:0.75rem;" onclick="sendSpecificPostToBuffer(${idx}, 'threads')">⚡ Buffer 🧵</button>`;
+        }
+
+        const toggleBtn = post.status === 'published'
+          ? `<button class="btn-table-sm" style="padding:4px 8px; font-size:0.75rem;" onclick="toggleSocialPublish(${idx})" title="改回排程中">改為排程</button>`
+          : `<button class="btn-table-sm" style="background:#F0FFF4; color:#22543D; border-color:#C6F6D5; font-weight:600; padding:4px 8px; font-size:0.75rem;" onclick="toggleSocialPublish(${idx})" title="標記這篇貼文已在社群發出">✓ 已發布</button>`;
+
+        tr.innerHTML = `
+          <td>
+            ${platBadges}<br>
+            ${statusBadge}
+          </td>
+          <td>
+            ${sourceHtml}
+          </td>
+          <td>
+            <div style="font-weight:700; color:#2D3748; margin-bottom:4px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+              <span>${escapeHtml(post.title)}</span>
+              ${post.topic ? `<span style="font-size:0.72rem; background:#EDF2F7; color:#4A5568; padding:1px 6px; border-radius:3px; white-space:nowrap !important; display:inline-block; word-break:keep-all !important;">#${escapeHtml(post.topic)}</span>` : ''}
+            </div>
+            ${previewBoxesHtml}
+          </td>
+          <td style="font-size:0.85rem; line-height:1.4;">${dateDisplay}</td>
+          <td style="font-size:0.83rem; color:#4A5568; line-height:1.4;">
+            ${post.mediaNotes ? `🎨 ${escapeHtml(post.mediaNotes)}` : '<span style="color:#CBD5E0;">純文字無配圖</span>'}
+          </td>
+          <td style="width:185px;">
+            <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
+              <div style="display:flex; gap:4px; align-items:center;">
+                ${bufferBtns}
+              </div>
+              <div style="display:flex; gap:4px; align-items:center;">
+                ${toggleBtn}
+                <button class="btn-table-sm" style="padding:4px 8px; font-size:0.75rem;" onclick="editSocialPost(${idx})">編輯</button>
+                <button class="btn-table-sm btn-table-delete" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteSocialPost(${idx})">刪除</button>
+              </div>
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      if (count === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:28px; color:#A0AEC0;">目前無符合條件之社群貼文，點擊右上角「➕ 起草新社群貼文」開始創作</td></tr>`;
+      }
+    }
+
+    // Modal 與微調分頁控制
+    function handleSocSourceTypeChange(type) {
+      const itemSelect = document.getElementById('socSourceItemSelect');
+      const customLabel = document.getElementById('socSourceCustomLabel');
+      if (!itemSelect || !customLabel) return;
+
+      itemSelect.innerHTML = '';
+
+      if (type === 'none') {
+        itemSelect.style.display = 'none';
+        customLabel.style.display = 'block';
+        customLabel.innerText = '✨ 此貼文為社群獨立起稿，不勉強關聯網站內容。';
+        document.getElementById('socSourceId').value = '';
+        return;
+      }
+
+      itemSelect.style.display = 'block';
+      customLabel.style.display = 'none';
+
+      if (type === 'article') {
+        const list = SITE_DATA.articles || [];
+        list.forEach(a => {
+          const opt = document.createElement('option');
+          opt.value = a.id;
+          opt.innerText = `📖 ${a.title} (${a.catName || '手札'})`;
+          itemSelect.appendChild(opt);
+        });
+      } else if (type === 'course') {
+        const list = SITE_DATA.courses || [];
+        list.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.innerText = `📋 ${c.name} (${c.organizer || '主辦'})`;
+          itemSelect.appendChild(opt);
+        });
+      } else if (type === 'submission') {
+        const list = SITE_DATA.submissions || [];
+        list.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          const title = s.title || (s.content ? s.content.slice(0, 20) : '無標題');
+          opt.innerText = `📬 [${s.typeName || '投稿'}] ${title} (${s.author || '匿名'})`;
+          itemSelect.appendChild(opt);
+        });
+      }
+
+      if (itemSelect.options.length > 0) {
+        handleSocSourceItemChange(itemSelect.value);
+      } else {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.innerText = '(目前尚無資料可關聯)';
+        itemSelect.appendChild(opt);
+        document.getElementById('socSourceId').value = '';
+      }
+    }
+
+    function handleSocSourceItemChange(val) {
+      document.getElementById('socSourceId').value = val;
+    }
+
+    function switchSocEditTab(tab) {
+      currentSocActiveTab = tab;
+      const btnThreads = document.getElementById('tabBtnThreads');
+      const btnIg = document.getElementById('tabBtnIg');
+      const paneThreads = document.getElementById('socTabPaneThreads');
+      const paneIg = document.getElementById('socTabPaneIg');
+
+      if (tab === 'threads') {
+        if (btnThreads) btnThreads.classList.add('active');
+        if (btnIg) btnIg.classList.remove('active');
+        if (paneThreads) paneThreads.style.display = 'block';
+        if (paneIg) paneIg.style.display = 'none';
+      } else {
+        if (btnIg) btnIg.classList.add('active');
+        if (btnThreads) btnThreads.classList.remove('active');
+        if (paneIg) paneIg.style.display = 'block';
+        if (paneThreads) paneThreads.style.display = 'none';
+      }
+    }
+
+    function syncSocTextBetweenTabs() {
+      const threadsText = (document.getElementById('socThreadsContentInput').value || '').trim();
+      const igText = (document.getElementById('socIgContentInput').value || '').trim();
+
+      if (currentSocActiveTab === 'threads') {
+        if (!threadsText) {
+          alert('請先在 Threads 專屬版本輸入文案');
+          return;
+        }
+        if (igText && !confirm('Instagram 版本已有文案，確定要以 Threads 文案覆蓋作為底稿進行微調嗎？')) {
+          return;
+        }
+        document.getElementById('socIgContentInput').value = threadsText;
+        updateSocIgCharCount();
+        switchSocEditTab('ig');
+        alert('⚡ 已將 Threads 文案複製至 Instagram 分頁！您可以在此增加輪播頁碼、排版空行與專屬 Hashtags 進行微調。');
+      } else {
+        if (!igText) {
+          alert('請先在 Instagram 專屬版本輸入文案');
+          return;
+        }
+        if (threadsText && !confirm('Threads 版本已有文案，確定要以 Instagram 文案覆蓋作為底稿進行微調嗎？')) {
+          return;
+        }
+        document.getElementById('socThreadsContentInput').value = igText;
+        updateSocThreadsCharCount();
+        switchSocEditTab('threads');
+        alert('⚡ 已將 Instagram 文案複製至 Threads 分頁！您可以在此精簡字數、增加呼吸留白以符合短文節奏。');
+      }
+    }
+
+    function updateSocThreadsCharCount() {
+      const text = document.getElementById('socThreadsContentInput').value || '';
+      const len = text.length;
+      const el = document.getElementById('socThreadsCharCount');
+      if (el) {
+        el.innerText = `${len} 字 ${len > 500 ? '⚠️ 超過建議 500 字' : ''}`;
+        el.style.color = len > 500 ? '#E53E3E' : '#718096';
+      }
+    }
+
+    function updateSocIgCharCount() {
+      const text = document.getElementById('socIgContentInput').value || '';
+      const len = text.length;
+      const el = document.getElementById('socIgCharCount');
+      if (el) {
+        el.innerText = `${len} 字`;
+        el.style.color = '#718096';
+      }
+    }
+
+    function handlePlatformCheckboxChange() {
+      const chkThreads = document.getElementById('chkPlatformThreads').checked;
+      const chkIg = document.getElementById('chkPlatformIg').checked;
+      if (!chkThreads && !chkIg) {
+        document.getElementById('chkPlatformThreads').checked = true;
+        alert('請至少勾選一個發布平台！');
+      }
+    }
+
+    function openSocialPostModal(idx = null) {
+      document.getElementById('socialPostModal').classList.add('open');
+      switchSocEditTab('threads');
+
+      const banner = document.getElementById('socSourceBanner');
+      const bannerLabel = document.getElementById('socSourceDisplayLabel');
+
+      if (idx !== null) {
+        const p = SITE_DATA.socialPosts[idx];
+        document.getElementById('socModalTitle').innerText = '編輯社群貼文';
+        document.getElementById('editSocialId').value = idx;
+        
+        // 來源設定
+        const sType = p.sourceType || 'none';
+        document.getElementById('socSourceTypeSelect').value = sType;
+        handleSocSourceTypeChange(sType);
+        if (p.sourceId) {
+          document.getElementById('socSourceItemSelect').value = p.sourceId;
+          document.getElementById('socSourceId').value = p.sourceId;
+        }
+
+        if (p.sourceLabel && p.sourceType !== 'none' && banner && bannerLabel) {
+          bannerLabel.innerText = p.sourceLabel;
+          banner.style.display = 'block';
+        } else if (banner) {
+          banner.style.display = 'none';
+        }
+
+        document.getElementById('socTitleInput').value = p.title || '';
+        document.getElementById('socTopicInput').value = p.topic || '生活步調';
+
+        // 平台勾選
+        const plats = p.targetPlatforms || (p.platform ? [p.platform] : ['threads', 'ig']);
+        document.getElementById('chkPlatformThreads').checked = plats.includes('threads');
+        document.getElementById('chkPlatformIg').checked = plats.includes('ig');
+
+        // 多平台微調版本文案
+        const threadsVal = (p.versions && p.versions.threads) || p.content || '';
+        const igVal = (p.versions && p.versions.ig) || p.content || '';
+        document.getElementById('socThreadsContentInput').value = threadsVal;
+        document.getElementById('socIgContentInput').value = igVal;
+
+        // 視覺字卡預設文字
+        if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = p.title || '';
+        if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = threadsVal || p.content || '';
+
+        document.getElementById('socMediaInput').value = p.mediaNotes || '';
+        document.getElementById('socDateInput').value = p.scheduledDate || '';
+        document.getElementById('socTimeSlotInput').value = p.scheduledTimeSlot || 'evening';
+        document.getElementById('socStatusInput').value = p.status || 'scheduled';
+        document.getElementById('socMetricsInput').value = p.metricsNote || '';
+      } else {
+        document.getElementById('socModalTitle').innerText = '起草社群貼文';
+        document.getElementById('editSocialId').value = '';
+        
+        document.getElementById('socSourceTypeSelect').value = 'none';
+        handleSocSourceTypeChange('none');
+        document.getElementById('socSourceId').value = '';
+        if (banner) banner.style.display = 'none';
+
+        document.getElementById('socTitleInput').value = '';
+        document.getElementById('socTopicInput').value = '生活步調';
+
+        document.getElementById('chkPlatformThreads').checked = true;
+        document.getElementById('chkPlatformIg').checked = true;
+
+        document.getElementById('socThreadsContentInput').value = '';
+        document.getElementById('socIgContentInput').value = '';
+        document.getElementById('socMediaInput').value = '';
+
+        if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = '';
+        if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = '';
+
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        const tomorrowStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        document.getElementById('socDateInput').value = tomorrowStr;
+        document.getElementById('socTimeSlotInput').value = 'evening';
+        document.getElementById('socStatusInput').value = 'scheduled';
+        document.getElementById('socMetricsInput').value = '';
+      }
+
+      updateSocThreadsCharCount();
+      updateSocIgCharCount();
+      setTimeout(updateCardCanvas, 60);
+    }
+
+    // 🎨 望舟視覺字卡 Canvas 即時渲染與產圖引擎
+    function updateCardCanvas() {
+      const canvas = document.getElementById('cardCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const ratio = document.getElementById('cardRatioSelect') ? document.getElementById('cardRatioSelect').value : 'portrait';
+      const theme = document.getElementById('cardThemeSelect') ? document.getElementById('cardThemeSelect').value : 'amber';
+
+      let w = 1080;
+      let h = 1350; // 4:5 portrait
+      if (ratio === 'story') {
+        h = 1920; // 9:16 story
+      } else if (ratio === 'square') {
+        h = 1080; // 1:1 square
+      }
+      canvas.width = w;
+      canvas.height = h;
+
+      // 主題配色
+      let bgColor = '#FBF9F4';
+      let cardBg = '#FFFFFF';
+      let borderColor = '#EADBCC';
+      let primaryText = '#2D3748';
+      let accentColor = '#8C5828';
+      let subText = '#718096';
+      let tagBg = '#F3ECE2';
+
+      if (theme === 'indigo') {
+        bgColor = '#16212B';
+        cardBg = '#1E2C3A';
+        borderColor = '#2E4357';
+        primaryText = '#F7FAFC';
+        accentColor = '#ECC94B';
+        subText = '#CBD5E0';
+        tagBg = '#2B3D4F';
+      } else if (theme === 'bamboo') {
+        bgColor = '#F2F6F3';
+        cardBg = '#FFFFFF';
+        borderColor = '#D3E2D8';
+        primaryText = '#1E352B';
+        accentColor = '#2F855A';
+        subText = '#4A6B5C';
+        tagBg = '#E6EFEA';
+      }
+
+      // 底色
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, w, h);
+
+      // 裝飾內卡
+      const margin = ratio === 'story' ? 80 : 70;
+      const cardW = w - margin * 2;
+      const cardH = h - margin * 2;
+      ctx.fillStyle = cardBg;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(margin, margin, cardW, cardH, 32);
+      } else {
+        ctx.rect(margin, margin, cardW, cardH);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // 頂部小棧標誌
+      ctx.font = "bold 32px 'Noto Sans TC', sans-serif";
+      ctx.fillStyle = accentColor;
+      ctx.textAlign = 'center';
+      ctx.fillText("〰 望舟小棧 farfaring 〰", w / 2, margin + 90);
+
+      // 分類標籤
+      const topic = document.getElementById('socTopicInput') ? document.getElementById('socTopicInput').value : '生活步調';
+      ctx.font = "500 28px 'Noto Sans TC', sans-serif";
+      const tagText = `# ${topic}`;
+      const tagW = ctx.measureText(tagText).width + 48;
+      const tagH = 50;
+      const tagX = (w - tagW) / 2;
+      const tagY = margin + 130;
+      ctx.fillStyle = tagBg;
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(tagX, tagY, tagW, tagH, 25);
+      } else {
+        ctx.rect(tagX, tagY, tagW, tagH);
+      }
+      ctx.fill();
+      ctx.fillStyle = accentColor;
+      ctx.fillText(tagText, w / 2, tagY + 35);
+
+      // 核心金句 / 標題
+      const titleText = (document.getElementById('cardQuoteInput') && document.getElementById('cardQuoteInput').value.trim())
+        || (document.getElementById('socTitleInput') && document.getElementById('socTitleInput').value.trim())
+        || "下班走出公司門口的深呼吸";
+
+      ctx.fillStyle = primaryText;
+      ctx.font = "bold 58px 'Noto Serif TC', serif";
+      ctx.textAlign = 'center';
+
+      const titleStartY = margin + (ratio === 'story' ? 440 : (ratio === 'portrait' ? 360 : 310));
+      drawCanvasWrappedText(ctx, titleText, w / 2, titleStartY, cardW - 140, 82, 4);
+
+      // 內文重點摘要
+      const subContent = (document.getElementById('cardSubInput') && document.getElementById('cardSubInput').value.trim())
+        || (document.getElementById('socThreadsContentInput') && document.getElementById('socThreadsContentInput').value.trim().slice(0, 110))
+        || "生活不是工作的附屬品，岸上的風景才是本體。\n累了就先靠岸，棧板一直都在。";
+
+      ctx.fillStyle = subText;
+      ctx.font = "400 36px 'Noto Sans TC', sans-serif";
+      ctx.textAlign = 'center';
+      const subStartY = titleStartY + 240;
+      drawCanvasWrappedText(ctx, subContent, w / 2, subStartY, cardW - 160, 62, ratio === 'story' ? 8 : 6);
+
+      // 底部裝飾線
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(margin + 80, margin + cardH - 130);
+      ctx.lineTo(margin + cardW - 80, margin + cardH - 130);
+      ctx.stroke();
+
+      // 底部浮水印與署名
+      ctx.font = "400 26px 'Noto Sans TC', sans-serif";
+      ctx.fillStyle = subText;
+      ctx.textAlign = 'center';
+      ctx.fillText("累了就先靠岸，棧板一直都在 ｜ farfaring.github.io/web.farfaring/", w / 2, margin + cardH - 75);
+    }
+
+    function drawCanvasWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 6) {
+      const paragraphs = text.split('\n');
+      let currentY = y;
+      let lineCount = 0;
+
+      for (let para of paragraphs) {
+        let line = '';
+        for (let i = 0; i < para.length; i++) {
+          const testLine = line + para[i];
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && line.length > 0) {
+            ctx.fillText(line, x, currentY);
+            line = para[i];
+            currentY += lineHeight;
+            lineCount++;
+            if (lineCount >= maxLines) {
+              ctx.fillText(line + '...', x, currentY);
+              return;
+            }
+          } else {
+            line = testLine;
+          }
+        }
+        if (line.length > 0) {
+          ctx.fillText(line, x, currentY);
+          currentY += lineHeight;
+          lineCount++;
+          if (lineCount >= maxLines) return;
+        }
+        currentY += lineHeight * 0.35;
+      }
+    }
+
+    function downloadCardImage() {
+      const canvas = document.getElementById('cardCanvas');
+      if (!canvas) return;
+      const ratio = document.getElementById('cardRatioSelect') ? document.getElementById('cardRatioSelect').value : 'portrait';
+      const title = (document.getElementById('socTitleInput') && document.getElementById('socTitleInput').value.trim()) || 'wangzhou-card';
+      
+      const link = document.createElement('a');
+      link.download = `望舟小棧_${title}_${ratio}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+    }
+
+    function editSocialPost(idx) {
+      openSocialPostModal(idx);
+    }
+
+    function handleSaveSocialPost(e) {
+      e.preventDefault();
+      const editIdx = document.getElementById('editSocialId').value;
+      
+      const targetPlatforms = [];
+      if (document.getElementById('chkPlatformThreads').checked) targetPlatforms.push('threads');
+      if (document.getElementById('chkPlatformIg').checked) targetPlatforms.push('ig');
+      if (targetPlatforms.length === 0) targetPlatforms.push('threads');
+
+      const sType = document.getElementById('socSourceTypeSelect').value;
+      const sId = document.getElementById('socSourceId').value;
+      let sLabel = '✨ 獨立原創靈感';
+      if (sType === 'article') {
+        const art = (SITE_DATA.articles || []).find(a => a.id === sId);
+        sLabel = art ? `📖 關聯手札：${art.title}` : '📖 關聯手札';
+      } else if (sType === 'course') {
+        const crs = (SITE_DATA.courses || []).find(c => c.id === sId);
+        sLabel = crs ? `📋 關聯課程：${crs.name}` : '📋 關聯精選課程';
+      } else if (sType === 'submission') {
+        const sub = (SITE_DATA.submissions || []).find(s => s.id === sId);
+        sLabel = sub ? `📬 來自讀者：${sub.author || sub.title || '訪客留言'}` : '📬 來自讀者投稿';
+      }
+
+      const threadsContent = document.getElementById('socThreadsContentInput').value.trim();
+      const igContent = document.getElementById('socIgContentInput').value.trim();
+
+      const timeSlots = {
+        morning: '☀️ 晨間通勤 (08:30)',
+        noon: '🍱 午休片刻 (12:15)',
+        evening: '🌙 晚間靠岸 (21:00)',
+        weekend: '☕ 週末午後 (15:00)',
+        custom: '⏱️ 自訂時間'
+      };
+      const timeSlotVal = document.getElementById('socTimeSlotInput').value;
+
+      const postObj = {
+        id: editIdx !== '' ? SITE_DATA.socialPosts[editIdx].id : "sp-" + Date.now(),
+        title: document.getElementById('socTitleInput').value.trim(),
+        topic: document.getElementById('socTopicInput').value,
+        sourceType: sType,
+        sourceId: sId,
+        sourceLabel: sLabel,
+        targetPlatforms: targetPlatforms,
+        platform: targetPlatforms[0] || 'threads',
+        versions: {
+          threads: threadsContent,
+          ig: igContent
+        },
+        content: threadsContent || igContent || '',
+        mediaNotes: document.getElementById('socMediaInput').value.trim(),
+        scheduledDate: document.getElementById('socDateInput').value,
+        scheduledTimeSlot: timeSlotVal,
+        timeSlotLabel: timeSlots[timeSlotVal] || '晚間靠岸',
+        status: document.getElementById('socStatusInput').value,
+        metricsNote: document.getElementById('socMetricsInput').value.trim()
+      };
+
+      const isBufferAction = e.submitter && e.submitter.value === 'buffer';
+
+      if (!SITE_DATA.socialPosts) SITE_DATA.socialPosts = [];
+
+      let savedIndex = 0;
+      if (editIdx !== '') {
+        savedIndex = parseInt(editIdx);
+        SITE_DATA.socialPosts[savedIndex] = postObj;
+      } else {
+        SITE_DATA.socialPosts.unshift(postObj);
+        savedIndex = 0;
+      }
+
+      saveDataToLocalStorage();
+      refreshAdminView();
+      closeModal('socialPostModal');
+
+      if (isBufferAction) {
+        const activePlat = (postObj.targetPlatforms && postObj.targetPlatforms.includes(currentSocActiveTab)) 
+          ? currentSocActiveTab 
+          : (postObj.targetPlatforms[0] || 'threads');
+        sendSpecificPostToBuffer(savedIndex, activePlat);
+      } else {
+        alert(`💾 社群貼文【${postObj.title}】已安全存入小棧稿庫（不佔用 Buffer 免費額度）！\n\n您可以隨時在後台清單中點擊「⚡ Buffer」隨選送出排程。`);
+      }
+    }
+
+    function toggleSocialPublish(idx) {
+      const p = SITE_DATA.socialPosts[idx];
+      if (!p) return;
+      if (p.status === 'published') {
+        p.status = 'scheduled';
+      } else {
+        p.status = 'published';
+      }
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    function deleteSocialPost(idx) {
+      const p = SITE_DATA.socialPosts[idx];
+      if (!p) return;
+      if (confirm(`確定要刪除社群貼文「${p.title}」嗎？`)) {
+        SITE_DATA.socialPosts.splice(idx, 1);
+        saveDataToLocalStorage();
+        refreshAdminView();
+      }
+    }
+
+    function copySingleVersion(idx, platform) {
+      const p = SITE_DATA.socialPosts[idx];
+      if (!p) return;
+      const postText = (p.versions && p.versions[platform]) ? p.versions[platform] : (p.content || '');
+      const platLabel = platform === 'threads' ? 'Threads' : 'Instagram';
+
+      navigator.clipboard.writeText(postText).then(() => {
+        alert(`📋 已複製【${p.title}】的【${platLabel} 微調版本文案】！\n段落、換行與專屬標籤已完整保留，可直接張貼發布。`);
+      }).catch(() => {
+        const t = document.createElement('textarea');
+        t.value = postText;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+        alert(`📋 已複製【${p.title}】的【${platLabel} 文案】！`);
+      });
+    }
+
+    function copySocialPostContent(idx) {
+      copySingleVersion(idx, 'threads');
+    }
+
+    // 跨模組串接：從手札、課程、投稿快速擬定社群
+    function switchTab(id) {
+      switchPanel(id);
+    }
+
+    function createSocialFromArticle(idx) {
+      const art = SITE_DATA.articles[idx];
+      if (!art) return;
+
+      switchPanel('social');
+      openSocialPostModal();
+
+      document.getElementById('socSourceTypeSelect').value = 'article';
+      handleSocSourceTypeChange('article');
+      document.getElementById('socSourceItemSelect').value = art.id;
+      document.getElementById('socSourceId').value = art.id;
+
+      document.getElementById('socTitleInput').value = `【手札精選】${art.title}`;
+      document.getElementById('socTopicInput').value = art.catName || '職涯探索';
+
+      const shortSnippet = art.prose ? art.prose.slice(0, 150).replace(/\n+/g, '\n') : '';
+      const threadsDraft = `${art.title}\n\n${shortSnippet}...\n\n生活不是只有往前衝，適時靠岸，小舟才能走得更遠。\n👉 完整隨筆收錄於望舟官網（點個人檔案連結）`;
+      document.getElementById('socThreadsContentInput').value = threadsDraft;
+
+      const igDraft = `${art.title}\n.\n${shortSnippet}...\n.\n📌 輪播卡片視覺企劃：\nP1 封面引言\nP2 現狀困境與心聲\nP3 觀點拆解\nP4 小步實驗行動\nP5 溫暖陪伴結語\n.\n📖 完整手札收錄於望舟小棧官網（Link in Bio）。\n.\n#望舟小棧 #${art.catName || '職涯探索'} #手札隨筆 #下班放鬆 #工作生活平衡`;
+      document.getElementById('socIgContentInput').value = igDraft;
+
+      document.getElementById('socMediaInput').value = `6 頁方形輪播圖（封面標題：${art.title}）`;
+      if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = art.title;
+      if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = shortSnippet || art.summary || '';
+      updateSocThreadsCharCount();
+      updateSocIgCharCount();
+      setTimeout(updateCardCanvas, 80);
+    }
+
+    function createSocialFromCourse(idx) {
+      const crs = SITE_DATA.courses[idx];
+      if (!crs) return;
+
+      switchPanel('social');
+      openSocialPostModal();
+
+      document.getElementById('socSourceTypeSelect').value = 'course';
+      handleSocSourceTypeChange('course');
+      document.getElementById('socSourceItemSelect').value = crs.id;
+      document.getElementById('socSourceId').value = crs.id;
+
+      document.getElementById('socTitleInput').value = `【精選推薦】${crs.name}`;
+      document.getElementById('socTopicInput').value = '職涯探索';
+
+      const threadsDraft = `精選課程推薦｜${crs.name}\n\n📍 地點：${crs.location || '線上課程'}\n💰 費用：${crs.cost || '完全免費'}\n⏳ 截止：${crs.deadline || '額滿為止'}\n\n${crs.whisper || crs.summary || ''}\n\n想了解更多或報名，可至望舟官網點擊開課連結 👉`;
+      document.getElementById('socThreadsContentInput').value = threadsDraft;
+
+      const igDraft = `【望舟推薦課程】${crs.name}\n.\n主辦單位：${crs.organizer || '精選機構'}\n開課地點：${crs.location || '線上'}\n費用屬性：${crs.cost || '免費政府補助'}\n報名期限：${crs.deadline || '近期截止'}\n.\n💡 小棧長導讀：\n${crs.whisper || crs.summary || ''}\n.\n🔗 報名連結收錄於望舟小棧「課程活動」頁面（請點個人檔案連結）。\n.\n#望舟小棧 #職涯進修 #技能增強 #免費課程 #政府補助 #轉職準備`;
+      document.getElementById('socIgContentInput').value = igDraft;
+
+      document.getElementById('socMediaInput').value = `活動宣傳視覺卡 / 重點資訊單圖`;
+      if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = crs.name;
+      if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = `${crs.organizer || '精選推薦'} ｜ ${crs.location || '線上'} ｜ ${crs.cost || '免費補助'}\n${crs.whisper || crs.summary || ''}`;
+      updateSocThreadsCharCount();
+      updateSocIgCharCount();
+      setTimeout(updateCardCanvas, 80);
+    }
+
+    function convertSubToSocialPost(subId) {
+      const sub = (SITE_DATA.submissions || []).find(s => s.id === subId);
+      if (!sub) return;
+
+      switchPanel('social');
+      openSocialPostModal();
+
+      document.getElementById('socSourceTypeSelect').value = 'submission';
+      handleSocSourceTypeChange('submission');
+      document.getElementById('socSourceItemSelect').value = sub.id;
+      document.getElementById('socSourceId').value = sub.id;
+
+      const titlePrefix = sub.typeName === '故事投稿' ? '讀者故事' : '讀者心聲';
+      document.getElementById('socTitleInput').value = `${titlePrefix}：${sub.title || sub.author || '岸邊共鳴'}`;
+      document.getElementById('socTopicInput').value = '生活步調';
+
+      const threadsDraft = `昨晚在小棧收到一則溫暖的投稿：\n\n「${sub.content || ''}」\n—— 署名：${sub.author || '水岸漫步者'}\n\n每艘小舟都有自己的航向與起風的季節，不用急著追趕別人的波浪。\n今天也請溫柔地善待自己。`;
+      document.getElementById('socThreadsContentInput').value = threadsDraft;
+
+      const igDraft = `【來自水岸邊的真實心聲】\n.\n「${sub.content || ''}」\n—— 署名：${sub.author || '水岸漫步者'}\n.\n每艘小舟吃水深淺不同、承載的重量不同，起風的季節也不同。\n走自己的節奏，本身就是一種勇氣。\n.\n望舟小棧的棧道留言一直都在，隨時歡迎你來靠岸。\n.\n#望舟小棧 #讀者心聲 #暖心文字 #生活步調 #自我接納 #陪伴`;
+      document.getElementById('socIgContentInput').value = igDraft;
+
+      document.getElementById('socMediaInput').value = `純文字暖木引言圖卡（琥珀色調）`;
+      if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = (sub.title || sub.author || '讀者心聲');
+      if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = `「${sub.content || ''}」\n—— ${sub.author || '水岸漫步者'}`;
+      updateSocThreadsCharCount();
+      updateSocIgCharCount();
+      setTimeout(updateCardCanvas, 80);
+    }
+
+    // ✨ Gemini AI In-The-Loop 協作助理
+    function openAiConfigModal() {
+      document.getElementById('geminiApiKeyInput').value = localStorage.getItem('WANGZHOU_GEMINI_KEY') || '';
+      document.getElementById('aiConfigModal').classList.add('open');
+    }
+
+    function handleSaveAiConfig(e) {
+      e.preventDefault();
+      const key = document.getElementById('geminiApiKeyInput').value.trim();
+      if (key) {
+        localStorage.setItem('WANGZHOU_GEMINI_KEY', key);
+        alert('✅ Google Gemini API Key 已成功儲存！現在您可以享受全自動 AI In-The-Loop 智能拆解！');
+      } else {
+        localStorage.removeItem('WANGZHOU_GEMINI_KEY');
+        alert('已清除 Gemini API Key。');
+      }
+      closeModal('aiConfigModal');
+    }
+
+    async function triggerGeminiCopilot() {
+      const geminiKey = localStorage.getItem('WANGZHOU_GEMINI_KEY');
+      if (!geminiKey) {
+        if (confirm('✨ 尚未設定 Google Gemini API Key！\n\nGemini API 提供個人免費額度（無需信用卡）。\n是否立即開啟設定視窗填入金鑰？\n\n（若您不想填 Key，也可以直接在對話中請 Antigravity AI 幫您即時拆解與算圖！）')) {
+          openAiConfigModal();
+        }
+        return;
+      }
+
+      // 取得來源內容全文
+      let sourceText = '';
+      const sType = document.getElementById('socSourceTypeSelect') ? document.getElementById('socSourceTypeSelect').value : 'none';
+      const sId = document.getElementById('socSourceId') ? document.getElementById('socSourceId').value : '';
+      if (sType === 'article') {
+        const art = (SITE_DATA.articles || []).find(a => a.id === sId);
+        if (art) sourceText = `標題：${art.title}\n分類：${art.catName || '職涯探索'}\n全文：\n${art.prose}`;
+      } else if (sType === 'course') {
+        const crs = (SITE_DATA.courses || []).find(c => c.id === sId);
+        if (crs) sourceText = `課程名稱：${crs.name}\n主辦：${crs.organizer || ''}\n地點：${crs.location || ''}\n費用：${crs.cost || ''}\n介紹：\n${crs.summary || ''}\n${crs.whisper || ''}`;
+      } else if (sType === 'submission') {
+        const sub = (SITE_DATA.submissions || []).find(s => s.id === sId);
+        if (sub) sourceText = `投稿者：${sub.author || ''}\n標題：${sub.title || ''}\n內容：\n${sub.content || ''}`;
+      }
+
+      if (!sourceText) {
+        sourceText = (document.getElementById('socTitleInput').value || '') + '\n' +
+          (document.getElementById('socThreadsContentInput').value || '') + '\n' +
+          (document.getElementById('socIgContentInput').value || '');
+      }
+
+      if (!sourceText.trim()) {
+        alert('請先輸入或選取欲拆解的內容來源（文章、課程、讀者留言或主題標題）！');
+        return;
+      }
+
+      const btn = document.getElementById('btnRunAiCopilot');
+      const originalText = btn ? btn.innerText : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ AI 正在深度思考重構中...';
+      }
+
+      try {
+        const prompt = `你是溫暖、富有心理共情能力的社群內容總監，專門為《望舟小棧 farfaring》打造社群內容。望舟小棧是專為迷惘上班族、轉職者打造的心靈靠岸空間，調性溫暖、平視、不說教、充滿生活呼吸感。
+請深度閱讀以下素材，為我進行跨平台重構，並嚴格只回傳純 JSON 格式（不要使用 Markdown 程式碼區塊包裹，直接回傳 JSON 物件）：
+{
+  "title": "精煉且直擊共鳴的社群主題（約 15-25 字）",
+  "topic": "生活步調 或 職涯探索 或 職場觀察",
+  "quote": "最能撫平焦慮的核心金句（15-30 字，用於視覺封面字卡）",
+  "subQuote": "2 句溫暖延伸摘要（用於字卡副標）",
+  "threadsText": "專為 Threads 設計的短文：第一行高共鳴鉤子、段落留白呼吸感、平視陪伴口吻、文末拋出一個開放問題引導交流（約 200-350 字）",
+  "igText": "專為 Instagram 設計的 5 頁輪播貼文腳本：包含 P1 封面鉤子、P2 真實心酸場景、P3 盲點觀點翻轉、P4 溫柔減法行動、P5 望舟靠岸結語，文末附上 5 個精選 hashtags",
+  "imagePrompt": "適合生成溫暖手繪水彩風格插畫的精準英文提示詞（要求：cozy warm watercolor digital art, calm river dock, night lantern, small wooden boat, peaceful healing vibe, no text）"
+}
+
+素材內容：
+${sourceText}`;
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.7 }
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error('API 回傳狀態代碼 ' + res.status);
+        }
+
+        const data = await res.json();
+        let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const result = JSON.parse(rawText);
+
+        if (result.title) document.getElementById('socTitleInput').value = result.title;
+        if (result.topic) document.getElementById('socTopicInput').value = result.topic;
+        if (result.quote && document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = result.quote;
+        if (result.subQuote && document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = result.subQuote;
+        if (result.threadsText) document.getElementById('socThreadsContentInput').value = result.threadsText;
+        if (result.igText) document.getElementById('socIgContentInput').value = result.igText;
+        if (result.imagePrompt) document.getElementById('socMediaInput').value = result.imagePrompt;
+
+        updateSocThreadsCharCount();
+        updateSocIgCharCount();
+        updateCardCanvas();
+
+        alert('✨ AI In-The-Loop 智能拆解成功！\\n已為您量身重構：\\n1. Threads 呼吸感鉤子短文\\n2. Instagram 5 頁輪播故事分頁腳本\\n3. 撫平焦慮的核心金句字卡\\n4. 英文 AI 生圖提示詞\\n\\n您可以檢視並微調內容，滿意後即可一鍵送往 Buffer！');
+      } catch (err) {
+        console.error('Gemini Copilot Error:', err);
+        alert('❌ AI 拆解失敗：' + err.message + '\\n請確認您的 Gemini API Key 是否正確。');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = originalText;
+        }
+      }
+    }
+
+    // ⚡ Buffer 社群排程串接
+    function openBufferConfigModal() {
+      document.getElementById('bufferWebhookInput').value = localStorage.getItem('WANGZHOU_BUFFER_WEBHOOK') || '';
+      document.getElementById('bufferModal').classList.add('open');
+    }
+
+    function handleSaveBufferConfig(e) {
+      e.preventDefault();
+      const webhook = document.getElementById('bufferWebhookInput').value.trim();
+      if (webhook) {
+        localStorage.setItem('WANGZHOU_BUFFER_WEBHOOK', webhook);
+        alert('✅ Buffer Webhook 自動推送網址已成功儲存！');
+      } else {
+        localStorage.removeItem('WANGZHOU_BUFFER_WEBHOOK');
+        alert('✅ 已設定為【Buffer 一鍵作曲器直通模式】（免 API Key，最穩定直覺）！');
+      }
+      closeModal('bufferModal');
+    }
+
+    function testBufferConnection() {
+      window.open('https://buffer.com/add?text=' + encodeURIComponent('【望舟小棧 farfaring】社群排程測試 🌊'), '_blank');
+    }
+
+    async function sendSpecificPostToBuffer(idx, platform = 'threads') {
+      const p = SITE_DATA.socialPosts[idx];
+      if (!p) return;
+
+      const postText = (p.versions && p.versions[platform]) ? p.versions[platform] : (p.content || '');
+      if (!postText) {
+        alert('該貼文尚無此平台的專屬文案！');
+        return;
+      }
+
+      const platLabel = platform === 'threads' ? 'Threads' : 'Instagram';
+      const webhook = localStorage.getItem('WANGZHOU_BUFFER_WEBHOOK');
+
+      if (webhook) {
+        try {
+          await fetch(webhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: p.title,
+              platform: platform,
+              content: postText,
+              mediaNotes: p.mediaNotes,
+              scheduledDate: p.scheduledDate,
+              scheduledTimeSlot: p.scheduledTimeSlot
+            })
+          });
+          alert(`🚀 已成功透過 Webhook 將【${p.title}】(${platLabel} 版) 自動推送至 Buffer 排程佇列！`);
+          p.status = 'scheduled';
+          saveDataToLocalStorage();
+          refreshAdminView();
+          return;
+        } catch (err) {
+          console.warn('Buffer Webhook 推送失敗，切換為一鍵作曲器模式：', err);
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(postText);
+      } catch (e) {}
+
+      const bufferUrl = `https://buffer.com/add?text=${encodeURIComponent(postText)}`;
+      const win = window.open(bufferUrl, '_blank');
+      if (win) {
+        p.status = 'scheduled';
+        saveDataToLocalStorage();
+        refreshAdminView();
+        alert(`⚡ 已為您喚醒 Buffer 排程作曲器！\n\n1. 【${platLabel} 專屬微調文案】已自動帶入 Buffer（剪貼簿亦已備份）。\n2. 請在彈出的 Buffer 視窗中選取對應帳號，點擊「Add to Queue」預約排程！\n\n✅ 系統已自動將此貼文標記為「🟡 預約排程中」。`);
+      } else {
+        alert('請允許瀏覽器彈出視窗，以自動打開 Buffer 排程作曲器。');
+      }
+    }
+
+    function sendPostToBuffer(idx) {
+      sendSpecificPostToBuffer(idx, 'threads');
+    }
+
     // 木棧板 CRUD
     function openPlankEditModal(idx = null) {
       document.getElementById('plankModal').classList.add('open');
@@ -1912,6 +3338,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
 
     refreshAdminView();
+
+    // 支援網址 hash 快速直通指定面版（例如 admin.html#social）
+    const initialHash = window.location.hash.replace('#', '');
+    if (initialHash && ['dashboard', 'submissions', 'articles', 'social', 'courses', 'planks'].includes(initialHash)) {
+      switchPanel(initialHash);
+    }
   </script>
 </body>
 </html>

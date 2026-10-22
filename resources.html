@@ -98,13 +98,17 @@
     </div>
 
     <div class="footer-social-bar">
-      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+      <a href="https://www.instagram.com/farfaring/" target="_blank" rel="noopener" class="social-badge-btn">
         <span>📸 Instagram</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
       </a>
       <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
         <span>🧵 Threads</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="mailto:farfaring.space@gmail.com" class="social-badge-btn">
+        <span>✉️ Email</span>
+        <span style="color:var(--amber-pier); font-weight:500;">farfaring.space@gmail.com</span>
       </a>
     </div>
 
@@ -167,7 +171,16 @@
     document.getElementById('autoMonthYearRes').innerText = SITE_DATA.siteInfo.lastUpdated;
 
     // 讀取共享數據核心之課程庫（過濾草稿，僅展示審核通過已上架之課程）
-    const resources = (SITE_DATA.courses || []).filter(c => !c.isDraft);
+    let resources = (SITE_DATA.courses || []).filter(c => !c.isDraft);
+
+    function refreshResources() {
+      resources = (SITE_DATA.courses || []).filter(c => !c.isDraft);
+    }
+
+    window.addEventListener('WangzhouDataSynced', () => {
+      refreshResources();
+      renderResources();
+    });
 
     let currentType = "all";
     let currentRegion = "all";
@@ -426,6 +439,10 @@
         localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
         localStorage.setItem('WANGZHOU_LAST_RES_SUBMIT', String(nowMs));
       } catch (err) {}
+
+      if (window.WangzhouCloud) {
+        window.WangzhouCloud.submitGuestFeedback(newSub).catch(console.warn);
+      }
 
       if (submitType === 'error') {
         alert(`非常感謝你的熱心回報！小棧長已收到關於「${target}」的勘誤資訊，我們會前往核實修正。`);

@@ -476,10 +476,12 @@
       <span style="font-size:0.8rem; color:rgba(255,255,255,0.65);">真實營運管理控制台</span>
     </div>
     <div class="admin-actions">
-      <button class="btn-front-preview" onclick="openCloudConfigModal()" title="設定 GitHub 雲端一鍵發布金鑰">🔑 雲端金鑰綁定</button>
-      <a href="https://farfaring.github.io/web.farfaring/" target="_blank" class="btn-front-preview" title="開啟已上線的正式網站">🌐 檢視正式網站 ↗</a>
-      <a href="./index.html" target="_blank" class="btn-front-preview" style="opacity:0.8;" title="開啟本機最新預覽">💻 本機預覽</a>
-      <button id="btnCloudPublish" class="btn-export-data" onclick="publishToGitHub()" title="自動透過 GitHub API 推送發布，免下載檔案">🚀 一鍵雲端發布</button>
+      <div id="cloudStatusBadge" style="display:flex; align-items:center; gap:8px; background:rgba(72, 187, 120, 0.15); border:1px solid rgba(72, 187, 120, 0.4); color:#9AE6B4; padding:6px 14px; border-radius:99px; font-size:0.82rem; font-weight:500;">
+        <span style="width:8px; height:8px; border-radius:50%; background:#48BB78; display:inline-block; box-shadow:0 0 8px #48BB78;"></span>
+        <span>Supabase 雲端資料庫：即時在線</span>
+      </div>
+      <a href="./index.html" target="_blank" class="btn-front-preview" title="開啟望舟小棧前台網站">🌐 檢視小棧前台 ↗</a>
+      <button class="btn-front-preview" onclick="refreshFromCloud()" title="從 Supabase 雲端資料庫立即同步最新數據">🔄 重新整理雲端</button>
       <button class="btn-front-preview" style="font-size:0.8rem; opacity:0.85;" onclick="exportDataJs()" title="離線備份並下載 data.js 檔案">💾 離線備份</button>
     </div>
   </header>
@@ -1174,38 +1176,29 @@
     </div>
   </div>
 
-  <!-- GitHub 雲端一鍵發布設定 Modal -->
+  <!-- Supabase 雲端資料庫狀態 Modal -->
   <div id="cloudModal" class="modal-overlay" onclick="if(event.target===this)closeModal('cloudModal')">
-    <div class="modal-content" style="max-width:540px;">
+    <div class="modal-content" style="max-width:520px;">
       <button class="modal-close-btn" onclick="closeModal('cloudModal')">×</button>
-      <h3 class="modal-title">🔑 GitHub 雲端一鍵發布設定</h3>
+      <h3 class="modal-title">⚡ Supabase 雲端資料庫狀態</h3>
       <p class="modal-desc">
-        只需設定一次，往後在後台寫好文章或增修課程，點擊「🚀 一鍵雲端發布」即可自動更新全站，完全不需手動下載檔案或開啟 GitHub。
+        小棧現已全面運作於現代化雲端資料庫架構，所有編輯與發布均即時寫入，無需再手動設定 GitHub 權杖。
       </p>
-      <form onsubmit="handleSaveCloudConfig(event)">
-        <div class="form-group">
-          <label>GitHub 使用者名稱與儲存庫（格式：帳號/專案名）：</label>
-          <input type="text" id="ghRepoInput" required placeholder="例如：yourname/farfaring">
+      <div style="background:#F7FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:16px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.88rem;">
+          <span style="color:#718096;">連線狀態：</span>
+          <span style="color:#38A169; font-weight:600;">🟢 即時在線 (Online)</span>
         </div>
-        <div class="form-group">
-          <label>主要分支名稱（通常為 main）：</label>
-          <input type="text" id="ghBranchInput" required value="main" placeholder="main">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.88rem;">
+          <span style="color:#718096;">雲端專案：</span>
+          <span style="font-family:monospace; color:#2D3748;">zqkcnarvyklsifrqhfhd</span>
         </div>
-        <div class="form-group">
-          <label>GitHub 個人存取權杖（Personal Access Token，需勾選 repo 權限）：</label>
-          <input type="password" id="ghTokenInput" required placeholder="ghp_xxxxxxxxxxxxxx">
-          <small style="color:#718096; display:block; margin-top:4px; font-size:0.8rem;">
-            📌 此金鑰僅安全保存在您這台電腦的瀏覽器中，絕不會外流。
-          </small>
+        <div style="display:flex; justify-content:space-between; font-size:0.88rem;">
+          <span style="color:#718096;">託管架構：</span>
+          <span style="color:#4A5568;">Vercel + Supabase (永久零元保障)</span>
         </div>
-        <div style="background:#FFFDF9; border:1px solid rgba(184,125,75,0.3); border-radius:8px; padding:12px; font-size:0.82rem; color:#718096; line-height:1.6; margin-bottom:16px;">
-          💡 <strong>如何取得 Token？</strong>（只需 1 分鐘）<br>
-          1. 登入 GitHub ➔ 點右上角頭像 ➔ Settings ➔ 最下方 Developer Settings。<br>
-          2. Personal access tokens ➔ Tokens (classic) ➔ Generate new token。<br>
-          3. 勾選 <code>repo</code> 權限，點擊 Generate 複製代碼貼至上方即可。
-        </div>
-        <button type="submit" class="btn-submit-action">確認儲存綁定</button>
-      </form>
+      </div>
+      <button type="button" class="btn-submit-action" onclick="refreshFromCloud(); closeModal('cloudModal');">立即同步最新雲端數據</button>
     </div>
   </div>
 
@@ -1698,16 +1691,27 @@
       sub.status = (sub.status === 'unread') ? 'reviewed' : 'unread';
       saveDataToLocalStorage();
       refreshAdminView();
+      if (window.WangzhouCloud) {
+        window.WangzhouCloud.updateSubmissionStatus(subId, sub.status).catch(console.warn);
+      }
     }
 
     // 刪除投稿
-    function deleteSub(subId) {
+    async function deleteSub(subId) {
       const idx = (SITE_DATA.submissions || []).findIndex(s => s.id === subId);
       if (idx === -1) return;
       if (confirm(`確定要刪除這筆來自「${SITE_DATA.submissions[idx].author || '訪客'}」的投稿嗎？`)) {
         SITE_DATA.submissions.splice(idx, 1);
         saveDataToLocalStorage();
         refreshAdminView();
+        try {
+          if (window.WangzhouCloud) {
+            await window.WangzhouCloud.deleteSubmission(subId);
+            showToast('✅ 投稿已自雲端資料庫刪除');
+          }
+        } catch (err) {
+          console.error(err);
+        }
       }
     }
 
@@ -1770,134 +1774,55 @@
       localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
     }
 
-    // 雲端設定管理
+    // 提示通知泡泡
+    function showToast(msg, duration = 3000) {
+      let toast = document.getElementById('wangzhouToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'wangzhouToast';
+        toast.style.cssText = 'position:fixed; bottom:24px; right:24px; background:#1C2127; color:#FFF; padding:12px 22px; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.25); font-size:0.9rem; z-index:99999; transition:all 0.3s ease; opacity:0; transform:translateY(12px); border-left:4px solid #48BB78;';
+        document.body.appendChild(toast);
+      }
+      toast.innerText = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(12px)';
+      }, duration);
+    }
+
+    // 雲端資料庫狀態檢查
+    function updateCloudStatusBadge(isOnline = true) {
+      const badge = document.getElementById('cloudStatusBadge');
+      if (badge) {
+        if (isOnline) {
+          badge.innerHTML = `<span style="width:8px; height:8px; border-radius:50%; background:#48BB78; display:inline-block; box-shadow:0 0 8px #48BB78;"></span><span>Supabase 雲端資料庫：即時在線</span>`;
+          badge.style.background = 'rgba(72, 187, 120, 0.15)';
+          badge.style.color = '#9AE6B4';
+        } else {
+          badge.innerHTML = `<span style="width:8px; height:8px; border-radius:50%; background:#ED8936; display:inline-block;"></span><span>離線快照模式</span>`;
+          badge.style.background = 'rgba(237, 137, 54, 0.15)';
+          badge.style.color = '#FBD38D';
+        }
+      }
+    }
+
+    // 手動從雲端同步最新數據
+    async function refreshFromCloud() {
+      if (!window.WangzhouCloud) return;
+      showToast('⏳ 正在從 Supabase 雲端資料庫載入最新數據...');
+      const ok = await window.WangzhouCloud.syncToLocal();
+      if (ok) {
+        refreshAdminView();
+        showToast('✨ 雲端資料庫已同步完成！');
+      } else {
+        showToast('⚠️ 雲端暫無法連線，已使用快照數據');
+      }
+    }
+
     function openCloudConfigModal() {
       document.getElementById('cloudModal').classList.add('open');
-      document.getElementById('ghRepoInput').value = localStorage.getItem('WANGZHOU_GH_REPO') || 'farfaring/web.farfaring';
-      document.getElementById('ghBranchInput').value = localStorage.getItem('WANGZHOU_GH_BRANCH') || 'main';
-      document.getElementById('ghTokenInput').value = localStorage.getItem('WANGZHOU_GH_TOKEN') || '';
-    }
-
-    function handleSaveCloudConfig(e) {
-      e.preventDefault();
-      const repo = document.getElementById('ghRepoInput').value.trim();
-      const branch = document.getElementById('ghBranchInput').value.trim() || 'main';
-      const token = document.getElementById('ghTokenInput').value.trim();
-
-      localStorage.setItem('WANGZHOU_GH_REPO', repo);
-      localStorage.setItem('WANGZHOU_GH_BRANCH', branch);
-      localStorage.setItem('WANGZHOU_GH_TOKEN', token);
-
-      updateCloudStatusBadge();
-      closeModal('cloudModal');
-      alert('✅ GitHub 雲端發布設定已成功儲存！往後只要點擊【🚀 一鍵雲端發布】即可在背景自動更新！');
-    }
-
-    function updateCloudStatusBadge() {
-      const badge = document.getElementById('cloudStatusBadge');
-      const repo = localStorage.getItem('WANGZHOU_GH_REPO');
-      const token = localStorage.getItem('WANGZHOU_GH_TOKEN');
-      if (badge) {
-        if (repo && token) {
-          badge.innerText = `✅ 已綁定：${repo}`;
-          badge.style.background = '#E6FFFA';
-          badge.style.color = '#234E52';
-          badge.style.fontWeight = '500';
-        } else {
-          badge.innerText = '⚠️ 尚未綁定 GitHub（點此設定）';
-          badge.style.background = '#FFF5F5';
-          badge.style.color = '#C53030';
-          badge.style.cursor = 'pointer';
-          badge.onclick = openCloudConfigModal;
-        }
-      }
-    }
-
-    // 🚀 一鍵雲端發布（直接呼叫 GitHub API，小棧長完全不需開啟 GitHub 網頁）
-    async function publishToGitHub() {
-      const repo = localStorage.getItem('WANGZHOU_GH_REPO');
-      const token = localStorage.getItem('WANGZHOU_GH_TOKEN');
-      const branch = localStorage.getItem('WANGZHOU_GH_BRANCH') || 'main';
-
-      if (!repo || !token) {
-        alert('💡 尚未設定 GitHub 雲端連線資訊。請先填寫您的 GitHub 儲存庫與 Token（只需設定一次）。');
-        openCloudConfigModal();
-        return;
-      }
-
-      const btn = document.getElementById('btnCloudPublish');
-      const originalText = btn.innerText;
-      btn.innerText = '⏳ 正在推播至雲端...';
-      btn.disabled = true;
-
-      try {
-        const d = new Date();
-        SITE_DATA.siteInfo.lastUpdated = `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`;
-        saveDataToLocalStorage();
-        refreshAdminView();
-
-        const fileContent = `/**
- * 《望舟小棧 farfaring》共享數據核心
- * 自動發布時間：${SITE_DATA.siteInfo.lastUpdated}
- */
-
-const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
-
-(function initializeData() {
-  try {
-    const localOverride = localStorage.getItem("WANGZHOU_SITE_DATA_OVERRIDE");
-    if (localOverride) {
-      const parsed = JSON.parse(localOverride);
-      Object.assign(SITE_DATA, parsed);
-    }
-  } catch (e) {
-    console.warn("使用 data.js 原始資料", e);
-  }
-})();
-`;
-
-        const base64Content = btoa(unescape(encodeURIComponent(fileContent)));
-
-        let sha = '';
-        const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/data.js?ref=${branch}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github+json'
-          }
-        });
-
-        if (getRes.ok) {
-          const getData = await getRes.json();
-          sha = getData.sha;
-        }
-
-        const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/data.js`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github+json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: `小棧長雲端發布：${SITE_DATA.siteInfo.lastUpdated}`,
-            content: base64Content,
-            sha: sha || undefined,
-            branch: branch
-          })
-        });
-
-        if (!putRes.ok) {
-          const errData = await putRes.json();
-          throw new Error(errData.message || 'GitHub API 回應錯誤');
-        }
-
-        alert(`🎉 雲端發布成功！\n全站最後維護日期已更新為：【${SITE_DATA.siteInfo.lastUpdated}】\n\nGitHub 已收到更新，前台網頁約 30 秒至 1 分鐘內會自動反映最新內容！`);
-      } catch (err) {
-        alert(`發布未完成：${err.message}\n\n可能原因：Token 逾期、權限未勾選 repo、或儲存庫名稱填寫有誤。\n您也可以隨時點擊「💾 離線備份」手動儲存 data.js。`);
-      } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
-      }
     }
 
     // 匯出真實 data.js 檔案
@@ -2084,19 +2009,32 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       openCourseEditModal(idx);
     }
 
-    function deleteCourse(idx) {
-      if (confirm(`確定要刪除「${SITE_DATA.courses[idx].title}」嗎？`)) {
+    async function deleteCourse(idx) {
+      const c = SITE_DATA.courses[idx];
+      if (!c) return;
+      if (confirm(`確定要刪除「${c.title}」嗎？`)) {
         SITE_DATA.courses.splice(idx, 1);
         saveDataToLocalStorage();
         refreshAdminView();
+        try {
+          if (window.WangzhouCloud) {
+            await window.WangzhouCloud.deleteCourse(c.id);
+            showToast('✅ 課程已從雲端資料庫刪除');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('⚠️ 雲端刪除失敗：' + err.message);
+        }
       }
     }
 
-    function handleSaveCourse(e) {
+    async function handleSaveCourse(e) {
       e.preventDefault();
       const editIdx = document.getElementById('editCourseId').value;
+      const isDraft = document.getElementById('courseIsDraftInput').value === 'true';
+
       const courseObj = {
-        id: editIdx !== '' ? SITE_DATA.courses[editIdx].id : "course-" + Date.now(),
+        id: editIdx !== '' ? SITE_DATA.courses[editIdx].id : ("course-" + Date.now()),
         title: document.getElementById('courseTitleInput').value.trim(),
         provider: document.getElementById('courseProviderInput').value.trim(),
         region: document.getElementById('courseRegionInput').value,
@@ -2108,11 +2046,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         address: document.getElementById('courseAddressInput').value.trim(),
         timeCycle: document.getElementById('courseTimeCycleInput').value.trim(),
         url: document.getElementById('courseUrlInput').value.trim(),
-        isDraft: document.getElementById('courseIsDraftInput').value === 'true',
+        isDraft: isDraft,
         types: ["deep", "upskill"],
         statusType: "open",
         statusText: "開放報名",
-        active: true
+        active: !isDraft
       };
 
       if (editIdx !== '') {
@@ -2124,6 +2062,16 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       saveDataToLocalStorage();
       refreshAdminView();
       closeModal('courseModal');
+
+      try {
+        if (window.WangzhouCloud) {
+          await window.WangzhouCloud.upsertCourse(courseObj);
+          showToast('🎉 課程已即時同步至 Supabase 雲端資料庫！');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
     }
 
     // 水岸手札審核與篩選
@@ -2210,15 +2158,26 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       openArticleEditModal(idx);
     }
 
-    function deleteArticle(idx) {
-      if (confirm(`確定要刪除手札「${SITE_DATA.articles[idx].title}」嗎？`)) {
+    async function deleteArticle(idx) {
+      const art = SITE_DATA.articles[idx];
+      if (!art) return;
+      if (confirm(`確定要刪除手札「${art.title}」嗎？`)) {
         SITE_DATA.articles.splice(idx, 1);
         saveDataToLocalStorage();
         refreshAdminView();
+        try {
+          if (window.WangzhouCloud) {
+            await window.WangzhouCloud.deleteArticle(art.id);
+            showToast('✅ 手札已從雲端資料庫刪除');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('⚠️ 雲端刪除失敗：' + err.message);
+        }
       }
     }
 
-    function handleSaveArticle(e) {
+    async function handleSaveArticle(e) {
       e.preventDefault();
       const editIdx = document.getElementById('editArticleId').value;
       const catKey = document.getElementById('artCatInput').value;
@@ -2229,16 +2188,18 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       };
 
       const now = new Date();
-      const dateStr = `${now.getFullYear()}.${now.getMonth() + 1}`;
+      const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const isDraft = document.getElementById('artIsDraftInput').value === 'true';
 
       const artObj = {
-        id: editIdx !== '' ? SITE_DATA.articles[editIdx].id : "note-" + Date.now(),
+        id: editIdx !== '' ? SITE_DATA.articles[editIdx].id : ("note-" + Date.now()),
         title: document.getElementById('artTitleInput').value.trim(),
         catKey: catKey,
         catName: catMap[catKey] || '水岸手札',
         date: dateStr,
         prose: document.getElementById('artProseInput').value.trim(),
-        isDraft: document.getElementById('artIsDraftInput').value === 'true'
+        isDraft: isDraft,
+        status: isDraft ? 'draft' : 'active'
       };
 
       if (editIdx !== '') {
@@ -2250,6 +2211,16 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       saveDataToLocalStorage();
       refreshAdminView();
       closeModal('articleModal');
+
+      try {
+        if (window.WangzhouCloud) {
+          await window.WangzhouCloud.upsertArticle(artObj);
+          showToast('🎉 手札已即時同步至 Supabase 雲端資料庫！');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
     }
 
     // 📱 社群貼文與排程管理
@@ -2926,35 +2897,48 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       refreshAdminView();
       closeModal('socialPostModal');
 
+      try {
+        if (window.WangzhouCloud) {
+          window.WangzhouCloud.upsertSocialPost(postObj).catch(console.warn);
+        }
+      } catch (err) {}
+
       if (isBufferAction) {
         const activePlat = (postObj.targetPlatforms && postObj.targetPlatforms.includes(currentSocActiveTab)) 
           ? currentSocActiveTab 
           : (postObj.targetPlatforms[0] || 'threads');
         sendSpecificPostToBuffer(savedIndex, activePlat);
       } else {
-        alert(`💾 社群貼文【${postObj.title}】已安全存入小棧稿庫（不佔用 Buffer 免費額度）！\n\n您可以隨時在後台清單中點擊「⚡ Buffer」隨選送出排程。`);
+        showToast(`✨ 社群貼文【${postObj.title}】已即時同步至雲端稿庫！`);
       }
     }
 
     function toggleSocialPublish(idx) {
       const p = SITE_DATA.socialPosts[idx];
       if (!p) return;
-      if (p.status === 'published') {
-        p.status = 'scheduled';
-      } else {
-        p.status = 'published';
-      }
+      p.status = (p.status === 'published') ? 'scheduled' : 'published';
       saveDataToLocalStorage();
       refreshAdminView();
+      if (window.WangzhouCloud) {
+        window.WangzhouCloud.upsertSocialPost(p).catch(console.warn);
+      }
     }
 
-    function deleteSocialPost(idx) {
+    async function deleteSocialPost(idx) {
       const p = SITE_DATA.socialPosts[idx];
       if (!p) return;
       if (confirm(`確定要刪除社群貼文「${p.title}」嗎？`)) {
         SITE_DATA.socialPosts.splice(idx, 1);
         saveDataToLocalStorage();
         refreshAdminView();
+        try {
+          if (window.WangzhouCloud) {
+            await window.WangzhouCloud.deleteSocialPost(p.id);
+            showToast('✅ 貼文已從雲端稿庫刪除');
+          }
+        } catch (err) {
+          console.error(err);
+        }
       }
     }
 
@@ -3343,6 +3327,22 @@ ${sourceText}`;
     const initialHash = window.location.hash.replace('#', '');
     if (initialHash && ['dashboard', 'submissions', 'articles', 'social', 'courses', 'planks'].includes(initialHash)) {
       switchPanel(initialHash);
+    }
+
+    // 監聽雲端數據同步事件
+    window.addEventListener('WangzhouDataSynced', () => {
+      refreshAdminView();
+      updateCloudStatusBadge(true);
+    });
+
+    // 初始載入時觸發雲端同步
+    if (window.WangzhouCloud) {
+      window.WangzhouCloud.syncToLocal().then(() => {
+        refreshAdminView();
+        updateCloudStatusBadge(true);
+      }).catch(() => {
+        updateCloudStatusBadge(false);
+      });
     }
   </script>
 </body>

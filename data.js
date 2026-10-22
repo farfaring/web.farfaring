@@ -370,15 +370,254 @@ const SITE_DATA = {
   ]
 };
 
-// 輔助函式：若瀏覽器本地有主理人編輯過的暫存（localStorage），優先讀取本地最新狀態
-(function initializeData() {
-  try {
-    const localOverride = localStorage.getItem("WANGZHOU_SITE_DATA_OVERRIDE");
-    if (localOverride) {
-      const parsed = JSON.parse(localOverride);
-      Object.assign(SITE_DATA, parsed);
+// =====================================================================
+// ⚡ 《望舟小棧 farfaring》Supabase 雲端資料庫雙向即時連接引擎
+// =====================================================================
+const SUPABASE_CONFIG = {
+  url: "https://zqkcnarvyklsifrqhfhd.supabase.co",
+  key: "sb_publishable_czCscDq--2300rOfRMsMOA_kJVBXeUa"
+};
+
+const WangzhouCloud = {
+  config: SUPABASE_CONFIG,
+
+  async request(endpoint, options = {}) {
+    const url = `${this.config.url}/rest/v1/${endpoint}`;
+    const headers = {
+      "apikey": this.config.key,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    };
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`雲端請求失敗 (${res.status}): ${err}`);
     }
-  } catch (e) {
-    console.warn("未能讀取本地暫存覆蓋，使用原始 data.js 數據", e);
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  },
+
+  // 1. 手札文章 (Articles)
+  async getArticles() {
+    return await this.request('articles?select=*&order=created_at.desc');
+  },
+  async upsertArticle(article) {
+    const payload = {
+      id: article.id,
+      cat_key: article.catKey || article.cat_key || 'career',
+      cat_name: article.catName || article.cat_name || '職涯探索',
+      date: article.date || '2026.10',
+      title: article.title,
+      prose: article.prose,
+      status: article.status || 'active'
+    };
+    return await this.request('articles', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(payload)
+    });
+  },
+  async deleteArticle(id) {
+    return await this.request(`articles?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 2. 精選課程 (Courses)
+  async getCourses() {
+    return await this.request('courses?select=*&order=created_at.desc');
+  },
+  async upsertCourse(course) {
+    const payload = {
+      id: course.id,
+      name: course.title || course.name,
+      organizer: course.provider || course.organizer,
+      types: course.types || [],
+      region: course.region || '線上',
+      location: course.locationLabel || course.location || '線上課程',
+      cost: course.cost || '免費',
+      deadline: course.deadline || '近期截止',
+      summary: course.summary,
+      whisper: course.whisper,
+      link: course.url || course.link,
+      status: course.active === false ? 'expired' : 'active'
+    };
+    return await this.request('courses', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(payload)
+    });
+  },
+  async deleteCourse(id) {
+    return await this.request(`courses?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 3. 訪客投稿審核箱 (Submissions)
+  async getSubmissions() {
+    return await this.request('submissions?select=*&order=created_at.desc');
+  },
+  async submitGuestFeedback(sub) {
+    const payload = {
+      id: sub.id || ('sub-' + Date.now()),
+      type: sub.type || 'quote',
+      type_name: sub.typeName || sub.type_name || '棧道留言',
+      title: sub.title || '',
+      author: sub.author || '水岸漫步者',
+      contact: sub.contact || '',
+      content: sub.content,
+      extra: sub.extra || '',
+      status: sub.status || 'unread'
+    };
+    return await this.request('submissions', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(payload)
+    });
+  },
+  async updateSubmissionStatus(id, status) {
+    return await this.request(`submissions?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+  },
+  async deleteSubmission(id) {
+    return await this.request(`submissions?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 4. 社群貼文排程 (Social Posts)
+  async getSocialPosts() {
+    return await this.request('social_posts?select=*&order=created_at.desc');
+  },
+  async upsertSocialPost(post) {
+    const payload = {
+      id: post.id,
+      title: post.title,
+      topic: post.topic || '生活步調',
+      source_type: post.sourceType || post.source_type || 'none',
+      source_id: post.sourceId || post.source_id || '',
+      source_label: post.sourceLabel || post.source_label || '',
+      target_platforms: post.targetPlatforms || post.target_platforms || ['threads'],
+      versions: post.versions || {},
+      content: post.content || '',
+      media_notes: post.mediaNotes || post.media_notes || '',
+      scheduled_date: post.scheduledDate || post.scheduled_date || null,
+      scheduled_time_slot: post.scheduledTimeSlot || post.scheduled_time_slot || 'evening',
+      time_slot_label: post.timeSlotLabel || post.time_slot_label || '🌙 晚間靠岸 (21:00)',
+      status: post.status || 'scheduled',
+      metrics_note: post.metricsNote || post.metrics_note || ''
+    };
+    return await this.request('social_posts', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(payload)
+    });
+  },
+  async deleteSocialPost(id) {
+    return await this.request(`social_posts?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 自動同步雲端所有數據到記憶體中的 SITE_DATA
+  async syncToLocal() {
+    try {
+      const [articles, courses, submissions, posts] = await Promise.all([
+        this.getArticles().catch(err => { console.warn('Articles sync failed:', err); return null; }),
+        this.getCourses().catch(err => { console.warn('Courses sync failed:', err); return null; }),
+        this.getSubmissions().catch(err => { console.warn('Submissions sync failed:', err); return null; }),
+        this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; })
+      ]);
+
+      let changed = false;
+
+      if (articles && articles.length > 0) {
+        SITE_DATA.articles = articles.map(a => ({
+          id: a.id,
+          catKey: a.cat_key,
+          catName: a.cat_name,
+          date: a.date,
+          title: a.title,
+          prose: a.prose,
+          status: a.status
+        }));
+        changed = true;
+      }
+
+      if (courses && courses.length > 0) {
+        SITE_DATA.courses = courses.map(c => ({
+          id: c.id,
+          title: c.name,
+          types: c.types || [],
+          region: c.region,
+          locationLabel: c.location,
+          provider: c.organizer,
+          cost: c.cost,
+          deadline: c.deadline,
+          summary: c.summary,
+          whisper: c.whisper,
+          url: c.link,
+          active: c.status === 'active'
+        }));
+        changed = true;
+      }
+
+      if (submissions) {
+        SITE_DATA.submissions = submissions.map(s => ({
+          id: s.id,
+          type: s.type,
+          typeName: s.type_name,
+          title: s.title,
+          author: s.author,
+          contact: s.contact,
+          content: s.content,
+          extra: s.extra,
+          status: s.status,
+          createdAt: s.created_at ? s.created_at.replace('T', ' ').substring(0, 16) : ''
+        }));
+        changed = true;
+      }
+
+      if (posts && posts.length > 0) {
+        SITE_DATA.socialPosts = posts.map(p => ({
+          id: p.id,
+          title: p.title,
+          topic: p.topic,
+          sourceType: p.source_type,
+          sourceId: p.source_id,
+          sourceLabel: p.source_label,
+          targetPlatforms: p.target_platforms || [],
+          versions: p.versions || {},
+          content: p.content,
+          mediaNotes: p.media_notes,
+          scheduledDate: p.scheduled_date,
+          scheduledTimeSlot: p.scheduled_time_slot,
+          timeSlotLabel: p.time_slot_label,
+          status: p.status,
+          metricsNote: p.metrics_note
+        }));
+        changed = true;
+      }
+
+      if (changed && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('WangzhouDataSynced', { detail: { timestamp: Date.now() } }));
+      }
+      return true;
+    } catch (err) {
+      console.warn('雲端同步例外：', err);
+      return false;
+    }
   }
-})();
+};
+
+// 全域掛載供所有頁面隨時呼叫
+if (typeof window !== 'undefined') {
+  window.WangzhouCloud = WangzhouCloud;
+  // 頁面載入時自動嘗試在背景同步雲端最新數據
+  setTimeout(() => {
+    WangzhouCloud.syncToLocal().catch(console.warn);
+  }, 100);
+}

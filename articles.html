@@ -246,13 +246,17 @@
     </div>
 
     <div class="footer-social-bar">
-      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+      <a href="https://www.instagram.com/farfaring/" target="_blank" rel="noopener" class="social-badge-btn">
         <span>📸 Instagram</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
       </a>
       <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
         <span>🧵 Threads</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="mailto:farfaring.space@gmail.com" class="social-badge-btn">
+        <span>✉️ Email</span>
+        <span style="color:var(--amber-pier); font-weight:500;">farfaring.space@gmail.com</span>
       </a>
     </div>
 
@@ -310,12 +314,23 @@
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
     document.getElementById('autoMonthYearArt').innerText = SITE_DATA.siteInfo.lastUpdated;
 
-    // 讀取共享數據核心之手札庫（支援後台隨時發表、修改、刪除）
     // 讀取共享數據核心之手札文章（過濾草稿，僅展示審核通過已上架之手札）
-    const notes = (SITE_DATA.articles || []).filter(a => !a.isDraft).map((n, idx) => ({
+    let notes = (SITE_DATA.articles || []).filter(a => !a.isDraft).map((n, idx) => ({
       ...n,
       cat: `${n.catName} ． 0${idx + 1}`
     }));
+
+    function refreshNotes() {
+      notes = (SITE_DATA.articles || []).filter(a => !a.isDraft).map((n, idx) => ({
+        ...n,
+        cat: `${n.catName} ． 0${idx + 1}`
+      }));
+    }
+
+    window.addEventListener('WangzhouDataSynced', () => {
+      refreshNotes();
+      renderArticleList();
+    });
 
     let currentCat = "all";
     let currentArticleId = "note-01";
@@ -466,6 +481,10 @@
         localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
         localStorage.setItem('WANGZHOU_LAST_STORY_SUBMIT', String(nowMs));
       } catch (err) {}
+
+      if (window.WangzhouCloud) {
+        window.WangzhouCloud.submitGuestFeedback(newSub).catch(console.warn);
+      }
 
       alert(`非常感謝你的慷慨分享！小棧長已收到（${author}）的故事「${title}」，內容已送達後台審核箱。`);
       document.getElementById('storyTitle').value = '';

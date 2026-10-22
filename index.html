@@ -344,13 +344,17 @@
     </div>
 
     <div class="footer-social-bar">
-      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+      <a href="https://www.instagram.com/farfaring/" target="_blank" rel="noopener" class="social-badge-btn">
         <span>📸 Instagram</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
       </a>
       <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
         <span>🧵 Threads</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="mailto:farfaring.space@gmail.com" class="social-badge-btn">
+        <span>✉️ Email</span>
+        <span style="color:var(--amber-pier); font-weight:500;">farfaring.space@gmail.com</span>
       </a>
     </div>
 
@@ -611,6 +615,10 @@
         localStorage.setItem('WANGZHOU_LAST_QUOTE_SUBMIT', String(nowMs));
         localStorage.setItem('WANGZHOU_LAST_QUOTE_TEXT', txt);
       } catch (err) {}
+
+      if (window.WangzhouCloud) {
+        window.WangzhouCloud.submitGuestFeedback(newSub).catch(console.warn);
+      }
 
       if (isRandomlyAssigned) {
         alert(`謝謝你的心意！小棧已為你隨機取好名籤「${author}」，棧道留言已妥善送達後台審核箱。`);

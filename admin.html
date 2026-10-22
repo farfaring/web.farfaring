@@ -503,7 +503,7 @@
       <h2>🛶 小棧長登入</h2>
       <p>輸入主理人信箱，系統會寄一封登入連結到信箱，點開即可進入後台。</p>
       <form id="authForm">
-        <input type="email" id="authEmailInput" placeholder="farfaring.space@gmail.com" autocomplete="email" required>
+        <input type="email" id="authEmailInput" placeholder="請輸入信箱" autocomplete="email" required>
         <button type="submit" id="authSubmitBtn">寄送登入連結</button>
       </form>
       <div id="authMsg" class="auth-msg"></div>
@@ -3390,7 +3390,6 @@ ${sourceText}`;
     // 真正的權限把關在資料庫 RLS（只有主理人信箱能讀寫）；這裡負責取得與續期登入憑證。
     // =====================================================================
     const WangzhouAuth = {
-      OWNER_EMAIL: 'farfaring.space@gmail.com',
       STORAGE_KEY: 'WANGZHOU_ADMIN_SESSION',
       session: null,
 
@@ -3403,27 +3402,18 @@ ${sourceText}`;
         const text = await res.text();
         const data = text ? JSON.parse(text) : null;
         if (!res.ok) {
-          throw new Error((data && (data.msg || data.error_description || data.message)) || `登入服務錯誤 (${res.status})`);
+          const err = new Error((data && (data.msg || data.error_description || data.message)) || `登入服務錯誤 (${res.status})`);
+          err.status = res.status;
+          throw err;
         }
         return data;
-      },
-
-      emailFromToken(token) {
-        try {
-          const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-          const bytes = Uint8Array.from(atob(payload), c => c.charCodeAt(0));
-          return JSON.parse(new TextDecoder().decode(bytes)).email || '';
-        } catch (e) {
-          return '';
-        }
       },
 
       setSession({ access_token, refresh_token, expires_in, expires_at }) {
         this.session = {
           access_token,
           refresh_token,
-          expires_at: Number(expires_at) || (Math.floor(Date.now() / 1000) + Number(expires_in || 3600)),
-          email: this.emailFromToken(access_token)
+          expires_at: Number(expires_at) || (Math.floor(Date.now() / 1000) + Number(expires_in || 3600))
         };
         try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.session)); } catch (e) {}
       },
@@ -3522,16 +3512,20 @@ ${sourceText}`;
       e.preventDefault();
       const email = document.getElementById('authEmailInput').value.trim().toLowerCase();
       const btn = document.getElementById('authSubmitBtn');
-      if (email !== WangzhouAuth.OWNER_EMAIL) {
-        showAuthGate('這個信箱沒有後台權限。', true);
-        return;
-      }
+      // 不論信箱是否有權限都回覆同一句話，避免被拿來試出哪個信箱是後台帳號
+      const neutralMsg = '若這個信箱有後台權限，登入連結已寄出，請到信箱點開連結（同一個瀏覽器）。';
       btn.disabled = true;
       try {
         await WangzhouAuth.sendMagicLink(email);
-        showAuthGate('登入連結已寄出，請到信箱點開連結（同一個瀏覽器）。', false);
+        showAuthGate(neutralMsg, false);
       } catch (err) {
-        showAuthGate('寄送失敗：' + err.message, true);
+        if (err.status === 429) {
+          showAuthGate('寄送太頻繁了，請稍等幾分鐘再試。', true);
+        } else if (!err.status) {
+          showAuthGate('網路連線異常，請稍後再試。', true);
+        } else {
+          showAuthGate(neutralMsg, false);
+        }
       } finally {
         btn.disabled = false;
       }
@@ -3548,11 +3542,6 @@ ${sourceText}`;
       if (!WangzhouAuth.session) WangzhouAuth.loadSession();
       if (!WangzhouAuth.session) {
         showAuthGate();
-        return;
-      }
-      if (WangzhouAuth.session.email !== WangzhouAuth.OWNER_EMAIL) {
-        WangzhouAuth.clearSession();
-        showAuthGate('這個帳號沒有後台權限。', true);
         return;
       }
       const token = await WangzhouAuth.getValidToken();

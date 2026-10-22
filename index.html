@@ -258,11 +258,15 @@
         </div>
       </div>
 
-      <!-- 投稿靠岸小句入口 -->
-      <div class="boardwalk-footer-bar">
+      <!-- 投稿靠岸小句入口 與 換一批停靠小語 -->
+      <div class="boardwalk-footer-bar" style="gap:12px;">
         <button class="btn-open-submit" onclick="openModal('submission')">
           <span>棧道留言</span>
           <span>✍️</span>
+        </button>
+        <button class="btn-open-submit" style="opacity:0.85;" onclick="renderBoardwalkPlanks()" title="讓湖面水流流動，換一批不同的停靠短句">
+          <span>換一批小語</span>
+          <span>🌊</span>
         </button>
       </div>
     </div>
@@ -412,13 +416,24 @@
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
     document.getElementById('autoMonthYear').innerText = SITE_DATA.siteInfo.lastUpdated;
 
-    // 動態渲染漂浮棧板（支援後台隨時增減與分類，移除右上角十字星號）
+    // 動態渲染漂浮棧板（支援後台隨時增減，採用「水流隨機輪替」機制：每次隨機浮現 3 塊最佳金句）
     function renderBoardwalkPlanks() {
       const track = document.querySelector('.floating-stream-track');
-      if (!track || !SITE_DATA.planks) return;
+      if (!track || !SITE_DATA.planks || SITE_DATA.planks.length === 0) return;
       track.innerHTML = '';
 
-      SITE_DATA.planks.forEach(p => {
+      // 當棧板總數超過 3 塊時，隨機選取 3 塊浮出水面（每次造訪帶來不同陪伴）
+      let displayPlanks = [...SITE_DATA.planks];
+      const maxDisplay = 3;
+      if (displayPlanks.length > maxDisplay) {
+        for (let i = displayPlanks.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [displayPlanks[i], displayPlanks[j]] = [displayPlanks[j], displayPlanks[i]];
+        }
+        displayPlanks = displayPlanks.slice(0, maxDisplay);
+      }
+
+      displayPlanks.forEach(p => {
         const plank = document.createElement('div');
         plank.className = `wood-plank plank-${p.categoryKey}`;
         plank.onclick = function() { this.classList.toggle('open'); };
@@ -428,6 +443,7 @@
               <span class="plank-tag">${p.categoryName}</span>
             </div>
             <div class="plank-quote">${p.quote}</div>
+            ${p.author ? `<div class="plank-author" style="font-size:0.78rem; color:var(--ink-muted); margin-top:6px; margin-bottom:2px; text-align:right; font-weight:400; opacity:0.85; letter-spacing:0.02em;">── ${p.author}</div>` : ''}
           </div>
           <div class="plank-expanded-text">
             ${p.expanded}

@@ -76,8 +76,39 @@ const SUPABASE_CONFIG = {
   key: "sb_publishable_czCscDq--2300rOfRMsMOA_kJVBXeUa"
 };
 
+// =====================================================================
+// 🛡️ 前台輸出跳脫工具：所有從資料庫來的文字，塞進 innerHTML 前都必須經過這裡
+// =====================================================================
+function wzEscape(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// 只允許 http/https 連結，擋掉 javascript: 等危險網址
+function wzSafeUrl(value) {
+  try {
+    const u = new URL(String(value || ''), window.location.href);
+    return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : '#';
+  } catch (e) {
+    return '#';
+  }
+}
+
+// 用於 onclick 等屬性內的 id：只保留英數、底線與連字號
+function wzSafeId(value) {
+  return String(value || '').replace(/[^A-Za-z0-9_-]/g, '');
+}
+
 const WangzhouCloud = {
   config: SUPABASE_CONFIG,
+
+  // 後台登入後由 admin.html 設定，回傳有效的 access token；前台不設定，以訪客身分讀取
+  getAccessToken: null,
 
   async request(endpoint, options = {}) {
     const url = `${this.config.url}/rest/v1/${endpoint}`;
@@ -86,6 +117,10 @@ const WangzhouCloud = {
       "Content-Type": "application/json",
       ...(options.headers || {})
     };
+    if (typeof this.getAccessToken === 'function') {
+      const token = await this.getAccessToken();
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+    }
     const res = await fetch(url, { ...options, headers });
     if (!res.ok) {
       const err = await res.text();
@@ -156,21 +191,23 @@ const WangzhouCloud = {
   async getSubmissions() {
     return await this.request('submissions?select=*&order=created_at.desc');
   },
+  // 訪客投稿：只寫入、不回讀（訪客沒有讀取投稿箱的權限）。長度上限與資料庫規則一致。
   async submitGuestFeedback(sub) {
+    const clip = (v, max) => String(v || '').slice(0, max);
     const payload = {
-      id: sub.id || ('sub-' + Date.now()),
+      id: 'sub-' + Date.now(),
       type: sub.type || 'quote',
-      type_name: sub.typeName || sub.type_name || '棧道留言',
-      title: sub.title || '',
-      author: sub.author || '水岸漫步者',
-      contact: sub.contact || '',
-      content: sub.content,
-      extra: sub.extra || '',
-      status: sub.status || 'unread'
+      type_name: clip(sub.typeName || sub.type_name || '棧道留言', 60),
+      title: clip(sub.title, 200),
+      author: clip(sub.author || '水岸漫步者', 60),
+      contact: clip(sub.contact, 200),
+      content: clip(sub.content, 5000),
+      extra: clip(sub.extra, 2000),
+      status: 'unread'
     };
     return await this.request('submissions', {
       method: 'POST',
-      headers: { 'Prefer': 'return=representation' },
+      headers: { 'Prefer': 'return=minimal' },
       body: JSON.stringify(payload)
     });
   },
@@ -220,14 +257,19 @@ const WangzhouCloud = {
     });
   },
 
-  // 自動同步雲端所有數據到記憶體中的 SITE_DATA
-  async syncToLocal() {
+  // 同步雲端數據到記憶體中的 SITE_DATA
+  // 前台：只抓「展出中」的手札與課程；投稿箱與社群稿庫屬於後台私有資料，絕不在前台讀取。
+  // 後台（已登入）：傳入 { includePrivate: true } 才會抓全部。
+  async syncToLocal({ includePrivate = false } = {}) {
     try {
+      const skip = Promise.resolve(null);
       const [articles, courses, submissions, posts] = await Promise.all([
-        this.getArticles().catch(err => { console.warn('Articles sync failed:', err); return null; }),
-        this.getCourses().catch(err => { console.warn('Courses sync failed:', err); return null; }),
-        this.getSubmissions().catch(err => { console.warn('Submissions sync failed:', err); return null; }),
-        this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; })
+        (includePrivate ? this.getArticles() : this.request('articles?select=*&status=eq.active&order=created_at.desc'))
+          .catch(err => { console.warn('Articles sync failed:', err); return null; }),
+        (includePrivate ? this.getCourses() : this.request('courses?select=*&status=eq.active&order=created_at.desc'))
+          .catch(err => { console.warn('Courses sync failed:', err); return null; }),
+        includePrivate ? this.getSubmissions().catch(err => { console.warn('Submissions sync failed:', err); return null; }) : skip,
+        includePrivate ? this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; }) : skip
       ]);
 
       let changed = false;
@@ -316,8 +358,10 @@ const WangzhouCloud = {
 // 全域掛載供所有頁面隨時呼叫
 if (typeof window !== 'undefined') {
   window.WangzhouCloud = WangzhouCloud;
-  // 頁面載入時自動嘗試在背景同步雲端最新數據
-  setTimeout(() => {
-    WangzhouCloud.syncToLocal().catch(console.warn);
-  }, 100);
+  // 前台頁面載入時自動在背景同步公開數據；後台改由登入後自行同步
+  if (!window.WANGZHOU_ADMIN_MODE) {
+    setTimeout(() => {
+      WangzhouCloud.syncToLocal().catch(console.warn);
+    }, 100);
+  }
 }

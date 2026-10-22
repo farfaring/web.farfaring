@@ -77,16 +77,38 @@ ALTER TABLE social_posts ENABLE ROW LEVEL SECURITY;
 -- 任何人可公開讀取活著的手札與課程 (展示廳)
 CREATE POLICY "Public read active articles" ON articles FOR SELECT USING (status = 'active');
 CREATE POLICY "Public read active courses" ON courses FOR SELECT USING (status = 'active');
-CREATE POLICY "Public read approved submissions" ON submissions FOR SELECT USING (status = 'approved');
 
--- 允許任何人投遞留言 (只寫入，不允許偷看他人未審核留言)
-CREATE POLICY "Public insert submissions" ON submissions FOR INSERT WITH CHECK (true);
+-- 允許任何人投遞留言 (只寫入、只能是待處理、格式與長度受限；不允許讀取任何投稿)
+CREATE POLICY "Public insert submissions" ON submissions FOR INSERT TO anon, authenticated
+  WITH CHECK (
+    status = 'unread'
+    AND id ~ '^sub-[0-9]{10,16}$'
+    AND type IN ('quote', 'story', 'course', 'error', 'letter')
+    AND char_length(content) BETWEEN 1 AND 5000
+    AND char_length(coalesce(title, '')) <= 200
+    AND char_length(coalesce(type_name, '')) <= 60
+    AND char_length(coalesce(author, '')) <= 60
+    AND char_length(coalesce(contact, '')) <= 200
+    AND char_length(coalesce(extra, '')) <= 2000
+  );
 
--- 後台主理人完全控制權限 (透過 anon key 於後台驗證後操作)
-CREATE POLICY "Admin full access articles" ON articles FOR ALL USING (true);
-CREATE POLICY "Admin full access courses" ON courses FOR ALL USING (true);
-CREATE POLICY "Admin full access submissions" ON submissions FOR ALL USING (true);
-CREATE POLICY "Admin full access social_posts" ON social_posts FOR ALL USING (true);
+-- 後台主理人完全控制權限 (必須以主理人信箱登入 Supabase Auth)
+CREATE OR REPLACE FUNCTION public.is_wangzhou_owner()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT coalesce(auth.jwt() ->> 'email', '') = 'farfaring.space@gmail.com'
+$$;
+
+CREATE POLICY "Owner full access articles" ON articles FOR ALL TO authenticated
+  USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
+CREATE POLICY "Owner full access courses" ON courses FOR ALL TO authenticated
+  USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
+CREATE POLICY "Owner full access submissions" ON submissions FOR ALL TO authenticated
+  USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
+CREATE POLICY "Owner full access social_posts" ON social_posts FOR ALL TO authenticated
+  USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
 
 -- =======================================================
 -- 匯入現有的精選示範資料（無縫繼承現有成果）

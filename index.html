@@ -435,18 +435,18 @@
 
       displayPlanks.forEach(p => {
         const plank = document.createElement('div');
-        plank.className = `wood-plank plank-${p.categoryKey}`;
+        plank.className = `wood-plank plank-${wzSafeId(p.categoryKey)}`;
         plank.onclick = function() { this.classList.toggle('open'); };
         plank.innerHTML = `
           <div>
             <div class="plank-top-meta">
-              <span class="plank-tag">${p.categoryName}</span>
+              <span class="plank-tag">${wzEscape(p.categoryName)}</span>
             </div>
-            <div class="plank-quote">${p.quote}</div>
-            ${p.author ? `<div class="plank-author" style="font-size:0.78rem; color:var(--ink-muted); margin-top:6px; margin-bottom:2px; text-align:right; font-weight:400; opacity:0.85; letter-spacing:0.02em;">── ${p.author}</div>` : ''}
+            <div class="plank-quote">${wzEscape(p.quote)}</div>
+            ${p.author ? `<div class="plank-author" style="font-size:0.78rem; color:var(--ink-muted); margin-top:6px; margin-bottom:2px; text-align:right; font-weight:400; opacity:0.85; letter-spacing:0.02em;">── ${wzEscape(p.author)}</div>` : ''}
           </div>
           <div class="plank-expanded-text">
-            ${p.expanded}
+            ${wzEscape(p.expanded)}
           </div>
         `;
         track.appendChild(plank);
@@ -642,11 +642,7 @@
         status: "unread"
       };
 
-      if (!SITE_DATA.submissions) SITE_DATA.submissions = [];
-      SITE_DATA.submissions.unshift(newSub);
-
       try {
-        localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
         localStorage.setItem('WANGZHOU_LAST_QUOTE_SUBMIT', String(nowMs));
         localStorage.setItem('WANGZHOU_LAST_QUOTE_TEXT', txt);
       } catch (err) {}

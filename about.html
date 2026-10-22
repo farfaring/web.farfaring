@@ -381,11 +381,7 @@
         status: "unread"
       };
 
-      if (!SITE_DATA.submissions) SITE_DATA.submissions = [];
-      SITE_DATA.submissions.unshift(newSub);
-
       try {
-        localStorage.setItem("WANGZHOU_SITE_DATA_OVERRIDE", JSON.stringify(SITE_DATA));
         localStorage.setItem('WANGZHOU_LAST_ABOUT_SUBMIT', String(nowMs));
       } catch (err) {}
 

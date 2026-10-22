@@ -231,21 +231,15 @@
         </div>
       </section>
 
-      <!-- 第三大區塊：【聯絡小棧長・專屬私密信箱】 -->
+      <!-- 第三大區塊：【聯絡小棧長】 -->
       <section class="about-card" id="section-contact">
         <h2 class="about-card-title">
           <span>✉️</span>
-          <span>聯絡小棧長・專屬私密信箱</span>
+          <span>聯絡小棧長</span>
         </h2>
-
-        <!-- 明確導流與去處說明（徹底劃分公開投稿與私密信箱） -->
-        <div class="routing-notice-box">
-          <strong style="color:var(--amber-pier); font-size:0.92rem; display:block; margin-bottom:6px;">📌 投稿與回報導流說明：</strong>
-          ・若您想<strong>推薦好課程或回報失效連結</strong> ➔ 請前往 <a href="./resources.html" style="color:var(--indigo-water); font-weight:500;">[木棧道・課程活動]</a>（直接送進後台審核上架）<br>
-          ・若您想留下<strong>漂浮棧板短句</strong> ➔ 請前往 <a href="./index.html" style="color:var(--indigo-water); font-weight:500;">[水岸首頁]</a> 點擊「棧道留言 ✍️」<br>
-          ・若您想<strong>分享個人職涯或生活故事</strong> ➔ 請前往 <a href="./articles.html" style="color:var(--indigo-water); font-weight:500;">[水岸手札]</a> 點擊「分享你的故事」<br><br>
-          🔒 <strong>本信箱專屬用途</strong>：此處為與小棧長的<strong>一對一私密聯絡通道</strong>（諮詢預約、演講合作或個人悄悄話）。信件直達小棧長個人 Email，<strong>絕不會</strong>公開刊登在網站任何角落，請安心填寫。
-        </div>
+        <p class="about-text" style="margin-bottom:20px;">
+          如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。
+        </p>
 
         <form onsubmit="handleAboutSubmit(event)">
           <!-- 蜜罐防護（防機器人自動填寫） -->
@@ -255,9 +249,8 @@
             <label>信件主旨類別：</label>
             <select id="aboutLetterCategory" style="padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--hairline); width:100%; font-family:inherit; font-size:0.9rem;">
               <option value="consult">🛶 預約一對一公益職涯諮詢</option>
-              <option value="collab">🤝 演講、專欄或跨界合作交流</option>
-              <option value="private">💌 給小棧長的悄悄話 / 閱讀回饋</option>
-              <option value="feedback">💡 其他個人建議與交流</option>
+              <option value="feedback">💬 讀者回饋與交流</option>
+              <option value="other">💡 其他</option>
             </select>
           </div>
 
@@ -267,17 +260,17 @@
               <input type="text" id="aboutFeedbackAuthor" placeholder="你的稱呼或筆名" required>
             </div>
             <div class="form-group">
-              <label>聯絡信箱（必填，供小棧長親自回覆）：</label>
+              <label>聯絡信箱（必填，供回覆）：</label>
               <input type="email" id="aboutFeedbackEmail" placeholder="yourname@gmail.com" required>
             </div>
           </div>
 
           <div class="form-group">
-            <label id="aboutTextareaLabel">想聊聊的事或諮詢需求：</label>
-            <textarea id="aboutFeedbackText" rows="5" placeholder="若是預約諮詢，請簡要說明您目前遇到的職涯瓶頸或想梳理的困惑；若是其他交流，歡迎在此暢所欲言..." required></textarea>
+            <label id="aboutTextareaLabel">信件內容：</label>
+            <textarea id="aboutFeedbackText" rows="5" placeholder="若是預約諮詢，請簡要說明您目前遇到的職涯瓶頸或想梳理的困惑；若是其他交流，歡迎在此留言..." required></textarea>
           </div>
 
-          <button type="submit" class="btn-submit-action" style="margin-top:6px;">寄出私密信件給小棧長 ✉️</button>
+          <button type="submit" class="btn-submit-action" style="margin-top:6px;">送出信件 ✉️</button>
         </form>
       </section>
 
@@ -294,13 +287,17 @@
 
     <!-- 社交帳號真實可點擊按鈕 -->
     <div class="footer-social-bar">
-      <a href="https://www.instagram.com/farfaring" target="_blank" rel="noopener" class="social-badge-btn">
+      <a href="https://www.instagram.com/farfaring/" target="_blank" rel="noopener" class="social-badge-btn">
         <span>📸 Instagram</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
       </a>
       <a href="https://www.threads.net/@farfaring" target="_blank" rel="noopener" class="social-badge-btn">
         <span>🧵 Threads</span>
         <span style="color:var(--amber-pier); font-weight:500;">@farfaring</span>
+      </a>
+      <a href="mailto:farfaring.space@gmail.com" class="social-badge-btn">
+        <span>✉️ Email</span>
+        <span style="color:var(--amber-pier); font-weight:500;">farfaring.space@gmail.com</span>
       </a>
     </div>
 
@@ -347,7 +344,7 @@
 
       const catSelect = document.getElementById('aboutLetterCategory');
       const catVal = catSelect ? catSelect.value : 'feedback';
-      const catText = catSelect ? catSelect.options[catSelect.selectedIndex].text : '私密信件';
+      const catText = catSelect ? catSelect.options[catSelect.selectedIndex].text : '來信';
 
       const content = document.getElementById('aboutFeedbackText').value.trim();
       const author = document.getElementById('aboutFeedbackAuthor').value.trim() || '水岸訪客';
@@ -374,7 +371,7 @@
       const newSub = {
         id: "sub-" + Date.now(),
         type: "letter",
-        typeName: `私密信件 ． ${catText.replace(/^[^\s]+\s*/, '')}`,
+        typeName: `來信 ． ${catText.replace(/^[^\s]+\s*/, '')}`,
         title: `【${catText}】${content.slice(0, 20)}${content.length > 20 ? '...' : ''}`,
         author: author,
         contact: email || '未留信箱',
@@ -392,9 +389,14 @@
         localStorage.setItem('WANGZHOU_LAST_ABOUT_SUBMIT', String(nowMs));
       } catch (err) {}
 
-      alert(`謝謝你（${author}）的真摯來信！小棧長已收到，此為專屬私密信件，絕不公開刊登，小棧長會透過 Email（${email}）親自與你聯繫。`);
+      if (window.WangzhouCloud) {
+        window.WangzhouCloud.submitGuestFeedback(newSub).catch(console.warn);
+      }
+
+      alert(`謝謝你（${author}）的來信！小棧長已收到，會透過 Email（${email}）與你聯繫。`);
       document.getElementById('aboutFeedbackText').value = '';
       document.getElementById('aboutFeedbackEmail').value = '';
+      document.getElementById('aboutFeedbackAuthor').value = '';
     }
   </script>
 </body>

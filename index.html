@@ -264,7 +264,7 @@
           <span>棧道留言</span>
           <span>✍️</span>
         </button>
-        <button class="btn-open-submit" style="opacity:0.85;" onclick="renderBoardwalkPlanks()" title="讓湖面水流流動，換一批不同的停靠短句">
+        <button class="btn-open-submit" style="opacity:0.85;" onclick="refreshBoardwalkPlanks()" title="讓湖面水流流動，換一批不同的停靠短句">
           <span>換一批小語</span>
           <span>🌊</span>
         </button>
@@ -451,6 +451,25 @@
         `;
         track.appendChild(plank);
       });
+    }
+
+    let isPlankSwitching = false;
+
+    // 平滑水流波浪換批過渡（先沉入微波 ➔ 更新內容 ➔ 再緩緩浮起）
+    function refreshBoardwalkPlanks() {
+      const track = document.querySelector('.floating-stream-track');
+      if (!track || isPlankSwitching) return;
+      isPlankSwitching = true;
+
+      track.classList.add('switching');
+
+      setTimeout(() => {
+        renderBoardwalkPlanks();
+        track.classList.remove('switching');
+        setTimeout(() => {
+          isPlankSwitching = false;
+        }, 320);
+      }, 260);
     }
 
     renderBoardwalkPlanks();

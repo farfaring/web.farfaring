@@ -286,6 +286,39 @@ const WangzhouCloud = {
     });
   },
 
+  // Buffer 排程轉送站（Supabase Edge Function：buffer-relay）；只有主理人登入後能用
+  async bufferRelay(payload) {
+    const token = typeof this.getAccessToken === 'function' ? await this.getAccessToken() : null;
+    if (!token) throw new Error('請先登入後台');
+    const res = await fetch(`${this.config.url}/functions/v1/buffer-relay`, {
+      method: 'POST',
+      headers: { apikey: this.config.key, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.ok) {
+      throw new Error((data && data.error) || `轉送站回應狀態 ${res.status}`);
+    }
+    return data;
+  },
+
+  // 上傳 IG 圖卡到 social-cards 圖片空間，回傳公開網址（Buffer 與 Instagram 由此網址取圖）
+  async uploadSocialCard(blob, fileName) {
+    const token = typeof this.getAccessToken === 'function' ? await this.getAccessToken() : null;
+    if (!token) throw new Error('請先登入後台');
+    const path = `${wzSafeId(fileName)}.jpg`;
+    const res = await fetch(`${this.config.url}/storage/v1/object/social-cards/${path}`, {
+      method: 'POST',
+      headers: { apikey: this.config.key, Authorization: `Bearer ${token}`, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+      body: blob
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`圖卡上傳失敗 (${res.status}): ${err}`);
+    }
+    return `${this.config.url}/storage/v1/object/public/social-cards/${path}`;
+  },
+
   // 5. 輕量流量統計與在線渡客 (Analytics & Realtime Presence)
   // 零個資、不記 IP、無 Cookie。僅記錄頁面、來源與 session，並回傳即時渡客數。
   getOrCreateSessionId() {

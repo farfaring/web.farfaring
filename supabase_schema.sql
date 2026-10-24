@@ -1,6 +1,6 @@
 -- =======================================================
 -- 《望舟小棧 farfaring》Supabase 資料庫完整結構
--- 用途：從零建立整個資料庫（資料表、權限規則、流量統計、預設內容）
+-- 用途：從零建立整個資料庫（資料表、權限規則、圖卡存放空間、流量統計、預設內容）
 -- 執行方式：Supabase 控制台 ➔ SQL Editor ➔ 貼上整份 ➔ Run
 -- 可重複執行：已存在的資料表與資料不會被覆蓋或刪除
 -- =======================================================
@@ -97,6 +97,14 @@ CREATE TABLE IF NOT EXISTS public.social_posts (
   time_slot_label TEXT DEFAULT '🌙 晚間靠岸 (21:00)',
   status TEXT DEFAULT 'scheduled',  -- draft, scheduled, published, retired
   metrics_note TEXT,
+  review_status TEXT DEFAULT 'pending',  -- 審稿：pending 待審, approved 可以發, revise 要修改, rejected 不要發
+  review_note TEXT,                      -- 主理人的修改意見
+  audit_note TEXT,                       -- Claude 預先稽核與風險提示
+  source_url TEXT,                       -- 免費開放全文來源
+  image_url TEXT,                        -- IG 圖卡（social-cards 圖片空間的公開網址）
+  scheduled_at TIMESTAMPTZ,              -- 確切發文時間
+  buffer_post_ids JSONB DEFAULT '{}'::jsonb,  -- Buffer 回傳的貼文編號 { "threads": "...", "instagram": "..." }
+  buffer_error TEXT,                     -- 最近一次送進 Buffer 失敗的原因
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -195,7 +203,30 @@ CREATE POLICY "Owner read active_sessions" ON public.active_sessions FOR SELECT 
 
 
 -- =======================================================
--- 4. 流量統計函數
+-- 4. 社群圖卡存放空間（social-cards）
+--    公開讀取：Buffer 與 Instagram 需要能直接打開圖片網址
+--    只有主理人能上傳、覆蓋、刪除；只收 JPEG、單檔 8 MB 以內
+-- =======================================================
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('social-cards', 'social-cards', true, 8388608, ARRAY['image/jpeg'])
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Owner upload social cards" ON storage.objects;
+CREATE POLICY "Owner upload social cards" ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'social-cards' AND public.is_wangzhou_owner());
+
+DROP POLICY IF EXISTS "Owner update social cards" ON storage.objects;
+CREATE POLICY "Owner update social cards" ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'social-cards' AND public.is_wangzhou_owner())
+  WITH CHECK (bucket_id = 'social-cards' AND public.is_wangzhou_owner());
+
+DROP POLICY IF EXISTS "Owner delete social cards" ON storage.objects;
+CREATE POLICY "Owner delete social cards" ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'social-cards' AND public.is_wangzhou_owner());
+
+
+-- =======================================================
+-- 5. 流量統計函數
 -- =======================================================
 
 -- 訪客造訪打卡：記錄造訪並回傳「在線人數」與「今日人數」
@@ -408,7 +439,7 @@ GRANT EXECUTE ON FUNCTION public.record_visit(text, text, text, text) TO anon, a
 
 
 -- =======================================================
--- 5. 預設內容（已存在則不覆蓋）
+-- 6. 預設內容（已存在則不覆蓋）
 -- =======================================================
 INSERT INTO public.planks (id, category_key, category_name, quote, expanded, author, sort_order) VALUES
 ('plank-01', 'amber', '🪵 陪伴停靠小語', '「累了就先靠岸，棧板一直都在」', '並不是每個季節都要用力划槳。先把呼吸調順了、把身心照顧好了，木棧板永遠在這裡為你留一個停靠處。', '小棧長', 1),

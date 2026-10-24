@@ -778,7 +778,7 @@
       <div class="panel-header" style="margin-bottom:12px; padding-bottom:12px;">
         <h2 class="panel-title" style="margin:0;">📱 社群貼文與排程管理</h2>
         <div style="display:flex; gap:8px; align-items:center;">
-          <button class="btn-table-sm" onclick="openBufferConfigModal()" style="background:#F0FFF4; border-color:#C6F6D5; color:#22543D; font-weight:600;" title="檢視 Buffer 串接狀態與說明">✅ Buffer 狀態：已就緒</button>
+          <button class="btn-table-sm" onclick="openBufferConfigModal()" style="background:#F0FFF4; border-color:#C6F6D5; color:#22543D; font-weight:600;" title="測試 Buffer 自動排程連線">🔌 Buffer 連線</button>
           <button class="btn-create-item" onclick="openSocialPostModal()">➕ 起草新社群貼文</button>
         </div>
       </div>
@@ -1235,44 +1235,31 @@
         <span style="color:#2C7A7B;">⚡</span> 社群排程串接狀態中心
       </h3>
 
-      <!-- 綠色大通知：直接告訴使用者已經串好，不用再填任何東西 -->
-      <div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:14px 16px; margin-bottom:14px;">
-        <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#22543D; font-size:0.95rem; margin-bottom:6px;">
-          <span>✅ 恭喜！社群一鍵串接已就緒（無須任何額外設定）</span>
-        </div>
-        <div style="font-size:0.84rem; color:#276749; line-height:1.65;">
-          您在 Buffer 上已經成功綁定 Threads 與 Instagram 帳號。小棧後台已全面啟用<strong>「瀏覽器一鍵喚醒技術」</strong>，您<strong>不需要填寫任何 API Key、密碼或 Webhook</strong>，隨時可以直接預約發布！
-        </div>
+      <!-- Buffer API 自動排程：透過 Supabase 轉送站（金鑰只存在 Supabase 保險箱） -->
+      <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:14px; margin-bottom:12px; font-size:0.85rem; line-height:1.7; color:#2D3748;">
+        <strong style="color:#2B4C65;">🔌 Buffer 自動排程連線</strong><br>
+        審稿通過、排程確認後，貼文會透過 Supabase 轉送站直接排進 Buffer，到時間由 Buffer 自動發到 Threads 與 Instagram。
+        Buffer 金鑰只存在 Supabase 保險箱，不會出現在這個頁面。
+        <div id="bufferApiTestResult" style="margin-top:10px; font-size:0.82rem;"></div>
       </div>
 
-      <!-- 運作步驟說明 -->
-      <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:14px; margin-bottom:16px; font-size:0.85rem; line-height:1.7; color:#2D3748;">
-        <strong style="color:#2B4C65;">🎯 平常如何將貼文送至社群排程？</strong><br>
-        1. <strong>起草與微調</strong>：在小棧後台撰寫好貼文（可分別微調 Threads 短文與 IG 輪播版）。<br>
-        2. <strong>一鍵前往排程</strong>：點擊「<strong>⚡ 儲存並前往 Buffer 排程</strong>」或列表上的「<strong>⚡ Buffer 🧵 / 📸</strong>」。<br>
-        3. <strong>自動代入發布</strong>：系統會自動帶入專屬文案並開啟 Buffer 視窗，點一下「<strong>Add to Queue</strong>」，定時發射就完成了！
-      </div>
-
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <button type="button" class="btn-submit-action" style="margin:0; background:#2C7A7B;" onclick="testBufferConnection()">
-          🧪 立即測試喚醒 Buffer 作曲器
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+        <button type="button" id="btnTestBufferApi" class="btn-submit-action" style="margin:0; background:#2C7A7B;" onclick="testBufferApiConnection()">
+          🔌 測試 Buffer 連線
         </button>
         <button type="button" class="btn-table-sm" onclick="closeModal('bufferModal')" style="padding:8px 16px;">
-          我知道了（關閉）
+          關閉
         </button>
       </div>
 
-      <!-- 進階開發者 Webhook（折疊收起，不干擾一般經營） -->
+      <!-- 備用：手動開啟 Buffer 發文視窗（自動排程出狀況時使用） -->
       <details style="border-top:1px dashed #E2E8F0; padding-top:10px; margin-top:8px; font-size:0.78rem; color:#718096;">
-        <summary style="cursor:pointer; color:#A0AEC0; font-weight:600; outline:none;">⚙️ 進階開發者設定（非必要，一般經營請直接忽略）</summary>
-        <div style="margin-top:10px; background:#FAFAFA; padding:12px; border-radius:6px; border:1px solid #EDF2F7;">
-          <p style="margin:0 0 8px 0; line-height:1.5;">
-            若您未來有架設 Make / Zapier 進行背景無介面自動推送，才需要填寫 Webhook。一般情況下<strong>保持空白即可正常使用一鍵排程</strong>。
-          </p>
-          <form onsubmit="handleSaveBufferConfig(event)" style="display:flex; gap:8px;">
-            <input type="url" id="bufferWebhookInput" placeholder="https://hook.us1.make.com/... (留空即可)" style="font-size:0.8rem; padding:6px 10px; flex:1;">
-            <button type="submit" class="btn-table-sm" style="white-space:nowrap;">儲存</button>
-          </form>
+        <summary style="cursor:pointer; color:#A0AEC0; font-weight:600; outline:none;">🧰 備用方式：手動開啟 Buffer 發文視窗</summary>
+        <div style="margin-top:10px; background:#FAFAFA; padding:12px; border-radius:6px; border:1px solid #EDF2F7; line-height:1.6;">
+          列表上的「⚡ Buffer 🧵 / 📸」按鈕會開啟 Buffer 發文視窗並帶入文案，帳號、時間與圖片需在 Buffer 視窗中手動設定。
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-table-sm" onclick="testBufferConnection()">開啟 Buffer 發文視窗試試</button>
+          </div>
         </div>
       </details>
     </div>
@@ -3337,21 +3324,31 @@ ${sourceText}`;
 
     // ⚡ Buffer 社群排程串接
     function openBufferConfigModal() {
-      document.getElementById('bufferWebhookInput').value = localStorage.getItem('WANGZHOU_BUFFER_WEBHOOK') || '';
+      document.getElementById('bufferApiTestResult').textContent = '';
       document.getElementById('bufferModal').classList.add('open');
     }
 
-    function handleSaveBufferConfig(e) {
-      e.preventDefault();
-      const webhook = document.getElementById('bufferWebhookInput').value.trim();
-      if (webhook) {
-        localStorage.setItem('WANGZHOU_BUFFER_WEBHOOK', webhook);
-        alert('✅ Buffer Webhook 自動推送網址已成功儲存！');
-      } else {
-        localStorage.removeItem('WANGZHOU_BUFFER_WEBHOOK');
-        alert('✅ 已設定為【Buffer 一鍵作曲器直通模式】（免 API Key，最穩定直覺）！');
+    // 透過轉送站列出 Buffer 頻道，確認金鑰、權限與 Threads / IG 連結都正常
+    async function testBufferApiConnection() {
+      const box = document.getElementById('bufferApiTestResult');
+      const btn = document.getElementById('btnTestBufferApi');
+      btn.disabled = true;
+      box.style.color = '#4A5568';
+      box.textContent = '⏳ 連線中…';
+      try {
+        const { channels } = await window.WangzhouCloud.bufferRelay({ action: 'channels' });
+        const services = channels.map(c => String(c.service || '').toLowerCase());
+        const hasThreads = services.some(s => s.includes('threads'));
+        const hasIg = services.includes('instagram');
+        const list = channels.map(c => `・${escapeHtml(c.name)}（${escapeHtml(c.service)}）`).join('<br>');
+        box.style.color = (hasThreads && hasIg) ? '#22543D' : '#C05621';
+        box.innerHTML = `${hasThreads && hasIg ? '✅ 連線成功，Threads 與 Instagram 都已就緒' : '⚠️ 連線成功，但缺少 ' + [!hasThreads && 'Threads', !hasIg && 'Instagram'].filter(Boolean).join('、') + ' 頻道'}<br>${list || '（Buffer 上沒有任何頻道）'}`;
+      } catch (err) {
+        box.style.color = '#C53030';
+        box.textContent = '❌ ' + err.message;
+      } finally {
+        btn.disabled = false;
       }
-      closeModal('bufferModal');
     }
 
     function testBufferConnection() {
@@ -3369,31 +3366,6 @@ ${sourceText}`;
       }
 
       const platLabel = platform === 'threads' ? 'Threads' : 'Instagram';
-      const webhook = localStorage.getItem('WANGZHOU_BUFFER_WEBHOOK');
-
-      if (webhook) {
-        try {
-          await fetch(webhook, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              title: p.title,
-              platform: platform,
-              content: postText,
-              mediaNotes: p.mediaNotes,
-              scheduledDate: p.scheduledDate,
-              scheduledTimeSlot: p.scheduledTimeSlot
-            })
-          });
-          alert(`🚀 已成功透過 Webhook 將【${p.title}】(${platLabel} 版) 自動推送至 Buffer 排程佇列！`);
-          p.status = 'scheduled';
-          saveDataToLocalStorage();
-          refreshAdminView();
-          return;
-        } catch (err) {
-          console.warn('Buffer Webhook 推送失敗，切換為一鍵作曲器模式：', err);
-        }
-      }
 
       try {
         await navigator.clipboard.writeText(postText);

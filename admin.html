@@ -3402,10 +3402,15 @@ ${sourceText}`;
       const bufferUrl = `https://buffer.com/add?text=${encodeURIComponent(postText)}`;
       const win = window.open(bufferUrl, '_blank');
       if (win) {
-        p.status = 'scheduled';
-        saveDataToLocalStorage();
-        refreshAdminView();
-        alert(`⚡ 已為您喚醒 Buffer 排程作曲器！\n\n1. 【${platLabel} 專屬微調文案】已自動帶入 Buffer（剪貼簿亦已備份）。\n2. 請在彈出的 Buffer 視窗中選取對應帳號，點擊「Add to Queue」預約排程！\n\n✅ 系統已自動將此貼文標記為「🟡 預約排程中」。`);
+        if (confirm(`⚡ 已為您開啟 Buffer 發布視窗並自動填入【${platLabel} 專屬文案】！\n\n請在 Buffer 視窗中選取帳號並點擊「Add to Queue」完成預約。\n\n請問您剛才是否已在 Buffer 中順利完成排程？\n（點擊「確定」標記為 🟡 預約排程中；點擊「取消」則維持草稿以便稍後重試）`)) {
+          p.status = 'scheduled';
+          saveDataToLocalStorage();
+          refreshAdminView();
+          if (window.WangzhouCloud) {
+            window.WangzhouCloud.upsertSocialPost(p).catch(console.warn);
+          }
+          showToast(`✅ 貼文【${p.title}】已標記為預約排程中！`);
+        }
       } else {
         alert('請允許瀏覽器彈出視窗，以自動打開 Buffer 排程作曲器。');
       }

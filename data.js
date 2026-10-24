@@ -257,6 +257,112 @@ const WangzhouCloud = {
     });
   },
 
+  // 5. 輕量流量統計與在線渡客 (Analytics & Realtime Presence)
+  // 零個資、不記 IP、無 Cookie。僅記錄頁面、來源與 session，並回傳即時渡客數。
+  getOrCreateSessionId() {
+    if (typeof window === 'undefined') return 'server';
+    try {
+      let sid = sessionStorage.getItem('wz_sid');
+      if (!sid) {
+        sid = 'wz-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8);
+        sessionStorage.setItem('wz_sid', sid);
+      }
+      return sid;
+    } catch (e) {
+      return 'wz-' + Date.now();
+    }
+  },
+
+  detectReferrer() {
+    if (typeof window === 'undefined') return '直接造訪';
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const fromParam = params.get('from') || params.get('ref') || params.get('utm_source');
+      if (fromParam) {
+        if (fromParam.toLowerCase().includes('bio')) return 'Threads (個人首頁)';
+        return fromParam;
+      }
+      const ref = document.referrer || '';
+      if (!ref) return '直接造訪';
+      const u = new URL(ref);
+      const host = u.hostname.toLowerCase();
+      if (host.includes('threads.net')) return 'Threads';
+      if (host.includes('instagram.com')) return 'Instagram';
+      if (host.includes('google.')) return 'Google 搜尋';
+      if (host.includes('facebook.com')) return 'Facebook';
+      if (host.includes('t.co') || host.includes('twitter.com') || host.includes('x.com')) return 'X (Twitter)';
+      if (host === window.location.hostname) return '站內切換';
+      return host;
+    } catch (e) {
+      return '其他來源';
+    }
+  },
+
+  async recordVisit(page, title) {
+    const sid = this.getOrCreateSessionId();
+    const ref = this.detectReferrer();
+    const payload = {
+      p_page: page || (typeof window !== 'undefined' ? window.location.pathname.split('/').pop() || 'index.html' : 'index.html'),
+      p_title: title || (typeof window !== 'undefined' ? document.title : '望舟小棧'),
+      p_referrer: ref,
+      p_session: sid
+    };
+    return await this.request('rpc/record_visit', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async getAdminAnalytics() {
+    return await this.request('rpc/get_admin_analytics', {
+      method: 'POST'
+    });
+  },
+
+  // 渡客意境文案生成器（配合當下真實時鐘與在線人數）
+  getDockPresenceCopy(hour, onlineCount, todayCount) {
+    let mainText = '';
+    const isSingle = (onlineCount === undefined || onlineCount === null) ? true : (onlineCount <= 1);
+
+    if (hour >= 5 && hour < 11) {
+      mainText = isSingle ? '晨光漸透，一舟獨泊' : '晨光漸透，二三舟相隨';
+    } else if (hour >= 11 && hour < 17) {
+      mainText = isSingle ? '日影漫漫，且泊於此' : '日正微瀾，水岸共泊';
+    } else if (hour >= 17 && hour < 21) {
+      mainText = isSingle ? '暮色收攏，暫繫小纜' : '暮色如織，數舟同歇';
+    } else {
+      mainText = isSingle ? '夜水無聲，一燈獨照' : '夜深水闊，舟火相望';
+    }
+
+    const count = (todayCount && todayCount > 0) ? todayCount : 1;
+    const subText = `（今日已有 ${count} 名渡客曾在此停佇片刻）`;
+    return { mainText, subText };
+  },
+
+  // 前台自動掛載並更新水岸狀態列
+  async initDockPresence() {
+    if (typeof window === 'undefined') return;
+    const el = document.getElementById('wangzhouDockPresence');
+    if (!el) return;
+
+    // 先依本地時鐘即時渲染初步畫面（秒開無延遲）
+    const nowHour = new Date().getHours();
+    const initCopy = this.getDockPresenceCopy(nowHour, 1, 1);
+    el.innerHTML = `<span class="presence-main"><span class="presence-dot"></span>${initCopy.mainText}</span> <span class="presence-sub">${initCopy.subText}</span>`;
+
+    // 呼叫雲端 RPC 記錄造訪並同步真實人數
+    try {
+      const stats = await this.recordVisit();
+      if (stats && typeof stats.today_count !== 'undefined') {
+        const liveCopy = this.getDockPresenceCopy(nowHour, stats.online_count, stats.today_count);
+        el.innerHTML = `<span class="presence-main"><span class="presence-dot"></span>${liveCopy.mainText}</span> <span class="presence-sub">${liveCopy.subText}</span>`;
+      }
+    } catch (err) {
+      // 若後台 SQL 尚未部署，靜默維持本地時間意境，不拋錯
+      console.warn('水岸在線狀態同步提示：', err.message || err);
+    }
+  },
+
   // 同步雲端數據到記憶體中的 SITE_DATA
   // 前台：只抓「展出中」的手札與課程；投稿箱與社群稿庫屬於後台私有資料，絕不在前台讀取。
   // 後台（已登入）：傳入 { includePrivate: true } 才會抓全部。
@@ -362,6 +468,7 @@ if (typeof window !== 'undefined') {
   if (!window.WANGZHOU_ADMIN_MODE) {
     setTimeout(() => {
       WangzhouCloud.syncToLocal().catch(console.warn);
+      WangzhouCloud.initDockPresence().catch(console.warn);
     }, 100);
   }
 }

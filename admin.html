@@ -605,6 +605,81 @@
         </div>
       </div>
 
+      <!-- 🌊 水岸即時人潮與渡客足跡洞察（流量與社群來源分析） -->
+      <div class="analytics-dashboard-box" style="background:#FFF; border:1px solid #E2E8F0; border-radius:12px; padding:22px; margin-bottom:24px; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:18px;">
+          <div>
+            <h3 style="margin:0 0 4px 0; font-size:1.1rem; color:#1A202C; display:flex; align-items:center; gap:8px;">
+              <span>🌊</span>
+              <span>水岸渡客人潮與流量洞察</span>
+              <span style="font-size:0.75rem; background:#EBF8FF; color:#2B6CB0; padding:2px 8px; border-radius:99px; font-weight:600;">即時在線 ＆ 零個資追蹤</span>
+            </h3>
+            <p style="margin:0; font-size:0.84rem; color:#718096;">無聲記錄渡客停佇足跡，不收集 IP 與 Cookie，全方位掌握社群導流成效。</p>
+          </div>
+          <button class="btn-table-sm" onclick="loadAdminAnalytics()" title="重新計算最新流量數據">🔄 重新整理流量</button>
+        </div>
+
+        <!-- 四大流量指標卡 -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;">
+          <div style="background:#F7FAFC; border:1px solid #EDF2F7; border-radius:8px; padding:14px; text-align:center;">
+            <div style="font-size:0.8rem; color:#718096; margin-bottom:4px;">🛶 當前在線渡客</div>
+            <div id="metricOnlineNow" style="font-size:1.6rem; font-weight:700; color:#B87D4B;">0</div>
+            <div style="font-size:0.72rem; color:#A0AEC0;">此時此刻在岸邊</div>
+          </div>
+          <div style="background:#F7FAFC; border:1px solid #EDF2F7; border-radius:8px; padding:14px; text-align:center;">
+            <div style="font-size:0.8rem; color:#718096; margin-bottom:4px;">🌅 今日停佇人數</div>
+            <div id="metricTodayVisitors" style="font-size:1.6rem; font-weight:700; color:#2B6CB0;">0</div>
+            <div style="font-size:0.72rem; color:#A0AEC0;">今日獨立訪客</div>
+          </div>
+          <div style="background:#F7FAFC; border:1px solid #EDF2F7; border-radius:8px; padding:14px; text-align:center;">
+            <div style="font-size:0.8rem; color:#718096; margin-bottom:4px;">📈 近 7 日累積造訪</div>
+            <div id="metricWeekVisitors" style="font-size:1.6rem; font-weight:700; color:#2F855A;">0</div>
+            <div style="font-size:0.72rem; color:#A0AEC0;">近一週停靠總次數</div>
+          </div>
+          <div style="background:#F7FAFC; border:1px solid #EDF2F7; border-radius:8px; padding:14px; text-align:center;">
+            <div style="font-size:0.8rem; color:#718096; margin-bottom:4px;">📜 歷史總瀏覽數</div>
+            <div id="metricTotalViews" style="font-size:1.6rem; font-weight:700; color:#4A5568;">0</div>
+            <div style="font-size:0.72rem; color:#A0AEC0;">全站累計點閱</div>
+          </div>
+        </div>
+
+        <!-- 兩欄分析：左欄 7 日人潮長條圖，右欄 水流社群來源 -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:18px; margin-bottom:20px;">
+          <!-- 7 日人潮圖表 -->
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:16px;">
+            <h4 style="margin:0 0 12px 0; font-size:0.9rem; color:#2D3748; display:flex; justify-content:space-between;">
+              <span>📊 近 7 日每日渡客人潮走勢</span>
+              <span style="font-size:0.75rem; color:#A0AEC0; font-weight:normal;">依日期排列</span>
+            </h4>
+            <div id="trendChartContainer" style="display:flex; align-items:flex-end; justify-content:space-between; height:120px; gap:8px; padding-top:10px;">
+              <div style="color:#A0AEC0; font-size:0.82rem; margin:auto;">載入中...</div>
+            </div>
+          </div>
+
+          <!-- 流量來源分佈 -->
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:16px;">
+            <h4 style="margin:0 0 12px 0; font-size:0.9rem; color:#2D3748; display:flex; justify-content:space-between;">
+              <span>🧭 渡客從何而來？（社群與來源）</span>
+              <span style="font-size:0.75rem; color:#A0AEC0; font-weight:normal;">近 30 日分佈</span>
+            </h4>
+            <div id="sourceListContainer" style="display:flex; flex-direction:column; gap:8px;">
+              <div style="color:#A0AEC0; font-size:0.82rem; margin:auto;">載入中...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最近 10 筆渡客動態足跡串流 -->
+        <div style="border-top:1px solid #EDF2F7; padding-top:16px;">
+          <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:#2D3748; display:flex; align-items:center; gap:6px;">
+            <span>👣 即時旅人足跡串流</span>
+            <span style="font-size:0.75rem; color:#718096; font-weight:normal;">（顯示最近 10 筆造訪，每 5 分鐘去重防刷）</span>
+          </h4>
+          <div id="recentFootprintsList" style="max-height:180px; overflow-y:auto; font-size:0.82rem; color:#4A5568; display:flex; flex-direction:column; gap:6px;">
+            <div style="color:#A0AEC0; text-align:center; padding:12px;">正在連線雲端查詢足跡...</div>
+          </div>
+        </div>
+      </div>
+
       <!-- 現代化 AI 採集與審稿流水線工作卡 -->
       <div style="background:#FFFDF9; border:1px solid rgba(184, 125, 75, 0.35); border-radius:12px; padding:22px; font-size:0.92rem; line-height:1.8; margin-bottom:24px;">
         <div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -1865,6 +1940,7 @@
       const ok = await window.WangzhouCloud.syncToLocal({ includePrivate: true });
       if (ok) {
         refreshAdminView();
+        loadAdminAnalytics();
         showToast('✨ 雲端資料庫已同步完成！');
       } else {
         showToast('⚠️ 雲端暫無法連線，已使用快照數據');
@@ -3506,6 +3582,102 @@ ${sourceText}`;
       const ok = await window.WangzhouCloud.syncToLocal({ includePrivate: true });
       refreshAdminView();
       updateCloudStatusBadge(ok);
+      loadAdminAnalytics();
+    }
+
+    async function loadAdminAnalytics() {
+      const onlineEl = document.getElementById('metricOnlineNow');
+      const todayEl = document.getElementById('metricTodayVisitors');
+      const weekEl = document.getElementById('metricWeekVisitors');
+      const totalEl = document.getElementById('metricTotalViews');
+      const trendEl = document.getElementById('trendChartContainer');
+      const sourceEl = document.getElementById('sourceListContainer');
+      const recentEl = document.getElementById('recentFootprintsList');
+
+      if (!window.WangzhouCloud || !window.WangzhouCloud.getAdminAnalytics) return;
+
+      try {
+        const data = await window.WangzhouCloud.getAdminAnalytics();
+        if (!data) return;
+
+        if (onlineEl) onlineEl.innerText = data.online_count || 0;
+        if (todayEl) todayEl.innerText = data.today_count || 0;
+        if (totalEl) totalEl.innerText = data.total_views || 0;
+
+        // 計算週人潮
+        let weekSum = 0;
+        if (Array.isArray(data.trend)) {
+          weekSum = data.trend.reduce((acc, t) => acc + (t.visitors || 0), 0);
+        }
+        if (weekEl) weekEl.innerText = weekSum;
+
+        // 渲染 7 日長條圖
+        if (trendEl && Array.isArray(data.trend) && data.trend.length > 0) {
+          const maxVis = Math.max(...data.trend.map(t => t.visitors || 0), 5);
+          trendEl.innerHTML = data.trend.map(t => {
+            const heightPct = Math.max(Math.round(((t.visitors || 0) / maxVis) * 85), 8);
+            return `
+              <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+                <span style="font-size:0.7rem; color:#718096; font-weight:600;">${t.visitors || 0}</span>
+                <div style="width:100%; max-width:24px; height:${heightPct}px; background:linear-gradient(to top, #B87D4B, #D69E2E); border-radius:4px 4px 0 0; transition:height 0.3s;"></div>
+                <span style="font-size:0.68rem; color:#A0AEC0;">${t.date_label}</span>
+              </div>
+            `;
+          }).join('');
+        } else if (trendEl) {
+          trendEl.innerHTML = '<div style="color:#A0AEC0; font-size:0.82rem; margin:auto;">尚無足夠之 7 日統計數據</div>';
+        }
+
+        // 渲染來源分佈
+        if (sourceEl && Array.isArray(data.sources) && data.sources.length > 0) {
+          const totalSrc = data.sources.reduce((acc, s) => acc + (s.count || 0), 0) || 1;
+          sourceEl.innerHTML = data.sources.map(s => {
+            const pct = Math.round(((s.count || 0) / totalSrc) * 100);
+            let badgeColor = '#4A5568';
+            if (s.source_name.includes('Threads')) badgeColor = '#000';
+            else if (s.source_name.includes('Instagram')) badgeColor = '#C13584';
+            else if (s.source_name.includes('Google')) badgeColor = '#4285F4';
+
+            return `
+              <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.82rem;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:${badgeColor}; display:inline-block;"></span>
+                  <span style="font-weight:500; color:#2D3748;">${wzEscape(s.source_name)}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:#718096; font-size:0.78rem;">${s.count} 次</span>
+                  <span style="font-weight:600; color:#2B6CB0; font-size:0.78rem; min-width:32px; text-align:right;">${pct}%</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else if (sourceEl) {
+          sourceEl.innerHTML = '<div style="color:#A0AEC0; font-size:0.82rem; margin:auto;">尚無外部來源數據</div>';
+        }
+
+        // 渲染即時足跡列表
+        if (recentEl && Array.isArray(data.recent) && data.recent.length > 0) {
+          recentEl.innerHTML = data.recent.map(r => {
+            const timeStr = r.created_at ? r.created_at.substring(11, 16) : '';
+            return `
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:#F7FAFC; border-radius:6px; border:1px solid #EDF2F7;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:#718096; font-size:0.75rem;">${timeStr}</span>
+                  <span style="font-weight:500; color:#2D3748;">${wzEscape(r.page_title || r.page_path)}</span>
+                </div>
+                <span style="font-size:0.75rem; background:#EDF2F7; color:#4A5568; padding:1px 6px; border-radius:4px;">來自 ${wzEscape(r.referrer || '直接造訪')}</span>
+              </div>
+            `;
+          }).join('');
+        } else if (recentEl) {
+          recentEl.innerHTML = '<div style="color:#A0AEC0; text-align:center; padding:12px;">尚無足跡紀錄（部署 SQL 後訪客進站即會自動記錄）</div>';
+        }
+      } catch (err) {
+        console.warn('載入營運統計提示：', err.message || err);
+        if (onlineEl) onlineEl.innerText = '-';
+        if (todayEl) todayEl.innerText = '-';
+        if (totalEl) totalEl.innerText = '-';
+      }
     }
 
     document.getElementById('authForm').addEventListener('submit', async (e) => {

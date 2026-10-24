@@ -1009,6 +1009,57 @@ body {
   color: var(--indigo-water);
 }
 
+/* 🌊 水岸即時陪伴與渡客停佇狀態列 */
+.footer-dock-presence {
+  margin: 14px 0 16px;
+  text-align: center;
+  font-family: 'Noto Serif TC', serif;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  animation: fadeInPresence 1.2s ease-out;
+}
+
+.presence-main {
+  color: var(--ink-body, #2D3748);
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.presence-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber-dark, #B87D4B);
+  box-shadow: 0 0 8px rgba(184, 125, 75, 0.65);
+  display: inline-block;
+  animation: pulsePresenceDot 3.2s ease-in-out infinite;
+}
+
+.presence-sub {
+  color: #A0AEC0;
+  font-size: 0.82rem;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+@keyframes pulsePresenceDot {
+  0%, 100% { opacity: 0.45; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+@keyframes fadeInPresence {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .footer-maintenance-stamp {
   font-size: 0.8rem;
   color: var(--ink-faint);

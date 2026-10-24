@@ -936,6 +936,18 @@
           </div>
         </div>
         <div class="form-group">
+          <label>資源類別（前台篩選用，至少勾選一項）：</label>
+          <div id="courseTypesInput" style="display:flex; gap:16px; flex-wrap:wrap;">
+            <label style="font-weight:400;"><input type="checkbox" value="deep"> 深度培訓</label>
+            <label style="font-weight:400;"><input type="checkbox" value="upskill"> 技能增強</label>
+            <label style="font-weight:400;"><input type="checkbox" value="events"> 講座工作坊</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>學習內容簡介（必填）：</label>
+          <textarea id="courseSummaryInput" rows="2" required placeholder="例如：涵蓋生成式 AI 基礎概念、提示詞工程、辦公自動化實作..."></textarea>
+        </div>
+        <div class="form-group">
           <label>推薦看點（親切短句，寫給讀者看的亮點）：</label>
           <textarea id="courseWhisperInput" rows="2" placeholder="例如：適合已有行政基礎者，將既有溝通優勢接軌至新工具..."></textarea>
         </div>
@@ -1770,9 +1782,7 @@
         document.getElementById('courseProviderInput').value = sub.extra.replace('主辦單位：', '').trim();
       }
 
-      sub.status = 'reviewed';
-      saveDataToLocalStorage();
-      refreshAdminView();
+      markSubReviewed(sub);
     }
 
     // 一鍵將投稿轉為手札草稿
@@ -1787,9 +1797,7 @@
       document.getElementById('artProseInput').value = sub.content || '';
       document.getElementById('artCatInput').value = 'workplace';
 
-      sub.status = 'reviewed';
-      saveDataToLocalStorage();
-      refreshAdminView();
+      markSubReviewed(sub);
     }
 
     // 一鍵將投稿轉為木棧板
@@ -1804,9 +1812,17 @@
       document.getElementById('plankExpandedInput').value = sub.content || '';
       document.getElementById('plankAuthorInput').value = sub.author || '小棧長';
 
+      markSubReviewed(sub);
+    }
+
+    // 投稿轉成課程／手札／棧板後，標記為已審並同步雲端
+    function markSubReviewed(sub) {
       sub.status = 'reviewed';
       saveDataToLocalStorage();
       refreshAdminView();
+      if (window.WangzhouCloud) {
+        window.WangzhouCloud.updateSubmissionStatus(sub.id, sub.status).catch(console.warn);
+      }
     }
 
     // 切換已審/未審狀態
@@ -1987,39 +2003,6 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       alert(`✅ 已完成發布！最新更新時間已烙印為【${SITE_DATA.siteInfo.lastUpdated}】。\n已為您下載最新「data.js」檔案，將它放入資料夾取代舊檔即可永久生效！`);
     }
 
-    // 課程 CRUD
-    function openCourseEditModal(idx = null) {
-      document.getElementById('courseModal').classList.add('open');
-      if (idx !== null) {
-        const c = SITE_DATA.courses[idx];
-        document.getElementById('courseModalTitle').innerText = '編輯課程活動';
-        document.getElementById('editCourseId').value = idx;
-        document.getElementById('courseTitleInput').value = c.title;
-        document.getElementById('courseProviderInput').value = c.provider;
-        document.getElementById('courseRegionInput').value = c.region || '北部';
-        document.getElementById('courseDeadlineInput').value = c.deadline;
-        document.getElementById('courseWhisperInput').value = c.whisper;
-        document.getElementById('courseOrganizerNoteInput').value = c.organizerNote || '';
-        document.getElementById('courseCostInput').value = c.cost;
-        document.getElementById('courseAddressInput').value = c.address;
-        document.getElementById('courseTimeCycleInput').value = c.timeCycle;
-        document.getElementById('courseUrlInput').value = c.url;
-      } else {
-        document.getElementById('courseModalTitle').innerText = '新增課程活動';
-        document.getElementById('editCourseId').value = '';
-        document.getElementById('courseTitleInput').value = '';
-        document.getElementById('courseProviderInput').value = '';
-        document.getElementById('courseRegionInput').value = '北部';
-        document.getElementById('courseDeadlineInput').value = '';
-        document.getElementById('courseWhisperInput').value = '';
-        document.getElementById('courseOrganizerNoteInput').value = '';
-        document.getElementById('courseCostInput').value = '';
-        document.getElementById('courseAddressInput').value = '';
-        document.getElementById('courseTimeCycleInput').value = '';
-        document.getElementById('courseUrlInput').value = '';
-      }
-    }
-
     // 課程活動審核與篩選（支援已上架、草稿與已過期過濾）
     function filterCourses(filter) {
       currentCourseFilter = filter;
@@ -2055,9 +2038,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           statusBadge = `<span style="background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟢 已上架</span>`;
         }
 
+        // 已截止的課程要重新上架，必須先改截止日，所以直接開編輯視窗
         const approveBtn = c.isDraft
           ? `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleCoursePublish(${idx})">✓ 通過上架</button>`
-          : `<button class="btn-table-sm" onclick="toggleCoursePublish(${idx})">${isExpired ? '重新上架' : '轉草稿'}</button>`;
+          : isExpired
+            ? `<button class="btn-table-sm" onclick="editCourse(${idx})">修改截止日</button>`
+            : `<button class="btn-table-sm" onclick="toggleCoursePublish(${idx})">轉草稿</button>`;
 
         const deadlineDisplay = isExpired
           ? `<span style="color:#E53E3E; font-weight:600;">${escapeHtml(c.deadline)}</span><br><span style="font-size:0.72rem; color:#E53E3E; white-space:nowrap;">（前台已自動隱藏）</span>`
@@ -2088,12 +2074,32 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
     }
 
-    function toggleCoursePublish(idx) {
+    async function toggleCoursePublish(idx) {
       const c = SITE_DATA.courses[idx];
       if (!c) return;
       c.isDraft = !c.isDraft;
+      c.active = !c.isDraft;
       saveDataToLocalStorage();
       refreshAdminView();
+      try {
+        if (window.WangzhouCloud) {
+          await window.WangzhouCloud.upsertCourse(c);
+          showToast(c.isDraft ? '🟡 已轉為草稿，前台已隱藏' : '🟢 已通過上架，前台讀者可見');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
+    }
+
+    function getCourseTypesInput() {
+      return Array.from(document.querySelectorAll('#courseTypesInput input:checked')).map(el => el.value);
+    }
+
+    function setCourseTypesInput(types) {
+      document.querySelectorAll('#courseTypesInput input').forEach(el => {
+        el.checked = (types || []).includes(el.value);
+      });
     }
 
     // 課程 CRUD
@@ -2107,13 +2113,15 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('courseProviderInput').value = c.provider;
         document.getElementById('courseRegionInput').value = c.region || '北部';
         document.getElementById('courseDeadlineInput').value = c.deadline;
-        document.getElementById('courseWhisperInput').value = c.whisper;
+        document.getElementById('courseSummaryInput').value = c.summary || '';
+        document.getElementById('courseWhisperInput').value = c.whisper || '';
         document.getElementById('courseOrganizerNoteInput').value = c.organizerNote || '';
         document.getElementById('courseCostInput').value = c.cost;
-        document.getElementById('courseAddressInput').value = c.address;
-        document.getElementById('courseTimeCycleInput').value = c.timeCycle;
+        document.getElementById('courseAddressInput').value = c.address || '';
+        document.getElementById('courseTimeCycleInput').value = c.timeCycle || '';
         document.getElementById('courseUrlInput').value = c.url;
         document.getElementById('courseIsDraftInput').value = c.isDraft ? 'true' : 'false';
+        setCourseTypesInput(c.types);
       } else {
         document.getElementById('courseModalTitle').innerText = '新增課程活動';
         document.getElementById('editCourseId').value = '';
@@ -2121,6 +2129,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('courseProviderInput').value = '';
         document.getElementById('courseRegionInput').value = '北部';
         document.getElementById('courseDeadlineInput').value = '';
+        document.getElementById('courseSummaryInput').value = '';
         document.getElementById('courseWhisperInput').value = '';
         document.getElementById('courseOrganizerNoteInput').value = '';
         document.getElementById('courseCostInput').value = '';
@@ -2128,6 +2137,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('courseTimeCycleInput').value = '';
         document.getElementById('courseUrlInput').value = '';
         document.getElementById('courseIsDraftInput').value = 'false';
+        setCourseTypesInput([]);
       }
     }
 
@@ -2158,6 +2168,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       e.preventDefault();
       const editIdx = document.getElementById('editCourseId').value;
       const isDraft = document.getElementById('courseIsDraftInput').value === 'true';
+      const types = getCourseTypesInput();
+      if (types.length === 0) {
+        alert('請至少勾選一個資源類別，讀者才能在前台篩選到這筆課程。');
+        return;
+      }
 
       const courseObj = {
         id: editIdx !== '' ? SITE_DATA.courses[editIdx].id : ("course-" + Date.now()),
@@ -2166,6 +2181,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         region: document.getElementById('courseRegionInput').value,
         locationLabel: `${document.getElementById('courseRegionInput').value} ． 培訓交流`,
         deadline: document.getElementById('courseDeadlineInput').value,
+        summary: document.getElementById('courseSummaryInput').value.trim(),
         whisper: document.getElementById('courseWhisperInput').value.trim(),
         organizerNote: document.getElementById('courseOrganizerNoteInput').value.trim(),
         cost: document.getElementById('courseCostInput').value.trim(),
@@ -2173,7 +2189,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         timeCycle: document.getElementById('courseTimeCycleInput').value.trim(),
         url: document.getElementById('courseUrlInput').value.trim(),
         isDraft: isDraft,
-        types: ["deep", "upskill"],
+        types: types,
         statusType: "open",
         statusText: "開放報名",
         active: !isDraft
@@ -2251,12 +2267,22 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
     }
 
-    function toggleArticlePublish(idx) {
+    async function toggleArticlePublish(idx) {
       const a = SITE_DATA.articles[idx];
       if (!a) return;
       a.isDraft = !a.isDraft;
+      a.status = a.isDraft ? 'draft' : 'active';
       saveDataToLocalStorage();
       refreshAdminView();
+      try {
+        if (window.WangzhouCloud) {
+          await window.WangzhouCloud.upsertArticle(a);
+          showToast(a.isDraft ? '🟡 已轉為草稿，前台已隱藏' : '🟢 已通過上架，前台讀者可見');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
     }
 
     // 手札 CRUD
@@ -2574,7 +2600,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         list.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
-          opt.innerText = `📋 ${c.name} (${c.organizer || '主辦'})`;
+          opt.innerText = `📋 ${c.title} (${c.provider || '主辦'})`;
           itemSelect.appendChild(opt);
         });
       } else if (type === 'submission') {
@@ -2949,7 +2975,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       openSocialPostModal(idx);
     }
 
-    function handleSaveSocialPost(e) {
+    async function handleSaveSocialPost(e) {
       e.preventDefault();
       const editIdx = document.getElementById('editSocialId').value;
       
@@ -2966,7 +2992,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         sLabel = art ? `📖 關聯手札：${art.title}` : '📖 關聯手札';
       } else if (sType === 'course') {
         const crs = (SITE_DATA.courses || []).find(c => c.id === sId);
-        sLabel = crs ? `📋 關聯課程：${crs.name}` : '📋 關聯精選課程';
+        sLabel = crs ? `📋 關聯課程：${crs.title}` : '📋 關聯精選課程';
       } else if (sType === 'submission') {
         const sub = (SITE_DATA.submissions || []).find(s => s.id === sId);
         sLabel = sub ? `📬 來自讀者：${sub.author || sub.title || '訪客留言'}` : '📬 來自讀者投稿';
@@ -2984,6 +3010,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       };
       const timeSlotVal = document.getElementById('socTimeSlotInput').value;
 
+      const rawDate = document.getElementById('socDateInput').value;
       const postObj = {
         id: editIdx !== '' ? SITE_DATA.socialPosts[editIdx].id : "sp-" + Date.now(),
         title: document.getElementById('socTitleInput').value.trim(),
@@ -2999,7 +3026,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         },
         content: threadsContent || igContent || '',
         mediaNotes: document.getElementById('socMediaInput').value.trim(),
-        scheduledDate: document.getElementById('socDateInput').value,
+        scheduledDate: rawDate ? rawDate.trim() : null,
         scheduledTimeSlot: timeSlotVal,
         timeSlotLabel: timeSlots[timeSlotVal] || '晚間靠岸',
         status: document.getElementById('socStatusInput').value,
@@ -3025,17 +3052,19 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
       try {
         if (window.WangzhouCloud) {
-          window.WangzhouCloud.upsertSocialPost(postObj).catch(console.warn);
+          await window.WangzhouCloud.upsertSocialPost(postObj);
+          if (isBufferAction) {
+            const activePlat = (postObj.targetPlatforms && postObj.targetPlatforms.includes(currentSocActiveTab)) 
+              ? currentSocActiveTab 
+              : (postObj.targetPlatforms[0] || 'threads');
+            sendSpecificPostToBuffer(savedIndex, activePlat);
+          } else {
+            showToast(`✨ 社群貼文【${postObj.title}】已即時同步至雲端稿庫！`);
+          }
         }
-      } catch (err) {}
-
-      if (isBufferAction) {
-        const activePlat = (postObj.targetPlatforms && postObj.targetPlatforms.includes(currentSocActiveTab)) 
-          ? currentSocActiveTab 
-          : (postObj.targetPlatforms[0] || 'threads');
-        sendSpecificPostToBuffer(savedIndex, activePlat);
-      } else {
-        showToast(`✨ 社群貼文【${postObj.title}】已即時同步至雲端稿庫！`);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端同步失敗：' + (err.message || err));
       }
     }
 
@@ -3138,18 +3167,20 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       document.getElementById('socSourceItemSelect').value = crs.id;
       document.getElementById('socSourceId').value = crs.id;
 
-      document.getElementById('socTitleInput').value = `【精選推薦】${crs.name}`;
+      // 後台課程物件的欄位是 title / provider / address（不是資料庫的 name / organizer / location）
+      const crsPlace = crs.address || crs.region || '線上課程';
+      document.getElementById('socTitleInput').value = `【精選推薦】${crs.title}`;
       document.getElementById('socTopicInput').value = '職涯探索';
 
-      const threadsDraft = `精選課程推薦｜${crs.name}\n\n📍 地點：${crs.location || '線上課程'}\n💰 費用：${crs.cost || '完全免費'}\n⏳ 截止：${crs.deadline || '額滿為止'}\n\n${crs.whisper || crs.summary || ''}\n\n想了解更多或報名，可至望舟官網點擊開課連結 👉`;
+      const threadsDraft = `精選課程推薦｜${crs.title}\n\n📍 地點：${crsPlace}\n💰 費用：${crs.cost || '完全免費'}\n⏳ 截止：${crs.deadline || '額滿為止'}\n\n${crs.whisper || crs.summary || ''}\n\n想了解更多或報名，可至望舟官網點擊開課連結 👉`;
       document.getElementById('socThreadsContentInput').value = threadsDraft;
 
-      const igDraft = `【望舟推薦課程】${crs.name}\n.\n主辦單位：${crs.organizer || '精選機構'}\n開課地點：${crs.location || '線上'}\n費用屬性：${crs.cost || '免費政府補助'}\n報名期限：${crs.deadline || '近期截止'}\n.\n💡 小棧長導讀：\n${crs.whisper || crs.summary || ''}\n.\n🔗 報名連結收錄於望舟小棧「課程活動」頁面（請點個人檔案連結）。\n.\n#望舟小棧 #職涯進修 #技能增強 #免費課程 #政府補助 #轉職準備`;
+      const igDraft = `【望舟推薦課程】${crs.title}\n.\n主辦單位：${crs.provider || '精選機構'}\n開課地點：${crsPlace}\n費用屬性：${crs.cost || '免費政府補助'}\n報名期限：${crs.deadline || '額滿為止'}\n.\n💡 小棧長導讀：\n${crs.whisper || crs.summary || ''}\n.\n🔗 報名連結收錄於望舟小棧「課程活動」頁面（請點個人檔案連結）。\n.\n#望舟小棧 #職涯進修 #技能增強 #免費課程 #政府補助 #轉職準備`;
       document.getElementById('socIgContentInput').value = igDraft;
 
       document.getElementById('socMediaInput').value = `活動宣傳視覺卡 / 重點資訊單圖`;
-      if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = crs.name;
-      if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = `${crs.organizer || '精選推薦'} ｜ ${crs.location || '線上'} ｜ ${crs.cost || '免費補助'}\n${crs.whisper || crs.summary || ''}`;
+      if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = crs.title;
+      if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = `${crs.provider || '精選推薦'} ｜ ${crsPlace} ｜ ${crs.cost || '免費補助'}\n${crs.whisper || crs.summary || ''}`;
       updateSocThreadsCharCount();
       updateSocIgCharCount();
       setTimeout(updateCardCanvas, 80);
@@ -3222,7 +3253,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         if (art) sourceText = `標題：${art.title}\n分類：${art.catName || '職涯探索'}\n全文：\n${art.prose}`;
       } else if (sType === 'course') {
         const crs = (SITE_DATA.courses || []).find(c => c.id === sId);
-        if (crs) sourceText = `課程名稱：${crs.name}\n主辦：${crs.organizer || ''}\n地點：${crs.location || ''}\n費用：${crs.cost || ''}\n介紹：\n${crs.summary || ''}\n${crs.whisper || ''}`;
+        if (crs) sourceText = `課程名稱：${crs.title}\n主辦：${crs.provider || ''}\n地點：${crs.address || crs.region || ''}\n費用：${crs.cost || ''}\n介紹：\n${crs.summary || ''}\n${crs.whisper || ''}`;
       } else if (sType === 'submission') {
         const sub = (SITE_DATA.submissions || []).find(s => s.id === sId);
         if (sub) sourceText = `投稿者：${sub.author || ''}\n標題：${sub.title || ''}\n內容：\n${sub.content || ''}`;
@@ -3409,15 +3440,25 @@ ${sourceText}`;
       openPlankEditModal(idx);
     }
 
-    function deletePlank(idx) {
+    async function deletePlank(idx) {
+      const p = SITE_DATA.planks[idx];
+      if (!p) return;
       if (confirm(`確定要刪除這塊木棧板嗎？`)) {
         SITE_DATA.planks.splice(idx, 1);
         saveDataToLocalStorage();
         refreshAdminView();
+        try {
+          if (window.WangzhouCloud) {
+            await window.WangzhouCloud.deletePlank(p.id);
+            showToast('🗑️ 木棧板已自雲端資料庫移除');
+          }
+        } catch (err) {
+          console.warn('雲端刪除棧板提示：', err.message || err);
+        }
       }
     }
 
-    function handleSavePlank(e) {
+    async function handleSavePlank(e) {
       e.preventDefault();
       const editIdx = document.getElementById('editPlankId').value;
       const catKey = document.getElementById('plankCatInput').value;
@@ -3433,7 +3474,8 @@ ${sourceText}`;
         categoryName: catMap[catKey] || '🪵 陪伴停靠小語',
         quote: document.getElementById('plankQuoteInput').value.trim(),
         expanded: document.getElementById('plankExpandedInput').value.trim(),
-        author: document.getElementById('plankAuthorInput').value.trim() || '小棧長'
+        author: document.getElementById('plankAuthorInput').value.trim() || '小棧長',
+        sortOrder: editIdx !== '' ? (SITE_DATA.planks[editIdx].sortOrder || parseInt(editIdx) + 1) : SITE_DATA.planks.length + 1
       };
 
       if (editIdx !== '') {
@@ -3445,6 +3487,16 @@ ${sourceText}`;
       saveDataToLocalStorage();
       refreshAdminView();
       closeModal('plankModal');
+
+      try {
+        if (window.WangzhouCloud) {
+          await window.WangzhouCloud.upsertPlank(plankObj);
+          showToast('🎉 木棧板短句已同步至雲端資料庫！');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端同步失敗：' + (err.message || err));
+      }
     }
 
     refreshAdminView();
@@ -3467,6 +3519,8 @@ ${sourceText}`;
     // =====================================================================
     const WangzhouAuth = {
       STORAGE_KEY: 'WANGZHOU_ADMIN_SESSION',
+      // 同一個瀏覽器登入超過 30 天就自動登出，需重新收信登入（防止在別人電腦忘記登出）
+      MAX_LOGIN_AGE_SEC: 30 * 24 * 60 * 60,
       session: null,
 
       async authRequest(path, options = {}) {
@@ -3485,11 +3539,14 @@ ${sourceText}`;
         return data;
       },
 
-      setSession({ access_token, refresh_token, expires_in, expires_at }) {
+      // newLogin：從信件連結剛登入時為 true，重新起算 30 天；續期憑證時沿用原本的登入時間
+      setSession({ access_token, refresh_token, expires_in, expires_at }, { newLogin = false } = {}) {
+        const now = Math.floor(Date.now() / 1000);
         this.session = {
           access_token,
           refresh_token,
-          expires_at: Number(expires_at) || (Math.floor(Date.now() / 1000) + Number(expires_in || 3600))
+          expires_at: Number(expires_at) || (now + Number(expires_in || 3600)),
+          logged_in_at: (!newLogin && this.session && this.session.logged_in_at) || now
         };
         try { localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.session)); } catch (e) {}
       },
@@ -3503,6 +3560,11 @@ ${sourceText}`;
         try {
           const raw = localStorage.getItem(this.STORAGE_KEY);
           this.session = raw ? JSON.parse(raw) : null;
+          // 加入 30 天限制前就已登入的瀏覽器：從現在開始起算
+          if (this.session && !this.session.logged_in_at) {
+            this.session.logged_in_at = Math.floor(Date.now() / 1000);
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.session));
+          }
         } catch (e) {
           this.session = null;
         }
@@ -3522,7 +3584,7 @@ ${sourceText}`;
           refresh_token: params.get('refresh_token'),
           expires_in: params.get('expires_in'),
           expires_at: params.get('expires_at')
-        });
+        }, { newLogin: true });
         return null;
       },
 
@@ -3538,6 +3600,11 @@ ${sourceText}`;
       async getValidToken() {
         if (!this.session) return null;
         const now = Math.floor(Date.now() / 1000);
+        if (now - this.session.logged_in_at > this.MAX_LOGIN_AGE_SEC) {
+          // 只登出這個瀏覽器，不影響其他裝置
+          await this.signOut({ scope: 'local', message: '登入已超過 30 天，請重新登入。' });
+          return null;
+        }
         if (this.session.expires_at - now > 60) return this.session.access_token;
         try {
           const data = await this.authRequest('token?grant_type=refresh_token', {
@@ -3554,18 +3621,19 @@ ${sourceText}`;
         }
       },
 
-      async signOut() {
+      // scope 'global'：手動按登出時，所有裝置一起登出；'local'：只登出這個瀏覽器
+      async signOut({ scope = 'global', message = '已登出。' } = {}) {
         const token = this.session && this.session.access_token;
         if (token) {
           try {
-            await this.authRequest('logout', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            await this.authRequest(`logout?scope=${scope}`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
           } catch (e) {}
         }
         this.clearSession();
         SITE_DATA.submissions = [];
         SITE_DATA.socialPosts = [];
         try { localStorage.removeItem('WANGZHOU_SITE_DATA_OVERRIDE'); } catch (e) {}
-        showAuthGate('已登出。', false);
+        showAuthGate(message, false);
       }
     };
 

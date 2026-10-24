@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS articles (
   date TEXT DEFAULT '2026.10',
   title TEXT NOT NULL,
   prose TEXT NOT NULL,
-  status TEXT DEFAULT 'active', -- active: 展出中, retired: 溫柔退役 (不佔空間)
+  status TEXT DEFAULT 'active', -- active: 展出中, draft: 待審草稿, retired: 溫柔退役 (不佔空間)
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -20,15 +20,30 @@ CREATE TABLE IF NOT EXISTS courses (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   organizer TEXT,
-  types TEXT[],
+  types TEXT[],                 -- deep: 深度培訓, upskill: 技能增強, events: 講座工作坊
   region TEXT DEFAULT '線上',
   location TEXT DEFAULT '線上課程',
   cost TEXT DEFAULT '免費政府補助',
-  deadline TEXT DEFAULT '近期截止',
+  deadline TEXT,                -- 報名截止日 YYYY-MM-DD（台灣時間當日 23:59:59 後前台自動隱藏）
   summary TEXT,
   whisper TEXT,
+  organizer_note TEXT,
+  address TEXT,
+  time_cycle TEXT,
   link TEXT,
-  status TEXT DEFAULT 'active', -- active: 開放中, expired: 已截止 (定期清理)
+  status TEXT DEFAULT 'active', -- active: 開放中, draft: 待審草稿, expired: 已下架
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2b. 建立首頁木棧板短句表 (planks)
+CREATE TABLE IF NOT EXISTS planks (
+  id TEXT PRIMARY KEY,
+  category_key TEXT NOT NULL DEFAULT 'amber', -- amber / indigo / bamboo
+  category_name TEXT NOT NULL DEFAULT '🪵 陪伴停靠小語',
+  quote TEXT NOT NULL,
+  expanded TEXT,
+  author TEXT DEFAULT '小棧長',
+  sort_order INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -73,10 +88,12 @@ ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE social_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE planks ENABLE ROW LEVEL SECURITY;
 
--- 任何人可公開讀取活著的手札與課程 (展示廳)
+-- 任何人可公開讀取活著的手札與課程、所有木棧板短句 (展示廳)
 CREATE POLICY "Public read active articles" ON articles FOR SELECT USING (status = 'active');
 CREATE POLICY "Public read active courses" ON courses FOR SELECT USING (status = 'active');
+CREATE POLICY "Public read planks" ON planks FOR SELECT USING (true);
 
 -- 允許任何人投遞留言 (只寫入、只能是待處理、格式與長度受限；不允許讀取任何投稿)
 CREATE POLICY "Public insert submissions" ON submissions FOR INSERT TO anon, authenticated
@@ -109,10 +126,19 @@ CREATE POLICY "Owner full access submissions" ON submissions FOR ALL TO authenti
   USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
 CREATE POLICY "Owner full access social_posts" ON social_posts FOR ALL TO authenticated
   USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
+CREATE POLICY "Owner full access planks" ON planks FOR ALL TO authenticated
+  USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
 
 -- =======================================================
 -- 匯入現有的精選示範資料（無縫繼承現有成果）
 -- =======================================================
+INSERT INTO planks (id, category_key, category_name, quote, expanded, author, sort_order) VALUES
+('plank-01', 'amber', '🪵 陪伴停靠小語', '「累了就先靠岸，棧板一直都在」', '並不是每個季節都要用力划槳。先把呼吸調順了、把身心照顧好了，木棧板永遠在這裡為你留一個停靠處。', '小棧長', 1),
+('plank-02', 'indigo', '🌊 迷惘真實心聲', '「不知往哪走時，停下來也是一種選擇」', '大家都在急著往前趕路，但停下來重新看看地圖與自己真正的需要，才不會在不適合自己的河道上筋疲力竭。', '夜航靠岸的朋友', 2),
+('plank-03', 'bamboo', '🌿 帶得走的好觀點', '「職涯不是直線，轉彎也是累積底氣」', '當代生涯發展研究指出：人的成長本就是非線性的。過去走過的每一段嘗試，都能在未來轉化為專屬於你的底氣。', 'Herminia Ibarra 研究精華', 3),
+('plank-04', 'amber', '🪵 陪伴停靠小語', '「不要用別人的時鐘，來丈量自己的航程」', '每艘小舟吃水深淺不同、承載的重量不同，起風的季節也不同。走自己的節奏，本身就是一種勇氣。', '水岸漫步者', 4)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO articles (id, cat_key, cat_name, date, title, prose) VALUES
 ('note-01', 'career', '職涯探索', '2026.10', '當你試了好多新方向，卻覺得還在原地打轉的時候', '有些人在離開原本熟悉的位置、或是換到比較安穩但少了點成就感的工作之後，為了想趕快找回生活的重心，會開始同時嘗試好多事——下班學剪輯、週末研究開小賣場、又報名了幾堂證照課。\n\n看起來每天的行程都排得好滿，但過了幾個月，卻覺得自己好像只是很累，小舟卻沒有真正往前走。\n\n如果你最近也是這樣，想先跟你說：這真的不是因為你不夠好。相反的，是因為你太認真想為自己找路了。\n\n只是在水流還不清楚的時候，如果急著往每個方向都用力划兩槳，船反而會在原地打轉。當力氣被分散在五件零散的小事上，每一件事都只推進了一點點，自然很難看見讓自己安心的風景。\n\n這週不妨先在木棧板上停一下，試著做個溫柔的減法：\n先把手上覺得「好像應該做」的五件事暫時放下三件，只留下一件「能接上你過去累積過的經驗」、或是「你做完之後心裡覺得踏實、有精神」的事。\n\n給自己三個月的時間，只專心划這一槳看看。'),
 ('note-02', 'career', '職涯探索', '2026.10', '走過的路不會白費：為什麼「舊經驗＋一點新工具」反而最珍貴？', '很多人在考慮轉換跑道或重新找方向時，心裡常會有個聲音：「我不是本科系出身，現在才學來得及嗎？」\n\n「過去做行政／做人資／跑業務累積的經驗，到了新領域是不是全都歸零了？」\n\n這種「歸零的恐慌」，常讓人遲遲不敢踏出第一步。\n\n但在水岸邊看過許多靠岸的小舟，往往真正走得遠的，不是那些一開始就懂得最新技術的人，而是「帶著舊領域扎實基本功，再加上一點點新工具」的轉職者。\n\n因為科技與工具每年都在變，但你過去所學會的「如何理解別人的需求」、「如何在混亂中把事情理出條理」、「如何跟不同個性的人好好說話」，這些都是無法被輕易取代的底層肌肉。\n\n新工具只是新槳，而你過去幾年積累的人生歷練，才是這艘小舟最重要的吃水深度。\n\n不用急著把過去的一切推翻抹去，試著把你的舊專長，輕輕搭上一件新工具試試看。')

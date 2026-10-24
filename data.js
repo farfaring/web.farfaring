@@ -169,11 +169,14 @@ const WangzhouCloud = {
       region: course.region || '線上',
       location: course.locationLabel || course.location || '線上課程',
       cost: course.cost || '免費',
-      deadline: course.deadline || '近期截止',
-      summary: course.summary,
-      whisper: course.whisper,
+      deadline: course.deadline || null,
+      summary: course.summary || '',
+      whisper: course.whisper || '',
+      organizer_note: course.organizerNote || course.organizer_note || '',
+      address: course.address || '',
+      time_cycle: course.timeCycle || course.time_cycle || '',
       link: course.url || course.link,
-      status: course.active === false ? 'expired' : 'active'
+      status: course.isDraft ? 'draft' : (course.active === false ? 'expired' : 'active')
     };
     return await this.request('courses', {
       method: 'POST',
@@ -187,7 +190,33 @@ const WangzhouCloud = {
     });
   },
 
-  // 3. 訪客投稿審核箱 (Submissions)
+  // 3. 木棧板小語 (Planks)
+  async getPlanks() {
+    return await this.request('planks?select=*&order=sort_order.asc,created_at.asc');
+  },
+  async upsertPlank(plank) {
+    const payload = {
+      id: plank.id,
+      category_key: plank.categoryKey || plank.category_key || 'amber',
+      category_name: plank.categoryName || plank.category_name || '🪵 陪伴停靠小語',
+      quote: plank.quote,
+      expanded: plank.expanded || '',
+      author: plank.author || '小棧長',
+      sort_order: typeof plank.sortOrder === 'number' ? plank.sortOrder : 0
+    };
+    return await this.request('planks', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(payload)
+    });
+  },
+  async deletePlank(id) {
+    return await this.request(`planks?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // 4. 訪客投稿審核箱 (Submissions)
   async getSubmissions() {
     return await this.request('submissions?select=*&order=created_at.desc');
   },
@@ -369,16 +398,30 @@ const WangzhouCloud = {
   async syncToLocal({ includePrivate = false } = {}) {
     try {
       const skip = Promise.resolve(null);
-      const [articles, courses, submissions, posts] = await Promise.all([
+      const [articles, courses, submissions, posts, planks] = await Promise.all([
         (includePrivate ? this.getArticles() : this.request('articles?select=*&status=eq.active&order=created_at.desc'))
           .catch(err => { console.warn('Articles sync failed:', err); return null; }),
         (includePrivate ? this.getCourses() : this.request('courses?select=*&status=eq.active&order=created_at.desc'))
           .catch(err => { console.warn('Courses sync failed:', err); return null; }),
         includePrivate ? this.getSubmissions().catch(err => { console.warn('Submissions sync failed:', err); return null; }) : skip,
-        includePrivate ? this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; }) : skip
+        includePrivate ? this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; }) : skip,
+        this.getPlanks().catch(err => { console.warn('Planks sync failed (using local fallback):', err); return null; })
       ]);
 
       let changed = false;
+
+      if (Array.isArray(planks) && planks.length > 0) {
+        SITE_DATA.planks = planks.map(p => ({
+          id: p.id,
+          categoryKey: p.category_key,
+          categoryName: p.category_name,
+          quote: p.quote,
+          expanded: p.expanded || '',
+          author: p.author || '小棧長',
+          sortOrder: p.sort_order || 0
+        }));
+        changed = true;
+      }
 
       if (Array.isArray(articles)) {
         SITE_DATA.articles = articles.map(a => ({
@@ -404,8 +447,11 @@ const WangzhouCloud = {
           provider: c.organizer,
           cost: c.cost,
           deadline: c.deadline,
-          summary: c.summary,
-          whisper: c.whisper,
+          summary: c.summary || '',
+          whisper: c.whisper || '',
+          organizerNote: c.organizer_note || '',
+          address: c.address || '',
+          timeCycle: c.time_cycle || '',
           url: c.link,
           active: c.status === 'active',
           isDraft: c.status === 'draft'
@@ -438,6 +484,7 @@ const WangzhouCloud = {
           sourceId: p.source_id,
           sourceLabel: p.source_label,
           targetPlatforms: p.target_platforms || [],
+          platform: (p.target_platforms && p.target_platforms[0]) || 'threads',
           versions: p.versions || {},
           content: p.content,
           mediaNotes: p.media_notes,

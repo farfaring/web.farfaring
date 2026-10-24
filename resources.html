@@ -197,10 +197,17 @@
       });
     }
 
+    // 截止日不是 YYYY-MM-DD 日期（例如舊資料的「近期截止」）時回傳 null：照常顯示、排在最後
     function getDaysLeft(deadlineStr) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(deadlineStr || '')) return null;
       const expiry = new Date(`${deadlineStr}T23:59:59+08:00`).getTime();
       const now = new Date().getTime();
       return Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+    }
+
+    function sortableDaysLeft(item) {
+      const days = getDaysLeft(item.deadline);
+      return days === null ? Infinity : days;
     }
 
     function handleSearch() {
@@ -229,20 +236,17 @@
       const filtered = resources.filter(item => {
         if (item.active === false) return false;
         const days = getDaysLeft(item.deadline);
-        if (days < 0) return false;
-        if (currentType !== "all" && !item.types.includes(currentType)) return false;
+        if (days !== null && days < 0) return false;
+        if (currentType !== "all" && !(item.types || []).includes(currentType)) return false;
         if (currentRegion !== "all" && item.region !== currentRegion) return false;
         if (searchKeyword) {
-          const matchTitle = item.title.toLowerCase().includes(searchKeyword);
-          const matchProvider = item.provider.toLowerCase().includes(searchKeyword);
-          const matchSummary = item.summary.toLowerCase().includes(searchKeyword);
-          const matchLocation = item.locationLabel.toLowerCase().includes(searchKeyword);
-          if (!matchTitle && !matchProvider && !matchSummary && !matchLocation) return false;
+          const fields = [item.title, item.provider, item.summary, item.locationLabel, item.address];
+          if (!fields.some(f => String(f || '').toLowerCase().includes(searchKeyword))) return false;
         }
         return true;
       });
 
-      filtered.sort((a, b) => getDaysLeft(a.deadline) - getDaysLeft(b.deadline));
+      filtered.sort((a, b) => sortableDaysLeft(a) - sortableDaysLeft(b));
 
       if (filtered.length === 0) {
         container.innerHTML = `
@@ -259,7 +263,7 @@
 
       filtered.forEach(item => {
         const days = getDaysLeft(item.deadline);
-        const isUrgent = days <= 5;
+        const isUrgent = days !== null && days <= 5;
         const card = document.createElement("article");
         card.className = "res-card";
 
@@ -269,7 +273,7 @@
             <div class="res-top-row">
               <span class="res-type-pill">${wzEscape(item.locationLabel)}</span>
               <span class="res-status-pill ${isUrgent ? 'status-urgent' : 'status-open'}">
-                ${isUrgent ? `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）` : `📅 報名截止：${wzEscape(item.deadline)}`}
+                ${isUrgent ? `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）` : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}`}
               </span>
             </div>
 
@@ -309,10 +313,10 @@
                 <span class="res-info-label">💰 費用說明：</span>
                 <span style="color:var(--amber-dark); font-weight:500;">${wzEscape(item.cost)}</span>
               </li>
-              <li class="res-info-item">
+              ${item.how ? `<li class="res-info-item">
                 <span class="res-info-label">📋 報名途徑：</span>
                 <span>${wzEscape(item.how)}</span>
-              </li>
+              </li>` : ''}
             </ul>
           </div>
 

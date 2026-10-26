@@ -652,6 +652,8 @@ const WangzhouCloud = {
 
 // 全域掛載供所有頁面隨時呼叫
 if (typeof window !== 'undefined') {
+  window.SITE_DATA = SITE_DATA;
+  window.DEFAULT_ABOUT_CONFIG = DEFAULT_ABOUT_CONFIG;
   window.WangzhouCloud = WangzhouCloud;
   // 前台頁面載入時自動在背景同步公開數據；後台改由登入後自行同步
   if (!window.WANGZHOU_ADMIN_MODE) {

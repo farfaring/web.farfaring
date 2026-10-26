@@ -328,7 +328,9 @@
 
     // 動態渲染關於望舟文案（從 SITE_DATA.about 取得，後台隨時編輯即可即時同步）
     function renderAboutPage() {
-      const cfg = (window.SITE_DATA && window.SITE_DATA.about) ? window.SITE_DATA.about : null;
+      const cfg = (typeof SITE_DATA !== 'undefined' && SITE_DATA.about) 
+        ? SITE_DATA.about 
+        : ((typeof window !== 'undefined' && window.SITE_DATA && window.SITE_DATA.about) ? window.SITE_DATA.about : null);
       if (!cfg) return;
 
       // 1. Hero 頂部標頭

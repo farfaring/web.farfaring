@@ -30,7 +30,11 @@ CREATE TABLE IF NOT EXISTS public.articles (
   date TEXT DEFAULT '2026.10',
   title TEXT NOT NULL,
   prose TEXT NOT NULL,
-  status TEXT DEFAULT 'active',  -- active: 展出中, draft: 待審草稿, retired: 退役
+  status TEXT DEFAULT 'active',  -- active: 展出中, draft: 待審草稿, retired: 退役／未採用
+  review_status TEXT,            -- 審稿工作台：pending 待審, approved 可以發, revise 要修改, rejected 不要發
+  review_note TEXT,              -- 主理人的修改意見
+  audit_note TEXT,               -- Claude 預先稽核與風險提示
+  source_url TEXT,               -- 免費開放全文來源
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -50,7 +54,10 @@ CREATE TABLE IF NOT EXISTS public.courses (
   address TEXT,
   time_cycle TEXT,
   link TEXT,
-  status TEXT DEFAULT 'active',  -- active: 開放中, draft: 待審草稿, expired: 已下架
+  status TEXT DEFAULT 'active',  -- active: 開放中, draft: 待審草稿, expired: 已下架／未採用
+  review_status TEXT,            -- 審稿工作台：pending 待審, approved 可以發, revise 要修改, rejected 不要發
+  review_note TEXT,              -- 主理人的修改意見
+  audit_note TEXT,               -- Claude 預先稽核與風險提示（來源即官方報名網址 link）
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

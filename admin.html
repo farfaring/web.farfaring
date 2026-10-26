@@ -536,6 +536,11 @@
         <span>📊</span>
         <span>營運概況與時間</span>
       </div>
+      <div class="admin-nav-item" data-panel="review" onclick="switchPanel('review', this)">
+        <span>📝</span>
+        <span>審稿工作台</span>
+        <span id="badgeReviewPending" style="background:#2B4C65; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="本期待審篇數">0</span>
+      </div>
       <div class="admin-nav-item" data-panel="submissions" onclick="switchPanel('submissions', this)">
         <span>📬</span>
         <span>訪客投稿審核箱</span>
@@ -707,6 +712,28 @@
     </main>
 
     <!-- 主面板 2: 訪客投稿審核箱（集中收納所有前台推薦、故事、來信與勘誤） -->
+    <!-- 主面板：審稿工作台（① 審稿：手札、課程、社群貼文一起審 ➔ ② 排程確認與送出 Buffer） -->
+    <main id="panel-review" class="admin-panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
+        <div>
+          <h2 class="panel-title">📝 審稿工作台</h2>
+          <p style="margin:4px 0 0; font-size:0.84rem; color:#718096;">先審內容，再確認發文時間、送進 Buffer，都在這一頁完成。</p>
+        </div>
+        <button type="button" class="btn-table-sm" onclick="copyReviewResults()" title="把本期審稿結果複製起來，貼給 AI 修改">📋 複製審稿結果給 AI</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <button type="button" id="deskStepBtn1" class="btn-table-sm" style="background:#2B4C65; color:#FFF;" onclick="switchDeskStep(1)">① 審稿</button>
+        <button type="button" id="deskStepBtn2" class="btn-table-sm" onclick="switchDeskStep(2)">② 排程確認與送出</button>
+      </div>
+      <div id="deskStep1">
+        <div id="reviewProgress" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
+        <div id="reviewCard"></div>
+      </div>
+      <div id="deskStep2" style="display:none;">
+        <div id="scheduleBoard"></div>
+      </div>
+    </main>
+
     <main id="panel-submissions" class="admin-panel">
       <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
         <h2 class="panel-title">📬 訪客投稿審核箱</h2>
@@ -972,6 +999,10 @@
           <input type="url" id="courseUrlInput" required placeholder="https://its.taiwanjobs.gov.tw/...">
         </div>
         <div class="form-group">
+          <label>🛡️ 預先稽核與風險提示（確認官方來源、費用與資格無誤）：</label>
+          <textarea id="courseAuditInput" rows="2" placeholder="例如：資訊取自勞動部台灣就業通官方頁，報名資格與費用已核對。"></textarea>
+        </div>
+        <div class="form-group">
           <label>發布與審核狀態：</label>
           <select id="courseIsDraftInput">
             <option value="false">🟢 正式上架（前台讀者可見）</option>
@@ -1005,6 +1036,14 @@
         <div class="form-group">
           <label>手札內文（建議 300～500 字日常短隨筆，支援段落換行）：</label>
           <textarea id="artProseInput" rows="8" required placeholder="寫下你的溫暖陪伴隨筆..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>🛡️ 預先稽核與風險提示（版權、個資、公務員兼職、非營利倫理）：</label>
+          <textarea id="artAuditInput" rows="2" placeholder="例如：轉譯 Ibarra 研究觀點，僅摘述、未轉載原文。"></textarea>
+        </div>
+        <div class="form-group">
+          <label>📖 免費開放全文來源網址（不收付費牆或純摘要）：</label>
+          <input type="url" id="artSourceUrlInput" placeholder="https://...">
         </div>
         <div class="form-group">
           <label>發布與審核狀態：</label>
@@ -1187,6 +1226,18 @@
         </div>
 
         <input type="hidden" id="socMediaInput">
+
+        <!-- 審稿雙必備：預先稽核 ＋ 免費開放全文來源 -->
+        <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>🛡️ 預先稽核與風險提示（版權、個資、公務員兼職、非營利倫理）：</label>
+            <textarea id="socAuditInput" rows="2" placeholder="例如：引用 HBR 文章僅摘述觀點、未轉載原文；未涉及個資。"></textarea>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>📖 免費開放全文來源網址（不收付費牆或純摘要）：</label>
+            <input type="url" id="socSourceUrlInput" placeholder="https://...">
+          </div>
+        </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
           <div class="form-group" style="margin:0;">
@@ -1506,6 +1557,9 @@
 
       // 渲染社群貼文表格
       renderSocialTable(currentSocialFilter, currentSocialPlatform);
+
+      // 渲染審稿工作台
+      renderReviewDesk();
     }
 
     // 渲染今日與本週投稿集中摘要
@@ -2009,8 +2063,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       list.forEach((c, idx) => {
         const expiryTime = new Date(`${c.deadline}T23:59:59+08:00`).getTime();
         const isExpired = !isNaN(expiryTime) && expiryTime < Date.now();
+        const isRejected = !c.isDraft && c.active === false && !isExpired;
 
-        if (filter === 'published' && (c.isDraft || isExpired)) return;
+        if (filter === 'published' && (c.isDraft || isExpired || isRejected)) return;
         if (filter === 'draft' && !c.isDraft) return;
         if (filter === 'expired' && !isExpired) return;
         count++;
@@ -2018,7 +2073,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         const tr = document.createElement('tr');
         let statusBadge = '';
         if (c.isDraft) {
-          statusBadge = `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟡 待審草稿</span>`;
+          statusBadge = `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟡 待審草稿${c.reviewStatus === 'revise' ? '（要修改）' : ''}</span>`;
+        } else if (isRejected) {
+          statusBadge = `<span style="background:#EDF2F7; color:#4A5568; border:1px solid #CBD5E0; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">📦 未採用</span>`;
         } else if (isExpired) {
           statusBadge = `<span style="background:#FFF5F5; color:#E53E3E; border:1px solid #FEB2B2; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">⚠️ 已截止</span>`;
         } else {
@@ -2108,6 +2165,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('courseTimeCycleInput').value = c.timeCycle || '';
         document.getElementById('courseUrlInput').value = c.url;
         document.getElementById('courseIsDraftInput').value = c.isDraft ? 'true' : 'false';
+        document.getElementById('courseAuditInput').value = c.auditNote || '';
         setCourseTypesInput(c.types);
       } else {
         document.getElementById('courseModalTitle').innerText = '新增課程活動';
@@ -2124,6 +2182,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('courseTimeCycleInput').value = '';
         document.getElementById('courseUrlInput').value = '';
         document.getElementById('courseIsDraftInput').value = 'false';
+        document.getElementById('courseAuditInput').value = '';
         setCourseTypesInput([]);
       }
     }
@@ -2161,7 +2220,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         return;
       }
 
+      // 保留審稿紀錄；被標「要修改」的課程改完後重新回到待審
+      const existing = editIdx !== '' ? SITE_DATA.courses[editIdx] : {};
       const courseObj = {
+        ...existing,
+        reviewStatus: existing.reviewStatus === 'revise' ? 'pending' : existing.reviewStatus,
+        auditNote: document.getElementById('courseAuditInput').value.trim(),
         id: editIdx !== '' ? SITE_DATA.courses[editIdx].id : ("course-" + Date.now()),
         title: document.getElementById('courseTitleInput').value.trim(),
         provider: document.getElementById('courseProviderInput').value.trim(),
@@ -2220,14 +2284,17 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const list = SITE_DATA.articles || [];
       let count = 0;
       list.forEach((a, idx) => {
-        if (filter === 'published' && a.isDraft) return;
+        const isRetired = a.status === 'retired';
+        if (filter === 'published' && (a.isDraft || isRetired)) return;
         if (filter === 'draft' && !a.isDraft) return;
         count++;
 
         const tr = document.createElement('tr');
         const statusBadge = a.isDraft
-          ? `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟡 待審草稿</span>`
-          : `<span style="background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟢 已上架</span>`;
+          ? `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟡 待審草稿${a.reviewStatus === 'revise' ? '（要修改）' : ''}</span>`
+          : isRetired
+            ? `<span style="background:#EDF2F7; color:#4A5568; border:1px solid #CBD5E0; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">📦 未採用</span>`
+            : `<span style="background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟢 已上架</span>`;
 
         const approveBtn = a.isDraft
           ? `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleArticlePublish(${idx})">✓ 通過上架</button>`
@@ -2283,6 +2350,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('artCatInput').value = a.catKey || 'workplace';
         document.getElementById('artProseInput').value = a.prose;
         document.getElementById('artIsDraftInput').value = a.isDraft ? 'true' : 'false';
+        document.getElementById('artAuditInput').value = a.auditNote || '';
+        document.getElementById('artSourceUrlInput').value = a.sourceUrl || '';
       } else {
         document.getElementById('articleModalTitle').innerText = '發表水岸手札';
         document.getElementById('editArticleId').value = '';
@@ -2290,6 +2359,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('artCatInput').value = 'workplace';
         document.getElementById('artProseInput').value = '';
         document.getElementById('artIsDraftInput').value = 'false';
+        document.getElementById('artAuditInput').value = '';
+        document.getElementById('artSourceUrlInput').value = '';
       }
     }
 
@@ -2330,7 +2401,13 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}`;
       const isDraft = document.getElementById('artIsDraftInput').value === 'true';
 
+      // 保留審稿紀錄；被標「要修改」的手札改完後重新回到待審
+      const existing = editIdx !== '' ? SITE_DATA.articles[editIdx] : {};
       const artObj = {
+        ...existing,
+        reviewStatus: existing.reviewStatus === 'revise' ? 'pending' : existing.reviewStatus,
+        auditNote: document.getElementById('artAuditInput').value.trim(),
+        sourceUrl: document.getElementById('artSourceUrlInput').value.trim(),
         id: editIdx !== '' ? SITE_DATA.articles[editIdx].id : ("note-" + Date.now()),
         title: document.getElementById('artTitleInput').value.trim(),
         catKey: catKey,
@@ -2747,6 +2824,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('socTimeSlotInput').value = p.scheduledTimeSlot || 'evening';
         document.getElementById('socStatusInput').value = p.status || 'scheduled';
         document.getElementById('socMetricsInput').value = p.metricsNote || '';
+        document.getElementById('socAuditInput').value = p.auditNote || '';
+        document.getElementById('socSourceUrlInput').value = p.sourceUrl || '';
       } else {
         document.getElementById('socModalTitle').innerText = '起草社群貼文';
         document.getElementById('editSocialId').value = '';
@@ -2765,6 +2844,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('socThreadsContentInput').value = '';
         document.getElementById('socIgContentInput').value = '';
         document.getElementById('socMediaInput').value = '';
+        document.getElementById('socAuditInput').value = '';
+        document.getElementById('socSourceUrlInput').value = '';
 
         if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = '';
         if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = '';
@@ -2910,7 +2991,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       ctx.font = "400 26px 'Noto Sans TC', sans-serif";
       ctx.fillStyle = subText;
       ctx.textAlign = 'center';
-      ctx.fillText("累了就先靠岸，棧板一直都在 ｜ farfaring.github.io/web.farfaring/", w / 2, margin + cardH - 75);
+      const siteHost = String(SITE_DATA.siteInfo.siteUrl || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+      ctx.fillText(`累了就先靠岸，棧板一直都在 ｜ ${siteHost}`, w / 2, margin + cardH - 75);
     }
 
     function drawCanvasWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 6) {
@@ -2962,6 +3044,618 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       openSocialPostModal(idx);
     }
 
+    // =====================================================================
+    // 📝 審稿工作台：① 審稿 ➔ ② 排程確認與送出
+    // 一張審稿卡 = 一個主題：手札或課程（連同為它寫的社群貼文），或一則獨立的社群貼文
+    // 每期固定 4 張卡：審過的留在本期，按「開始下一期」才換下一批，審稿量不會無限膨脹
+    // =====================================================================
+    const REVIEW_QUOTA = 4;
+    const REVIEW_LABELS = { pending: '⏳ 待審', approved: '✅ 可以發', revise: '✏️ 要修改', rejected: '❌ 不要發' };
+    const REVIEW_KIND_LABELS = { article: '📖 水岸手札', course: '📋 課程活動', social: '📱 社群貼文' };
+    const REVISE_TAGS = ['🛶 語氣更溫暖', '✂️ 篇幅縮短', '💡 重點更聚焦', '🔍 資訊需再查證'];
+    const REJECT_TAGS = ['🎯 議題調性不合', '🔁 內容重複', '📦 留待以後再發'];
+    const DESK_SLOTS = {
+      morning: { label: '☀️ 晨間通勤 08:30', time: '08:30' },
+      noon: { label: '🍱 午休片刻 12:15', time: '12:15' },
+      evening: { label: '🌙 晚間靠岸 21:00', time: '21:00' },
+      weekend: { label: '☕ 週末午後 15:00', time: '15:00' }
+    };
+    const PLATFORM_TEXT_LIMITS = { threads: 500, instagram: 2200 };
+    let reviewPoolKeys = [];
+    const deskDecidedKeys = new Set();
+    let reviewCursor = 0;
+    let deskStep = 1;
+
+    function deskList(kind) {
+      if (kind === 'article') return SITE_DATA.articles || [];
+      if (kind === 'course') return SITE_DATA.courses || [];
+      return SITE_DATA.socialPosts || [];
+    }
+
+    function deskFind(kind, id) {
+      return deskList(kind).find(x => x.id === id);
+    }
+
+    function reviewStatusOf(p) {
+      return REVIEW_LABELS[p.reviewStatus] ? p.reviewStatus : 'pending';
+    }
+
+    // 社群貼文的平台：後台存 threads / ig，Buffer 轉送站用 threads / instagram
+    function platformsOf(p) {
+      const plats = p.targetPlatforms || (p.platform ? [p.platform] : ['threads']);
+      return plats.map(x => (x === 'ig' ? 'instagram' : x)).filter(x => x === 'threads' || x === 'instagram');
+    }
+
+    function postTextFor(p, platform) {
+      const v = p.versions || {};
+      return (platform === 'threads' ? v.threads : v.ig) || p.content || '';
+    }
+
+    function isFullySent(p) {
+      const ids = p.bufferPostIds || {};
+      const plats = platformsOf(p);
+      return plats.length > 0 && plats.every(pl => ids[pl]);
+    }
+
+    // 已在社群發布、或已送進 Buffer 的貼文，不再進審稿池
+    function isReviewable(p) {
+      const sent = p.bufferPostIds && Object.keys(p.bufferPostIds).length > 0;
+      return p.status !== 'published' && !sent;
+    }
+
+    // 手札與課程的審稿狀態跟著網站上下架走：草稿＝待審（或要修改），上架＝可以發，未採用＝不要發
+    function itemReviewState(kind, item) {
+      if (kind === 'social') return reviewStatusOf(item);
+      if (item.isDraft) return item.reviewStatus === 'revise' ? 'revise' : 'pending';
+      const rejected = kind === 'article' ? item.status === 'retired' : (item.active === false && item.reviewStatus === 'rejected');
+      return rejected ? 'rejected' : 'approved';
+    }
+
+    function linkedPosts(kind, id) {
+      return (SITE_DATA.socialPosts || []).filter(p => p.sourceType === kind && p.sourceId === id && isReviewable(p));
+    }
+
+    function buildReviewUnit(key) {
+      const sep = key.indexOf(':');
+      const kind = key.slice(0, sep);
+      const item = deskFind(kind, key.slice(sep + 1));
+      if (!item) return null;
+      const posts = kind === 'social' ? [] : linkedPosts(kind, item.id);
+      const states = [itemReviewState(kind, item), ...posts.map(reviewStatusOf)];
+      const state = states.includes('pending') ? 'pending'
+        : states.includes('revise') ? 'revise'
+        : states.every(s => s === 'rejected') ? 'rejected' : 'approved';
+      return { key, kind, item, posts, state };
+    }
+
+    // 所有待審的審稿卡（不含本期已在池中的），由最早建立的開始
+    function pendingReviewKeys() {
+      const found = [];
+      ['course', 'article'].forEach(kind => deskList(kind).forEach(item => {
+        const unit = buildReviewUnit(`${kind}:${item.id}`);
+        if (unit && unit.state === 'pending') found.push({ key: unit.key, at: item.createdAt || item.id });
+      }));
+      (SITE_DATA.socialPosts || []).forEach(p => {
+        const hasSource = (p.sourceType === 'article' || p.sourceType === 'course') && deskFind(p.sourceType, p.sourceId);
+        if (!hasSource && reviewStatusOf(p) === 'pending' && isReviewable(p)) found.push({ key: `social:${p.id}`, at: p.createdAt || p.id });
+      });
+      return found
+        .filter(f => !reviewPoolKeys.includes(f.key))
+        .sort((a, b) => String(a.at).localeCompare(String(b.at)))
+        .map(f => f.key);
+    }
+
+    // 本期審稿池：順序固定，不足 4 張時由最早的待審補上
+    function getReviewPool() {
+      reviewPoolKeys = reviewPoolKeys.filter(k => buildReviewUnit(k));
+      if (reviewPoolKeys.length < REVIEW_QUOTA) {
+        reviewPoolKeys.push(...pendingReviewKeys().slice(0, REVIEW_QUOTA - reviewPoolKeys.length));
+      }
+      return reviewPoolKeys.map(buildReviewUnit);
+    }
+
+    function switchDeskStep(step) {
+      deskStep = step;
+      document.getElementById('deskStep1').style.display = step === 1 ? 'block' : 'none';
+      document.getElementById('deskStep2').style.display = step === 2 ? 'block' : 'none';
+      [1, 2].forEach(n => {
+        const btn = document.getElementById('deskStepBtn' + n);
+        if (btn) {
+          btn.style.background = n === step ? '#2B4C65' : '';
+          btn.style.color = n === step ? '#FFF' : '';
+        }
+      });
+    }
+
+    function renderReviewDesk() {
+      renderReviewStep();
+      renderScheduleStep();
+    }
+
+    function deskTextBox(label, text, limit) {
+      const over = limit && text.length > limit;
+      return `
+        <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:12px 14px;">
+          <div style="display:flex; justify-content:space-between; font-weight:600; font-size:0.85rem; color:#2D3748; margin-bottom:8px;">
+            <span>${label}</span>
+            ${limit ? `<span style="font-weight:normal; color:${over ? '#C53030' : '#718096'};">${text.length} / ${limit} 字</span>` : ''}
+          </div>
+          <div style="white-space:pre-wrap; font-size:0.92rem; line-height:1.85; color:#2D3748; max-height:360px; overflow:auto;">${text ? escapeHtml(text) : '<span style="color:#A0AEC0;">（沒有內容）</span>'}</div>
+        </div>`;
+    }
+
+    function deskPostHtml(p, withHeader) {
+      const idx = (SITE_DATA.socialPosts || []).indexOf(p);
+      const plats = platformsOf(p);
+      let boxes = '';
+      if (plats.includes('threads')) boxes += deskTextBox('🧵 Threads', postTextFor(p, 'threads'), PLATFORM_TEXT_LIMITS.threads);
+      if (plats.includes('instagram')) boxes += deskTextBox('📸 Instagram', postTextFor(p, 'instagram'), PLATFORM_TEXT_LIMITS.instagram);
+      return `
+        <div style="margin-top:12px;">
+          ${withHeader ? `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#4A5568;">
+            <strong>📱 社群貼文：${escapeHtml(p.title || '（無標題）')}</strong>
+            <span>${REVIEW_LABELS[reviewStatusOf(p)]}</span>
+          </div>` : ''}
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">${boxes}</div>
+          <div style="text-align:right; margin-top:6px;"><button type="button" class="btn-table-sm" onclick="editSocialPost(${idx})">✏️ 編輯這則貼文</button></div>
+        </div>`;
+    }
+
+    function deskMainContentHtml(unit) {
+      const { kind, item } = unit;
+      if (kind === 'article') {
+        return deskTextBox(`📖 手札內文（${escapeHtml(item.catName || '水岸手札')}）`, item.prose || '', 0);
+      }
+      if (kind === 'course') {
+        const rows = [
+          ['🏛️ 辦訓單位', item.provider], ['⏳ 報名截止', item.deadline], ['📍 上課地點', item.address || item.region],
+          ['⏰ 上課時間', item.timeCycle], ['💰 費用說明', item.cost], ['🎯 學習內容', item.summary], ['✦ 推薦看點', item.whisper],
+          ['📢 備註', item.organizerNote]
+        ].filter(r => r[1]);
+        return `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:12px 14px; font-size:0.88rem; line-height:1.8;">
+          ${rows.map(r => `<div><span style="color:#718096;">${r[0]}：</span>${escapeHtml(r[1])}</div>`).join('')}
+        </div>`;
+      }
+      return deskPostHtml(item, false);
+    }
+
+    function renderReviewStep() {
+      const card = document.getElementById('reviewCard');
+      const progress = document.getElementById('reviewProgress');
+      if (!card || !progress) return;
+
+      const pool = getReviewPool();
+      const pendingCount = pool.filter(u => u.state === 'pending').length;
+      const waiting = pendingReviewKeys().length;
+
+      const badge = document.getElementById('badgeReviewPending');
+      if (badge) {
+        badge.innerText = pendingCount;
+        badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+      }
+
+      if (pool.length === 0) {
+        progress.innerHTML = '';
+        card.innerHTML = `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:40px 20px; text-align:center; color:#718096;">
+          🌊 目前沒有待審的內容。<br>手札草稿、課程草稿與新的社群貼文，都會自動出現在這裡。</div>`;
+        return;
+      }
+
+      if (reviewCursor >= pool.length) reviewCursor = pool.length - 1;
+      if (reviewCursor < 0) reviewCursor = 0;
+
+      progress.innerHTML = `<span style="font-size:0.82rem; color:#4A5568; margin-right:4px;">本期 ${pool.length} / ${REVIEW_QUOTA}：</span>` +
+        pool.map((u, i) => `<button type="button" class="btn-table-sm" style="${i === reviewCursor ? 'background:#2B4C65; color:#FFF; border-color:#2B4C65;' : ''}" onclick="gotoReview(${i})">${i + 1}. ${REVIEW_LABELS[u.state]}</button>`).join('') +
+        (waiting > 0 ? `<span style="font-size:0.78rem; color:#A0AEC0; margin-left:6px;">另有 ${waiting} 張排在下一期</span>` : '');
+
+      const unit = pool[reviewCursor];
+      const { kind, item, posts } = unit;
+      const auditNote = item.auditNote || (posts.find(p => p.auditNote) || {}).auditNote || '';
+      const sourceUrl = kind === 'course' ? item.url : (item.sourceUrl || (posts.find(p => p.sourceUrl) || {}).sourceUrl || '');
+      const sourceLabel = kind === 'course' ? '📖 官方報名頁' : '📖 免費開放全文來源';
+
+      const auditHtml = auditNote
+        ? `<div style="white-space:pre-wrap;">${escapeHtml(auditNote)}</div>`
+        : `<div style="color:#C05621;">⚠️ 尚未提供預先稽核與風險提示，建議先補上再決定。</div>`;
+      const sourceHtml = sourceUrl
+        ? `<a href="${escapeHtml(wzSafeUrl(sourceUrl))}" target="_blank" rel="noopener noreferrer" style="color:#2B6CB0; word-break:break-all;">${escapeHtml(sourceUrl)} ↗</a>${kind === 'course' ? '' : '<div style="font-size:0.75rem; color:#718096; margin-top:2px;">請確認可免費閱讀全文（非付費牆、非純摘要）。</div>'}`
+        : `<div style="color:#C05621;">⚠️ 尚未提供來源連結。</div>`;
+
+      const itemIdx = deskList(kind).indexOf(item);
+      const editItemBtn = kind === 'article' ? `<button type="button" class="btn-table-sm" onclick="editArticle(${itemIdx})">✏️ 編輯手札</button>`
+        : kind === 'course' ? `<button type="button" class="btn-table-sm" onclick="editCourse(${itemIdx})">✏️ 編輯課程</button>` : '';
+      const note = item.reviewNote || (posts.find(p => p.reviewNote) || {}).reviewNote || '';
+      const tagChips = (tags) => tags.map(t => `<button type="button" class="btn-table-sm" style="font-size:0.75rem;" onclick="addReviewTag(this.textContent)">${t}</button>`).join(' ');
+
+      const nextRoundHtml = pendingCount === 0
+        ? `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span>🎉 本期 ${pool.length} 張都審完了。可以到「② 排程確認與送出」安排時間。${waiting > 0 ? `還有 ${waiting} 張待審。` : ''}</span>
+            ${waiting > 0 ? '<button type="button" class="btn-table-sm" onclick="startNextReviewRound()">開始下一期 →</button>' : ''}
+          </div>`
+        : '';
+
+      card.innerHTML = `
+        ${nextRoundHtml}
+        <div style="background:#FAF8F5; border:1px solid #E2E8F0; border-radius:12px; padding:18px;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+            <span class="sub-badge" style="background:#EDF2F7; color:#2D3748;">${REVIEW_KIND_LABELS[kind]}</span>
+            ${posts.length ? `<span class="sub-badge" style="background:#FAF5FF; color:#6B46C1;">＋ ${posts.length} 則社群貼文</span>` : ''}
+            <span style="margin-left:auto; font-size:0.82rem; font-weight:600; color:#2B4C65;">${REVIEW_LABELS[unit.state]}</span>
+          </div>
+          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 14px;">${escapeHtml(item.title || '（無標題）')}</h3>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; margin-bottom:12px; font-size:0.84rem; line-height:1.7;">
+            <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px;"><strong>🛡️ 預先稽核與風險提示</strong>${auditHtml}</div>
+            <div style="background:#EBF8FF; border:1px solid #BEE3F8; border-radius:8px; padding:10px 12px;"><strong>${sourceLabel}</strong>${sourceHtml}</div>
+          </div>
+
+          ${deskMainContentHtml(unit)}
+          ${editItemBtn ? `<div style="text-align:right; margin-top:6px;">${editItemBtn}</div>` : ''}
+          ${posts.map(p => deskPostHtml(p, true)).join('')}
+
+          <div class="form-group" style="margin:16px 0 8px;">
+            <label>修改意見（選「✏️ 要修改」時必填，會一併複製給 AI）：</label>
+            <div style="margin-bottom:6px;">${tagChips(REVISE_TAGS)}</div>
+            <div style="margin-bottom:6px;">${tagChips(REJECT_TAGS)}</div>
+            <textarea id="reviewNoteInput" rows="2" placeholder="點上面的快速標籤，或自己寫下想法。">${escapeHtml(note)}</textarea>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px;">
+            <button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideReview('approved')">✅ 可以發</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideReview('revise')">✏️ 要修改</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#718096;" onclick="decideReview('rejected')">❌ 不要發</button>
+          </div>
+          <div style="font-size:0.78rem; color:#718096; margin-bottom:10px;">
+            ${kind === 'social' ? '決定只影響這則社群貼文。' : `✅ 可以發：${kind === 'article' ? '手札' : '課程'}會立即上架到網站，社群貼文進入排程確認。❌ 不要發：從網站撤下並標為未採用。`}
+          </div>
+
+          <div style="display:flex; justify-content:space-between; gap:8px;">
+            <button type="button" class="btn-table-sm" onclick="gotoReview(${reviewCursor - 1})" ${reviewCursor === 0 ? 'disabled' : ''}>← 上一張</button>
+            <button type="button" class="btn-table-sm" onclick="gotoReview(${reviewCursor + 1})" ${reviewCursor >= pool.length - 1 ? 'disabled' : ''}>下一張 →</button>
+          </div>
+        </div>`;
+    }
+
+    function gotoReview(i) {
+      reviewCursor = i;
+      renderReviewStep();
+    }
+
+    function addReviewTag(tag) {
+      const box = document.getElementById('reviewNoteInput');
+      if (!box || box.value.includes(tag)) return;
+      box.value = box.value.trim() ? `${box.value.trim()}；${tag}` : tag;
+    }
+
+    function startNextReviewRound() {
+      // 只把已做出決定的卡移出本期；被改回待審的會留下
+      reviewPoolKeys = reviewPoolKeys.filter(k => {
+        const unit = buildReviewUnit(k);
+        return unit && unit.state === 'pending';
+      });
+      reviewCursor = 0;
+      renderReviewDesk();
+    }
+
+    // 手札／課程：只有還在審稿中的才跟著決定上下架；已上架的舊內容不會因為新貼文被撤下
+    function applyItemDecision(unit, decision, note) {
+      const { kind, item, key } = unit;
+      const tasks = [];
+      const itemOpen = ['pending', 'revise'].includes(itemReviewState(kind, item)) || deskDecidedKeys.has(key);
+      if (kind === 'social') {
+        item.reviewStatus = decision;
+        item.reviewNote = note;
+        tasks.push(() => window.WangzhouCloud.upsertSocialPost(item));
+      } else if (itemOpen) {
+        item.reviewStatus = decision;
+        item.reviewNote = note;
+        if (kind === 'article') {
+          item.status = decision === 'approved' ? 'active' : decision === 'rejected' ? 'retired' : 'draft';
+          item.isDraft = item.status === 'draft';
+          tasks.push(() => window.WangzhouCloud.upsertArticle(item));
+        } else {
+          item.isDraft = decision === 'revise';
+          item.active = decision === 'approved';
+          tasks.push(() => window.WangzhouCloud.upsertCourse(item));
+        }
+      }
+      unit.posts.forEach(p => {
+        if (['pending', 'revise'].includes(reviewStatusOf(p)) || deskDecidedKeys.has(key)) {
+          p.reviewStatus = decision;
+          p.reviewNote = note;
+          tasks.push(() => window.WangzhouCloud.upsertSocialPost(p));
+        }
+      });
+      return tasks;
+    }
+
+    async function decideReview(decision) {
+      const pool = getReviewPool();
+      const unit = pool[reviewCursor];
+      if (!unit) return;
+      const note = document.getElementById('reviewNoteInput').value.trim();
+      if (decision === 'revise' && !note) {
+        alert('請寫下要修改的地方（可以點快速標籤），AI 才知道怎麼改。');
+        document.getElementById('reviewNoteInput').focus();
+        return;
+      }
+
+      const tasks = applyItemDecision(unit, decision, note);
+      deskDecidedKeys.add(unit.key);
+      saveDataToLocalStorage();
+
+      // 自動跳到下一張待審
+      const updated = getReviewPool();
+      const nextIdx = updated.findIndex((u, i) => i > reviewCursor && u.state === 'pending');
+      const firstIdx = updated.findIndex(u => u.state === 'pending');
+      if (nextIdx >= 0) reviewCursor = nextIdx;
+      else if (firstIdx >= 0) reviewCursor = firstIdx;
+      refreshAdminView();
+
+      if (!window.WangzhouCloud) return;
+      try {
+        for (const task of tasks) await task();
+        showToast(`${REVIEW_LABELS[decision]}：已儲存「${unit.item.title || '（無標題）'}」`);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
+    }
+
+    // 「提早審稿一鍵複製結果給 AI」：整理成純文字，直接貼進對話
+    async function copyReviewResults() {
+      const pool = getReviewPool();
+      if (pool.length === 0) {
+        alert('本期沒有審稿資料可以複製。');
+        return;
+      }
+      const groups = { approved: [], revise: [], rejected: [], pending: [] };
+      pool.forEach(u => groups[u.state].push(u));
+      const label = u => `[${REVIEW_KIND_LABELS[u.kind]}] ${u.item.title || '（無標題）'}${u.posts.length ? `（含 ${u.posts.length} 則社群貼文）` : ''}`;
+      const noteOf = u => u.item.reviewNote || (u.posts.find(p => p.reviewNote) || {}).reviewNote || '';
+      const today = new Date().toLocaleDateString('zh-TW');
+      const lines = [`望舟小棧審稿結果（${today}）`];
+      if (groups.approved.length) lines.push('', '✅ 可以發：', ...groups.approved.map(u => `・${label(u)}`));
+      if (groups.revise.length) lines.push('', '✏️ 要修改：', ...groups.revise.map(u => `・${label(u)}\n  修改意見：${noteOf(u) || '（未填）'}`));
+      if (groups.rejected.length) lines.push('', '❌ 不要發：', ...groups.rejected.map(u => `・${label(u)}${noteOf(u) ? `（${noteOf(u)}）` : ''}`));
+      if (groups.pending.length) lines.push('', '⏳ 尚未審：', ...groups.pending.map(u => `・${label(u)}`));
+      const text = lines.join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('📋 已複製審稿結果，可以直接貼給 AI');
+      } catch (e) {
+        alert(text);
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // ② 排程確認與送出
+    // ---------------------------------------------------------------------
+    function taipeiToday() {
+      return new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
+    }
+
+    function addDays(dateStr, n) {
+      const d = new Date(dateStr + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function isWeekendDate(dateStr) {
+      const day = new Date(dateStr + 'T00:00:00Z').getUTCDay();
+      return day === 0 || day === 6;
+    }
+
+    function postDeadline(p) {
+      if (p.sourceType !== 'course') return null;
+      const c = deskFind('course', p.sourceId);
+      return c && /^\d{4}-\d{2}-\d{2}$/.test(c.deadline || '') ? c.deadline : null;
+    }
+
+    function postDueIso(p) {
+      const slot = DESK_SLOTS[p.scheduledTimeSlot] || DESK_SLOTS.evening;
+      return `${p.scheduledDate}T${slot.time}:00+08:00`;
+    }
+
+    // 已通過審稿、還沒全部送進 Buffer 的社群貼文
+    function scheduleCandidates() {
+      return (SITE_DATA.socialPosts || []).filter(p => reviewStatusOf(p) === 'approved' && p.status !== 'published' && !isFullySent(p));
+    }
+
+    function upcomingSentPosts() {
+      return (SITE_DATA.socialPosts || [])
+        .filter(p => isFullySent(p) && p.scheduledAt && Date.parse(p.scheduledAt) > Date.now() - 24 * 3600 * 1000)
+        .sort((a, b) => Date.parse(a.scheduledAt) - Date.parse(b.scheduledAt));
+    }
+
+    // 建議時段：有報名截止日的先排；一天一篇，平日晚間 21:00、週末午後 15:00
+    // 主理人自己選過的日期保留不動；系統建議的每次重新計算，新的急件才排得進截止日前
+    function suggestSchedule(list) {
+      const today = taipeiToday();
+      const taken = new Set(upcomingSentPosts().map(p => p.scheduledDate).filter(Boolean));
+      const isChosen = p => !p.scheduleSuggested && p.scheduledDate && p.scheduledDate > today;
+      list.filter(isChosen).forEach(p => taken.add(p.scheduledDate));
+      const todo = list
+        .filter(p => !isChosen(p))
+        .sort((a, b) => (postDeadline(a) || '9999').localeCompare(postDeadline(b) || '9999') ||
+          String(a.createdAt || a.id).localeCompare(String(b.createdAt || b.id)));
+      let day = addDays(today, 1);
+      todo.forEach(p => {
+        while (taken.has(day)) day = addDays(day, 1);
+        p.scheduledDate = day;
+        p.scheduledTimeSlot = isWeekendDate(day) ? 'weekend' : 'evening';
+        p.scheduleSuggested = true;
+        taken.add(day);
+      });
+    }
+
+    function renderScheduleStep() {
+      const board = document.getElementById('scheduleBoard');
+      if (!board) return;
+      const list = scheduleCandidates();
+      suggestSchedule(list);
+      list.sort((a, b) => postDueIso(a).localeCompare(postDueIso(b)));
+      const sent = upcomingSentPosts();
+
+      const slotOptions = (current) => Object.keys(DESK_SLOTS)
+        .map(k => `<option value="${k}" ${k === current ? 'selected' : ''}>${DESK_SLOTS[k].label}</option>`).join('');
+
+      const rows = list.map(p => {
+        const plats = platformsOf(p);
+        const deadline = postDeadline(p);
+        const late = deadline && p.scheduledDate > deadline;
+        const sentIds = p.bufferPostIds || {};
+        const platChips = plats.map(pl => `<span class="sub-badge" style="background:${pl === 'threads' ? '#000' : '#C13584'}; color:#FFF;">${pl === 'threads' ? '🧵 Threads' : '📸 Instagram'}${sentIds[pl] ? ' ✅' : ''}</span>`).join(' ');
+        const needsCard = plats.includes('instagram');
+        const cardHtml = needsCard
+          ? (p.imageUrl
+            ? `<img src="${escapeHtml(wzSafeUrl(p.imageUrl))}" alt="IG 圖卡" style="width:88px; border-radius:6px; border:1px solid #E2E8F0;"><br><button type="button" class="btn-table-sm" style="font-size:0.72rem; margin-top:4px;" onclick="generateCardForPost('${wzSafeId(p.id)}')">🔄 重新產生</button>`
+            : `<button type="button" class="btn-table-sm" onclick="generateCardForPost('${wzSafeId(p.id)}')">🎨 產生 IG 圖卡</button>`)
+          : '<span style="font-size:0.75rem; color:#A0AEC0;">純文字</span>';
+        return `
+          <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:12px 14px; margin-bottom:10px; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center;">
+            <div>
+              <div style="font-weight:600; color:#1E242B; margin-bottom:4px;">${escapeHtml(p.title || '（無標題）')}</div>
+              <div style="margin-bottom:8px;">${platChips}
+                ${deadline ? `<span style="font-size:0.78rem; color:${late ? '#C53030' : '#B87D4B'}; margin-left:4px;">⚡ 報名截止 ${escapeHtml(deadline)}${late ? '（⚠️ 排在截止日之後）' : ''}</span>` : ''}
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="date" value="${escapeHtml(p.scheduledDate || '')}" min="${taipeiToday()}" onchange="setPostSchedule('${wzSafeId(p.id)}', 'date', this.value)" style="width:auto;">
+                <select onchange="setPostSchedule('${wzSafeId(p.id)}', 'slot', this.value)" style="width:auto;">${slotOptions(p.scheduledTimeSlot)}</select>
+              </div>
+              ${p.bufferError ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">❌ 上次送出失敗：${escapeHtml(p.bufferError)}</div>` : ''}
+            </div>
+            <div style="text-align:center;">${cardHtml}</div>
+          </div>`;
+      }).join('');
+
+      const sentHtml = sent.length
+        ? `<h4 style="margin:20px 0 8px; color:#2D3748;">📬 已排進 Buffer（${sent.length} 篇）</h4>` + sent.map(p => {
+          const when = new Date(p.scheduledAt).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' });
+          return `<div style="font-size:0.85rem; color:#4A5568; padding:6px 0; border-bottom:1px dashed #E2E8F0;">✅ ${escapeHtml(when)}｜${escapeHtml(p.title || '（無標題）')}｜${platformsOf(p).map(pl => (pl === 'threads' ? 'Threads' : 'Instagram')).join('、')}</div>`;
+        }).join('')
+        : '';
+
+      board.innerHTML = list.length
+        ? `<p style="font-size:0.84rem; color:#718096; margin:0 0 12px;">已通過審稿的社群貼文。時間是系統建議的（有截止日的課程排在前面），可以直接修改。送出後由 Buffer 在排定時間自動發布。</p>
+           ${rows}
+           <button type="button" id="btnSendToBuffer" class="btn-submit-action" style="background:#2C7A7B;" onclick="sendScheduledToBuffer()">🚀 送進 Buffer（${list.length} 篇）</button>
+           ${sentHtml}`
+        : `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:32px 20px; text-align:center; color:#718096;">目前沒有等待排程的貼文。審稿時按「✅ 可以發」的社群貼文會出現在這裡。</div>${sentHtml}`;
+    }
+
+    async function setPostSchedule(id, field, value) {
+      const p = deskFind('social', id);
+      if (!p) return;
+      p.scheduleSuggested = false;
+      if (field === 'date') p.scheduledDate = value;
+      else {
+        p.scheduledTimeSlot = value;
+        p.timeSlotLabel = DESK_SLOTS[value] ? DESK_SLOTS[value].label : '';
+      }
+      saveDataToLocalStorage();
+      renderScheduleStep();
+      try {
+        if (window.WangzhouCloud) await window.WangzhouCloud.upsertSocialPost(p);
+      } catch (err) {
+        showToast('⚠️ 時間儲存失敗：' + err.message);
+      }
+    }
+
+    // 用後台的水墨字卡產生器畫 4:5 直式圖卡，上傳到 social-cards 圖片空間
+    async function generateCardForPost(id) {
+      const p = deskFind('social', id);
+      if (!p) return;
+      // 副標用 Threads 文案的第一句（自然的散文）；IG 版常是「P1 封面…」這類分頁腳本，不適合直接印在圖上
+      const body = postTextFor(p, 'threads') || postTextFor(p, 'instagram');
+      const firstLine = body.split('\n').map(s => s.trim()).filter(Boolean)[0] || '';
+      document.getElementById('cardQuoteInput').value = p.title || '';
+      document.getElementById('cardSubInput').value = firstLine.slice(0, 80);
+      document.getElementById('cardRatioSelect').value = 'portrait';
+      updateCardCanvas();
+      try {
+        const blob = await new Promise((resolve, reject) => {
+          document.getElementById('cardCanvas').toBlob(b => (b ? resolve(b) : reject(new Error('圖卡繪製失敗'))), 'image/jpeg', 0.92);
+        });
+        const url = await window.WangzhouCloud.uploadSocialCard(blob, p.id);
+        p.imageUrl = `${url}?v=${Date.now()}`;
+        saveDataToLocalStorage();
+        await window.WangzhouCloud.upsertSocialPost(p);
+        showToast('🎨 圖卡已產生並上傳');
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 圖卡產生失敗：' + err.message);
+      }
+      renderScheduleStep();
+    }
+
+    async function sendScheduledToBuffer() {
+      const list = scheduleCandidates();
+      if (list.length === 0) return;
+
+      const problems = [];
+      list.forEach(p => {
+        const title = p.title || '（無標題）';
+        const due = Date.parse(postDueIso(p));
+        if (!p.scheduledDate || Number.isNaN(due) || due < Date.now() + 5 * 60 * 1000) problems.push(`「${title}」的發文時間已經過了或太近`);
+        platformsOf(p).forEach(pl => {
+          if ((p.bufferPostIds || {})[pl]) return;
+          const text = postTextFor(p, pl);
+          if (!text) problems.push(`「${title}」沒有 ${pl} 文案`);
+          else if (text.length > PLATFORM_TEXT_LIMITS[pl]) problems.push(`「${title}」的 ${pl} 文案超過 ${PLATFORM_TEXT_LIMITS[pl]} 字`);
+          if (pl === 'instagram' && !p.imageUrl) problems.push(`「${title}」還沒有 IG 圖卡`);
+        });
+      });
+      if (problems.length) {
+        alert('還不能送出：\n\n' + problems.join('\n'));
+        return;
+      }
+      if (!confirm(`即將把 ${list.length} 篇貼文送進 Buffer，到排定時間會自動發布到 Threads／Instagram。\n確定送出嗎？`)) return;
+
+      const btn = document.getElementById('btnSendToBuffer');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = '⏳ 送出中…';
+      }
+      let ok = 0;
+      let failed = 0;
+      for (const p of list) {
+        p.bufferPostIds = { ...(p.bufferPostIds || {}) };
+        const errors = [];
+        for (const pl of platformsOf(p)) {
+          if (p.bufferPostIds[pl]) continue;
+          try {
+            const result = await window.WangzhouCloud.bufferRelay({
+              action: 'create',
+              platform: pl,
+              text: postTextFor(p, pl),
+              dueAt: postDueIso(p),
+              imageUrl: pl === 'instagram' ? p.imageUrl : undefined
+            });
+            p.bufferPostIds[pl] = result.postId;
+          } catch (err) {
+            errors.push(`${pl === 'threads' ? 'Threads' : 'Instagram'}：${err.message}`);
+          }
+        }
+        p.bufferError = errors.join('；');
+        p.scheduledAt = new Date(Date.parse(postDueIso(p))).toISOString();
+        if (isFullySent(p)) {
+          p.status = 'scheduled';
+          ok++;
+        } else {
+          failed++;
+        }
+        try {
+          await window.WangzhouCloud.upsertSocialPost(p);
+        } catch (err) {
+          p.bufferError = `${p.bufferError ? p.bufferError + '；' : ''}送出紀錄未能存到雲端：${err.message}`;
+        }
+      }
+      saveDataToLocalStorage();
+      refreshAdminView();
+      alert(failed ? `完成 ${ok} 篇，${failed} 篇有問題，原因已標在該篇下方，修正後可再按一次送出（已成功的平台不會重複送）。` : `🎉 ${ok} 篇都已排進 Buffer！`);
+    }
+
     async function handleSaveSocialPost(e) {
       e.preventDefault();
       const editIdx = document.getElementById('editSocialId').value;
@@ -2998,7 +3692,19 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const timeSlotVal = document.getElementById('socTimeSlotInput').value;
 
       const rawDate = document.getElementById('socDateInput').value;
+      // 保留審稿結果、圖卡與 Buffer 紀錄；文案有改動（或原本被標「要修改」）就重新回到待審
+      const existing = editIdx !== '' ? SITE_DATA.socialPosts[editIdx] : {};
+      const newTitle = document.getElementById('socTitleInput').value.trim();
+      const contentChanged = !!existing.id && (
+        (existing.title || '') !== newTitle ||
+        ((existing.versions && existing.versions.threads) || '') !== threadsContent ||
+        ((existing.versions && existing.versions.ig) || '') !== igContent
+      );
       const postObj = {
+        ...existing,
+        reviewStatus: (!existing.reviewStatus || existing.reviewStatus === 'revise' || contentChanged) ? 'pending' : existing.reviewStatus,
+        auditNote: document.getElementById('socAuditInput').value.trim(),
+        sourceUrl: document.getElementById('socSourceUrlInput').value.trim(),
         id: editIdx !== '' ? SITE_DATA.socialPosts[editIdx].id : "sp-" + Date.now(),
         title: document.getElementById('socTitleInput').value.trim(),
         topic: document.getElementById('socTopicInput').value,
@@ -3480,7 +4186,7 @@ ${sourceText}`;
 
     // 支援網址 hash 快速直通指定面版（例如 admin.html#social）
     const initialHash = window.location.hash.replace('#', '');
-    if (initialHash && ['dashboard', 'submissions', 'articles', 'social', 'courses', 'planks'].includes(initialHash)) {
+    if (initialHash && ['dashboard', 'review', 'submissions', 'articles', 'social', 'courses', 'planks'].includes(initialHash)) {
       switchPanel(initialHash);
     }
 

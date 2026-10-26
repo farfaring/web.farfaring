@@ -10,7 +10,7 @@ const SITE_DATA = {
     name: "望舟小棧",
     enName: "farfaring",
     tagline: "生活裡處處都是機會，陪你挖掘，陪你發現",
-    siteUrl: "https://farfaring.github.io/web.farfaring/",
+    siteUrl: "https://webfarfaring.vercel.app/",
     lastUpdated: "2026 年 10 月 21 日",
     adminTitle: "小棧長",
     contactEmail: "farfaring.space@gmail.com",
@@ -104,6 +104,14 @@ function wzSafeId(value) {
   return String(value || '').replace(/[^A-Za-z0-9_-]/g, '');
 }
 
+// 審稿等選填欄位：有值才送，避免舊畫面存檔時把雲端已有的資料蓋掉
+function wzAddDefined(payload, fields) {
+  Object.keys(fields).forEach(k => {
+    if (fields[k] !== undefined) payload[k] = fields[k];
+  });
+  return payload;
+}
+
 const WangzhouCloud = {
   config: SUPABASE_CONFIG,
 
@@ -144,6 +152,12 @@ const WangzhouCloud = {
       prose: article.prose,
       status: article.status || 'active'
     };
+    wzAddDefined(payload, {
+      review_status: article.reviewStatus,
+      review_note: article.reviewNote,
+      audit_note: article.auditNote,
+      source_url: article.sourceUrl
+    });
     return await this.request('articles', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
@@ -178,6 +192,11 @@ const WangzhouCloud = {
       link: course.url || course.link,
       status: course.isDraft ? 'draft' : (course.active === false ? 'expired' : 'active')
     };
+    wzAddDefined(payload, {
+      review_status: course.reviewStatus,
+      review_note: course.reviewNote,
+      audit_note: course.auditNote
+    });
     return await this.request('courses', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
@@ -274,6 +293,16 @@ const WangzhouCloud = {
       status: post.status || 'scheduled',
       metrics_note: post.metricsNote || post.metrics_note || ''
     };
+    wzAddDefined(payload, {
+      review_status: post.reviewStatus,
+      review_note: post.reviewNote,
+      audit_note: post.auditNote,
+      source_url: post.sourceUrl,
+      image_url: post.imageUrl,
+      scheduled_at: post.scheduledAt,
+      buffer_post_ids: post.bufferPostIds,
+      buffer_error: post.bufferError
+    });
     return await this.request('social_posts', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
@@ -465,7 +494,12 @@ const WangzhouCloud = {
           title: a.title,
           prose: a.prose,
           status: a.status,
-          isDraft: a.status === 'draft'
+          isDraft: a.status === 'draft',
+          reviewStatus: a.review_status || '',
+          reviewNote: a.review_note || '',
+          auditNote: a.audit_note || '',
+          sourceUrl: a.source_url || '',
+          createdAt: a.created_at || ''
         }));
         changed = true;
       }
@@ -487,7 +521,11 @@ const WangzhouCloud = {
           timeCycle: c.time_cycle || '',
           url: c.link,
           active: c.status === 'active',
-          isDraft: c.status === 'draft'
+          isDraft: c.status === 'draft',
+          reviewStatus: c.review_status || '',
+          reviewNote: c.review_note || '',
+          auditNote: c.audit_note || '',
+          createdAt: c.created_at || ''
         }));
         changed = true;
       }
@@ -525,7 +563,16 @@ const WangzhouCloud = {
           scheduledTimeSlot: p.scheduled_time_slot,
           timeSlotLabel: p.time_slot_label,
           status: p.status,
-          metricsNote: p.metrics_note
+          metricsNote: p.metrics_note,
+          reviewStatus: p.review_status || 'pending',
+          reviewNote: p.review_note || '',
+          auditNote: p.audit_note || '',
+          sourceUrl: p.source_url || '',
+          imageUrl: p.image_url || '',
+          scheduledAt: p.scheduled_at || null,
+          bufferPostIds: p.buffer_post_ids || {},
+          bufferError: p.buffer_error || '',
+          createdAt: p.created_at || ''
         }));
         changed = true;
       }

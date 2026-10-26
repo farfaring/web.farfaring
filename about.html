@@ -167,9 +167,9 @@
 
   <!-- Page Header（純化為 ABOUT FARFARING，副標題置中且無行尾標點） -->
   <header class="page-hero">
-    <div class="page-eyebrow">ABOUT FARFARING</div>
-    <h1 class="page-title">關於望舟・一個短暫停靠的地方</h1>
-    <p class="page-subtitle">
+    <div class="page-eyebrow" id="aboutHeroEyebrow">ABOUT FARFARING</div>
+    <h1 class="page-title" id="aboutHeroTitle">關於望舟・一個短暫停靠的地方</h1>
+    <p class="page-subtitle" id="aboutHeroSubtitle">
       這裡是短暫停靠的水岸小棧，陪你在迷惘時看清前方的路<br>
       當你整理好腳步、蓄滿能量，隨時都能從容啟航，通往真正想要的生活
     </p>
@@ -183,30 +183,32 @@
       <section class="about-card" id="section-intro">
         <h2 class="about-card-title">
           <span>🌿</span>
-          <span>在小棧停靠，你能獲得什麼？</span>
+          <span id="aboutIntroTitle">在小棧停靠，你能獲得什麼？</span>
         </h2>
-        <p class="about-text">
-          在生涯的河道上，很少有人是一路筆直划到底的。<br>
-          更多的時候，會遇到水霧、會覺得手臂痠痛，或是發現原本想去的地方，好像已經跟現在的自己不太一樣了。
-        </p>
-        <p class="about-text">
-          「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟。<br>
-          當你覺得累了、不知道下一步該往哪裡走的時候，可以先在這裡靠岸停一下。來這裡看看新事物，發現一點新靈感。<br>
-          等充好電了、看清楚方向了，隨時可以解開纜繩，帶著踏實的心情再次啟航。
-        </p>
+        <div id="aboutIntroTexts">
+          <p class="about-text">
+            在生涯的河道上，很少有人是一路筆直划到底的。<br>
+            更多的時候，會遇到水霧、會覺得手臂痠痛，或是發現原本想去的地方，好像已經跟現在的自己不太一樣了。
+          </p>
+          <p class="about-text">
+            「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟。<br>
+            當你覺得累了、不知道下一步該往哪裡走的時候，可以先在這裡靠岸停一下。來這裡看看新事物，發現一點新靈感。<br>
+            等充好電了、看清楚方向了，隨時可以解開纜繩，帶著踏實的心情再次啟航。
+          </p>
+        </div>
 
         <!-- 協作透明說明 -->
         <div class="collab-confession-box">
           <div class="collab-confession-title">
             <span>🌿</span>
-            <span>一則真誠的小記：關於這裡的產出</span>
+            <span id="aboutCollabTitle">一則真誠的小記：關於這裡的產出</span>
           </div>
-          <p class="collab-confession-text">
+          <div class="collab-confession-text" id="aboutCollabText">
             身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。<br>
             「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。<br><br>
             這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。<br><br>
             <strong>科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。</strong>
-          </p>
+          </div>
         </div>
       </section>
 
@@ -214,12 +216,12 @@
       <section class="about-card" id="section-consult">
         <h2 class="about-card-title">
           <span>🛶</span>
-          <span>一對一公益職涯諮詢</span>
+          <span id="aboutConsultTitle">一對一公益職涯諮詢</span>
         </h2>
-        <p class="about-text">
+        <p class="about-text" id="aboutConsultDesc">
           如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：
         </p>
-        <ul class="consult-rules">
+        <ul class="consult-rules" id="aboutConsultRules">
           <li><strong>參與費用</strong>：公益性質，不收取任何諮詢費用。</li>
           <li><strong>深談時間</strong>：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。</li>
           <li><strong>進行方式</strong>：線上視訊會談（Google Meet 或約定工具）。</li>
@@ -227,7 +229,7 @@
         </ul>
         <div style="margin-top:20px;">
           <button class="btn-consult-action" onclick="scrollToContact('consult')">
-            <span>📅 填寫諮詢預約意向 ↓</span>
+            <span id="aboutConsultBtnText">📅 填寫諮詢預約意向 ↓</span>
           </button>
         </div>
       </section>
@@ -236,9 +238,9 @@
       <section class="about-card" id="section-contact">
         <h2 class="about-card-title">
           <span>✉️</span>
-          <span>聯絡小棧長</span>
+          <span id="aboutContactTitle">聯絡小棧長</span>
         </h2>
-        <p class="about-text" style="margin-bottom:20px;">
+        <p class="about-text" id="aboutContactDesc" style="margin-bottom:20px;">
           如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。
         </p>
 
@@ -323,6 +325,114 @@
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
     document.getElementById('autoMonthYearAbt').innerText = SITE_DATA.siteInfo.lastUpdated;
+
+    // 動態渲染關於望舟文案（從 SITE_DATA.about 取得，後台隨時編輯即可即時同步）
+    function renderAboutPage() {
+      const cfg = (window.SITE_DATA && window.SITE_DATA.about) ? window.SITE_DATA.about : null;
+      if (!cfg) return;
+
+      // 1. Hero 頂部標頭
+      if (cfg.heroEyebrow) {
+        const el = document.getElementById('aboutHeroEyebrow');
+        if (el) el.textContent = cfg.heroEyebrow;
+      }
+      if (cfg.heroTitle) {
+        const el = document.getElementById('aboutHeroTitle');
+        if (el) el.textContent = cfg.heroTitle;
+      }
+      if (cfg.heroSubtitle) {
+        const el = document.getElementById('aboutHeroSubtitle');
+        if (el) {
+          const lines = String(cfg.heroSubtitle).split('\n').map(l => wzEscape(l.trim())).filter(Boolean);
+          el.innerHTML = lines.join('<br>');
+        }
+      }
+
+      // 2. 空間初心與協作小記
+      if (cfg.introTitle) {
+        const el = document.getElementById('aboutIntroTitle');
+        if (el) el.textContent = cfg.introTitle;
+      }
+      if (cfg.introText) {
+        const el = document.getElementById('aboutIntroTexts');
+        if (el) {
+          const raw = String(cfg.introText);
+          const paras = raw.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+          el.innerHTML = paras.map(p => {
+            const lines = p.split('\n').map(l => wzEscape(l.trim())).join('<br>');
+            return `<p class="about-text">${lines}</p>`;
+          }).join('');
+        }
+      }
+      if (cfg.collabTitle) {
+        const el = document.getElementById('aboutCollabTitle');
+        if (el) el.textContent = cfg.collabTitle;
+      }
+      if (cfg.collabText) {
+        const el = document.getElementById('aboutCollabText');
+        if (el) {
+          const raw = String(cfg.collabText);
+          const paras = raw.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+          el.innerHTML = paras.map((p, idx) => {
+            const lines = p.split('\n').map(l => wzEscape(l.trim())).join('<br>');
+            if (idx === paras.length - 1 && paras.length > 1) {
+              return `<strong>${lines}</strong>`;
+            }
+            return lines;
+          }).join('<br><br>');
+        }
+      }
+
+      // 3. 一對一公益職涯諮詢
+      if (cfg.consultTitle) {
+        const el = document.getElementById('aboutConsultTitle');
+        if (el) el.textContent = cfg.consultTitle;
+      }
+      if (cfg.consultDesc) {
+        const el = document.getElementById('aboutConsultDesc');
+        if (el) el.textContent = cfg.consultDesc;
+      }
+      if (cfg.consultRules) {
+        const el = document.getElementById('aboutConsultRules');
+        if (el) {
+          const rules = Array.isArray(cfg.consultRules) 
+            ? cfg.consultRules 
+            : String(cfg.consultRules).split('\n').map(r => r.trim()).filter(Boolean);
+          if (rules.length > 0) {
+            el.innerHTML = rules.map(rule => {
+              const match = rule.match(/^([^：:]+[：:])(.*)$/);
+              if (match) {
+                const title = match[1].slice(0, -1);
+                const colon = match[1].slice(-1);
+                const body = match[2];
+                return `<li><strong>${wzEscape(title)}</strong>${wzEscape(colon)}${wzEscape(body)}</li>`;
+              }
+              return `<li>${wzEscape(rule)}</li>`;
+            }).join('');
+          }
+        }
+      }
+      if (cfg.consultBtnText) {
+        const el = document.getElementById('aboutConsultBtnText');
+        if (el) el.textContent = cfg.consultBtnText;
+      }
+
+      // 4. 聯絡小棧長
+      if (cfg.contactTitle) {
+        const el = document.getElementById('aboutContactTitle');
+        if (el) el.textContent = cfg.contactTitle;
+      }
+      if (cfg.contactDesc) {
+        const el = document.getElementById('aboutContactDesc');
+        if (el) el.textContent = cfg.contactDesc;
+      }
+    }
+
+    // 初始渲染與同步雲端後重新渲染
+    renderAboutPage();
+    window.addEventListener('WangzhouDataSynced', () => {
+      renderAboutPage();
+    });
 
     // 平滑滾動至私密聯絡信箱並切換類別
     function scrollToContact(category = 'consult') {

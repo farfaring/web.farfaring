@@ -135,6 +135,13 @@ CREATE TABLE IF NOT EXISTS public.active_sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_active_sessions_last_seen ON public.active_sessions(last_seen_at);
 
+-- 網站全域設定與頁面文案（關於望舟、公告等）
+CREATE TABLE IF NOT EXISTS public.site_configs (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 
 -- =======================================================
 -- 3. 權限規則（Row Level Security）
@@ -148,6 +155,7 @@ ALTER TABLE public.submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.social_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.active_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_configs ENABLE ROW LEVEL SECURITY;
 
 -- 訪客公開讀取
 DROP POLICY IF EXISTS "Public read active articles" ON public.articles;
@@ -160,6 +168,10 @@ CREATE POLICY "Public read active courses" ON public.courses
 
 DROP POLICY IF EXISTS "Public read planks" ON public.planks;
 CREATE POLICY "Public read planks" ON public.planks
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read site_configs" ON public.site_configs;
+CREATE POLICY "Public read site_configs" ON public.site_configs
   FOR SELECT USING (true);
 
 -- 訪客投稿：只能新增、只能是待處理、欄位格式與長度受限；不能讀取任何投稿
@@ -197,6 +209,10 @@ CREATE POLICY "Owner full access submissions" ON public.submissions FOR ALL TO a
 
 DROP POLICY IF EXISTS "Owner full access social_posts" ON public.social_posts;
 CREATE POLICY "Owner full access social_posts" ON public.social_posts FOR ALL TO authenticated
+  USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
+
+DROP POLICY IF EXISTS "Owner full access site_configs" ON public.site_configs;
+CREATE POLICY "Owner full access site_configs" ON public.site_configs FOR ALL TO authenticated
   USING (public.is_wangzhou_owner()) WITH CHECK (public.is_wangzhou_owner());
 
 -- 流量統計明細：只有主理人能讀；寫入一律透過下方 record_visit 函數
@@ -459,3 +475,30 @@ INSERT INTO public.articles (id, cat_key, cat_name, date, title, prose) VALUES
 ('note-01', 'career', '職涯探索', '2026.10', '當你試了好多新方向，卻覺得還在原地打轉的時候', '有些人在離開原本熟悉的位置、或是換到比較安穩但少了點成就感的工作之後，為了想趕快找回生活的重心，會開始同時嘗試好多事——下班學剪輯、週末研究開小賣場、又報名了幾堂證照課。\n\n看起來每天的行程都排得好滿，但過了幾個月，卻覺得自己好像只是很累，小舟卻沒有真正往前走。\n\n如果你最近也是這樣，想先跟你說：這真的不是因為你不夠好。相反的，是因為你太認真想為自己找路了。\n\n只是在水流還不清楚的時候，如果急著往每個方向都用力划兩槳，船反而會在原地打轉。當力氣被分散在五件零散的小事上，每一件事都只推進了一點點，自然很難看見讓自己安心的風景。\n\n這週不妨先在木棧板上停一下，試著做個溫柔的減法：\n先把手上覺得「好像應該做」的五件事暫時放下三件，只留下一件「能接上你過去累積過的經驗」、或是「你做完之後心裡覺得踏實、有精神」的事。\n\n給自己三個月的時間，只專心划這一槳看看。'),
 ('note-02', 'career', '職涯探索', '2026.10', '走過的路不會白費：為什麼「舊經驗＋一點新工具」反而最珍貴？', '很多人在考慮轉換跑道或重新找方向時，心裡常會有個聲音：「我不是本科系出身，現在才學來得及嗎？」\n\n「過去做行政／做人資／跑業務累積的經驗，到了新領域是不是全都歸零了？」\n\n這種「歸零的恐慌」，常讓人遲遲不敢踏出第一步。\n\n但在水岸邊看過許多靠岸的小舟，往往真正走得遠的，不是那些一開始就懂得最新技術的人，而是「帶著舊領域扎實基本功，再加上一點點新工具」的轉職者。\n\n因為科技與工具每年都在變，但你過去所學會的「如何理解別人的需求」、「如何在混亂中把事情理出條理」、「如何跟不同個性的人好好說話」，這些都是無法被輕易取代的底層肌肉。\n\n新工具只是新槳，而你過去幾年積累的人生歷練，才是這艘小舟最重要的吃水深度。\n\n不用急著把過去的一切推翻抹去，試著把你的舊專長，輕輕搭上一件新工具試試看。')
 ON CONFLICT (id) DO NOTHING;
+
+-- 關於望舟頁面預設文案
+INSERT INTO public.site_configs (key, value) VALUES
+(
+  'about',
+  jsonb_build_object(
+    'heroEyebrow', 'ABOUT FARFARING',
+    'heroTitle', '關於望舟・一個短暫停靠的地方',
+    'heroSubtitle', E'這裡是短暫停靠的水岸小棧，陪你在迷惘時看清前方的路\n當你整理好腳步、蓄滿能量，隨時都能從容啟航，通往真正想要的生活',
+    'introTitle', '在小棧停靠，你能獲得什麼？',
+    'introText', E'在生涯的河道上，很少有人是一路筆直划到底的。\n更多的時候，會遇到水霧、會覺得手臂痠痛，或是發現原本想去的地方，好像已經跟現在的自己不太一樣了。\n\n「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟。\n當你覺得累了、不知道下一步該往哪裡走的時候，可以先在這裡靠岸停一下。來這裡看看新事物，發現一點新靈感。\n等充好電了、看清楚方向了，隨時可以解開纜繩，帶著踏實的心情再次啟航。',
+    'collabTitle', '一則真誠的小記：關於這裡的產出',
+    'collabText', E'身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。\n「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。\n\n這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。\n\n科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。',
+    'consultTitle', '一對一公益職涯諮詢',
+    'consultDesc', '如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：',
+    'consultRules', jsonb_build_array(
+      '參與費用：公益性質，不收取任何諮詢費用。',
+      '深談時間：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。',
+      '進行方式：線上視訊會談（Google Meet 或約定工具）。',
+      '善循環回饋：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。'
+    ),
+    'consultBtnText', '📅 填寫諮詢預約意向 ↓',
+    'contactTitle', '聯絡小棧長',
+    'contactDesc', '如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。'
+  )
+)
+ON CONFLICT (key) DO NOTHING;

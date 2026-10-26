@@ -4,6 +4,28 @@
  * 當後台發布更新時，本檔案的 lastUpdated 與各項資料庫將同步更新。
  */
 
+// 《關於望舟》頁面預設文案（Single Source of Truth 初始範本）
+const DEFAULT_ABOUT_CONFIG = {
+  heroEyebrow: "ABOUT FARFARING",
+  heroTitle: "關於望舟・一個短暫停靠的地方",
+  heroSubtitle: "這裡是短暫停靠的水岸小棧，陪你在迷惘時看清前方的路\n當你整理好腳步、蓄滿能量，隨時都能從容啟航，通往真正想要的生活",
+  introTitle: "在小棧停靠，你能獲得什麼？",
+  introText: "在生涯的河道上，很少有人是一路筆直划到底的。\n更多的時候，會遇到水霧、會覺得手臂痠痛，或是發現原本想去的地方，好像已經跟現在的自己不太一樣了。\n\n「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟。\n當你覺得累了、不知道下一步該往哪裡走的時候，可以先在這裡靠岸停一下。來這裡看看新事物，發現一點新靈感。\n等充好電了、看清楚方向了，隨時可以解開纜繩，帶著踏實的心情再次啟航。",
+  collabTitle: "一則真誠的小記：關於這裡的產出",
+  collabText: "身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。\n「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。\n\n這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。\n\n科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。",
+  consultTitle: "一對一公益職涯諮詢",
+  consultDesc: "如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：",
+  consultRules: [
+    "參與費用：公益性質，不收取任何諮詢費用。",
+    "深談時間：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。",
+    "進行方式：線上視訊會談（Google Meet 或約定工具）。",
+    "善循環回饋：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。"
+  ],
+  consultBtnText: "📅 填寫諮詢預約意向 ↓",
+  contactTitle: "聯絡小棧長",
+  contactDesc: "如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。"
+};
+
 const SITE_DATA = {
   // 網站全域營運設定
   siteInfo: {
@@ -18,6 +40,9 @@ const SITE_DATA = {
     threads: "https://www.threads.net/@farfaring",
     disclaimer: "相關開課資訊請以各主辦單位公告為準 ｜ 望舟小棧 farfaring"
   },
+
+  // 🌿 關於望舟頁面文案（支援後台隨時編輯微調、同步雲端）
+  about: Object.assign({}, DEFAULT_ABOUT_CONFIG),
 
   // 首頁湖面漂浮棧板短句庫（支援後台隨時增減、調整三色分類）
   planks: [
@@ -67,6 +92,19 @@ const SITE_DATA = {
   // 📱 社群專屬稿庫與排程
   socialPosts: []
 };
+
+// 本機 localStorage 暫存快取回補（若主理人在後台編輯過但尚未同步或預覽）
+try {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const localSaved = localStorage.getItem('WANGZHOU_SITE_DATA_OVERRIDE');
+    if (localSaved) {
+      const parsed = JSON.parse(localSaved);
+      if (parsed && parsed.about) {
+        SITE_DATA.about = Object.assign({}, SITE_DATA.about, parsed.about);
+      }
+    }
+  }
+} catch (e) {}
 
 // =====================================================================
 // ⚡ 《望舟小棧 farfaring》Supabase 雲端資料庫雙向即時連接引擎
@@ -348,7 +386,25 @@ const WangzhouCloud = {
     return `${this.config.url}/storage/v1/object/public/social-cards/${path}`;
   },
 
-  // 5. 輕量流量統計與在線渡客 (Analytics & Realtime Presence)
+  // 5. 網站全域設定與頁面文案 (Site Configs: about, etc.)
+  async getSiteConfig(key) {
+    const data = await this.request(`site_configs?key=eq.${encodeURIComponent(key)}&select=value`);
+    return (data && data[0]) ? data[0].value : null;
+  },
+  async upsertSiteConfig(key, value) {
+    const payload = {
+      key: key,
+      value: value,
+      updated_at: new Date().toISOString()
+    };
+    return await this.request('site_configs', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(payload)
+    });
+  },
+
+  // 6. 輕量流量統計與在線渡客 (Analytics & Realtime Presence)
   // 零個資、不記 IP、無 Cookie。僅記錄頁面、來源與 session，並回傳即時渡客數。
   getOrCreateSessionId() {
     if (typeof window === 'undefined') return 'server';
@@ -460,14 +516,15 @@ const WangzhouCloud = {
   async syncToLocal({ includePrivate = false } = {}) {
     try {
       const skip = Promise.resolve(null);
-      const [articles, courses, submissions, posts, planks] = await Promise.all([
+      const [articles, courses, submissions, posts, planks, aboutConfig] = await Promise.all([
         (includePrivate ? this.getArticles() : this.request('articles?select=*&status=eq.active&order=created_at.desc'))
           .catch(err => { console.warn('Articles sync failed:', err); return null; }),
         (includePrivate ? this.getCourses() : this.request('courses?select=*&status=eq.active&order=created_at.desc'))
           .catch(err => { console.warn('Courses sync failed:', err); return null; }),
         includePrivate ? this.getSubmissions().catch(err => { console.warn('Submissions sync failed:', err); return null; }) : skip,
         includePrivate ? this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; }) : skip,
-        this.getPlanks().catch(err => { console.warn('Planks sync failed (using local fallback):', err); return null; })
+        this.getPlanks().catch(err => { console.warn('Planks sync failed (using local fallback):', err); return null; }),
+        this.getSiteConfig('about').catch(err => { console.warn('About config sync failed (using local fallback):', err); return null; })
       ]);
 
       let changed = false;
@@ -574,6 +631,11 @@ const WangzhouCloud = {
           bufferError: p.buffer_error || '',
           createdAt: p.created_at || ''
         }));
+        changed = true;
+      }
+
+      if (aboutConfig && typeof aboutConfig === 'object') {
+        SITE_DATA.about = Object.assign({}, SITE_DATA.about || {}, aboutConfig);
         changed = true;
       }
 

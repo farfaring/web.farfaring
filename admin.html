@@ -565,6 +565,10 @@
         <span>🪵</span>
         <span>漂浮棧板短句</span>
       </div>
+      <div class="admin-nav-item" data-panel="about" onclick="switchPanel('about', this)">
+        <span>🌿</span>
+        <span>關於望舟文案</span>
+      </div>
     </aside>
 
     <!-- 主面板 1: 營運概況與維護時間 -->
@@ -582,7 +586,6 @@
         <div style="display:flex; align-items:center; gap:12px;">
           <span id="currentStampDisplay" class="time-badge">2026 年 10 月 20 日</span>
           <button class="btn-table-sm" onclick="stampTodayDate()">🕒 標記為今日</button>
-          <button class="btn-table-sm" style="color:#718096;" onclick="resetToDefaultData()">🔄 還原 data.js</button>
         </div>
       </div>
 
@@ -607,6 +610,10 @@
         <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('planks')">
           <div class="stat-desc">水面漂浮棧板</div>
           <div id="statPlanksCount" class="stat-num">0</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer;" onclick="switchPanel('about')">
+          <div class="stat-desc">關於望舟文案</div>
+          <div class="stat-num" style="color:#285E61; font-size:1.35rem;">🌿 點擊微調</div>
         </div>
       </div>
 
@@ -906,6 +913,139 @@
           </thead>
           <tbody id="plankTableBody"></tbody>
         </table>
+      </div>
+    </main>
+
+    <!-- 主面板 7: 關於望舟頁面文案管理（about.html 內容微調與發布） -->
+    <main id="panel-about" class="admin-panel">
+      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
+        <div>
+          <h2 class="panel-title">🌿 關於望舟頁面文案管理</h2>
+          <p style="font-size:0.86rem; color:#718096; margin-top:4px;">
+            直接在此微調《關於望舟》頁面的所有文字排版、初心小記與諮詢規則，點擊儲存即刻同步至雲端與前台，無須透過 GitHub 手動修改。
+          </p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a href="./about.html" target="_blank" class="btn-table-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="另開分頁查看前台關於望舟頁面">
+            👁️ 預覽前台
+          </a>
+          <button type="button" class="btn-table-sm" onclick="resetAboutToDefault()" title="恢復為初始預設文案">
+            🔄 恢復預設
+          </button>
+          <button type="button" class="btn-create-item" onclick="saveAboutConfig()" id="btnSaveAboutTop" style="background:#285E61;">
+            💾 儲存並發布文案
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:20px; max-width:920px; margin-top:16px;">
+
+        <!-- 卡片 1: 頁面頂部標頭 (Hero) -->
+        <div style="background:#FFF; border:1px solid var(--admin-border); border-radius:var(--radius-md); padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
+          <div style="font-size:1.05rem; font-weight:700; color:#2D3748; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            <span>🌅</span>
+            <span>頁面頂部標頭（Hero 區域）</span>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">英文小眉標：</label>
+            <input type="text" id="aboutHeroEyebrowInput" placeholder="ABOUT FARFARING" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">頁面主標題：</label>
+            <input type="text" id="aboutHeroTitleInput" placeholder="關於望舟・一個短暫停靠的地方" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
+          </div>
+          <div class="form-group">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">
+              意境副標題（支援換行，每行將於前台置中呈現）：
+            </label>
+            <textarea id="aboutHeroSubtitleInput" rows="3" placeholder="這裡是短暫停靠的水岸小棧，陪你在迷惘時看清前方的路&#10;當你整理好腳步、蓄滿能量，隨時都能從容啟航，通往真正想要的生活" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- 卡片 2: 第一區塊：空間初心與協作小記 -->
+        <div style="background:#FFF; border:1px solid var(--admin-border); border-radius:var(--radius-md); padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
+          <div style="font-size:1.05rem; font-weight:700; color:#2D3748; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            <span>🌿</span>
+            <span>第一區塊：空間初心與協作小記</span>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">初心區塊標題：</label>
+            <input type="text" id="aboutIntroTitleInput" placeholder="在小棧停靠，你能獲得什麼？" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:20px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">
+              空間初心內文（段落之間空一行即自動分成獨立段落）：
+            </label>
+            <textarea id="aboutIntroTextInput" rows="7" placeholder="在生涯的河道上，很少有人是一路筆直划到底的...&#10;&#10;「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟..." style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+          </div>
+          <div style="border-top:1px dashed #E2E8F0; padding-top:16px;">
+            <div class="form-group" style="margin-bottom:14px;">
+              <label style="font-weight:600; font-size:0.88rem; color:#8C5E35; display:block; margin-bottom:6px;">協作透明說明標題：</label>
+              <input type="text" id="aboutCollabTitleInput" placeholder="一則真誠的小記：關於這裡的產出" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
+            </div>
+            <div class="form-group">
+              <label style="font-weight:600; font-size:0.88rem; color:#8C5E35; display:block; margin-bottom:6px;">
+                協作說明正文（空行分段，最後一段將自動加粗強調）：
+              </label>
+              <textarea id="aboutCollabTextInput" rows="8" placeholder="身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人...&#10;&#10;科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片 3: 第二區塊：一對一公益職涯諮詢 -->
+        <div style="background:#FFF; border:1px solid var(--admin-border); border-radius:var(--radius-md); padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
+          <div style="font-size:1.05rem; font-weight:700; color:#2D3748; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            <span>🛶</span>
+            <span>第二區塊：一對一公益職涯諮詢</span>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">諮詢區塊標題：</label>
+            <input type="text" id="aboutConsultTitleInput" placeholder="一對一公益職涯諮詢" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">諮詢前言引言：</label>
+            <textarea id="aboutConsultDescInput" rows="3" placeholder="如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">
+              諮詢規則清單（一行一條規則，冒號「：」前之文字將自動加粗，每行自動帶有 ✦ 星芒）：
+            </label>
+            <textarea id="aboutConsultRulesInput" rows="5" placeholder="參與費用：公益性質，不收取任何諮詢費用。&#10;深談時間：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。&#10;進行方式：線上視訊會談（Google Meet 或約定工具）。&#10;善循環回饋：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+          </div>
+          <div class="form-group">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">預約意向按鈕文字：</label>
+            <input type="text" id="aboutConsultBtnTextInput" placeholder="📅 填寫諮詢預約意向 ↓" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
+          </div>
+        </div>
+
+        <!-- 卡片 4: 第三區塊：聯絡小棧長（私密信箱） -->
+        <div style="background:#FFF; border:1px solid var(--admin-border); border-radius:var(--radius-md); padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
+          <div style="font-size:1.05rem; font-weight:700; color:#2D3748; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            <span>✉️</span>
+            <span>第三區塊：聯絡小棧長</span>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">信箱區塊標題：</label>
+            <input type="text" id="aboutContactTitleInput" placeholder="聯絡小棧長" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
+          </div>
+          <div class="form-group">
+            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">信箱說明引言：</label>
+            <textarea id="aboutContactDescInput" rows="3" placeholder="如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- 底部儲存動作列 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:var(--radius-md); padding:16px 20px;">
+          <div style="font-size:0.86rem; color:#718096;" id="aboutSaveStatusHint">
+            💡 點擊右方按鈕儲存，文字將同步更新至雲端資料庫並即時反映於前台。
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn-create-item" onclick="saveAboutConfig()" id="btnSaveAboutBottom" style="background:#285E61; padding:10px 24px; font-size:0.92rem; font-weight:600;">
+              💾 儲存並發布文案
+            </button>
+          </div>
+        </div>
+
       </div>
     </main>
 
@@ -1393,6 +1533,9 @@
       }
       const targetPanel = document.getElementById('panel-' + panelId);
       if (targetPanel) targetPanel.classList.add('active');
+      if (panelId === 'about') {
+        populateAboutAdminForm();
+      }
     }
 
     function closeModal(id) {
@@ -1560,6 +1703,9 @@
 
       // 渲染審稿工作台
       renderReviewDesk();
+
+      // 填充關於頁面編輯表單
+      populateAboutAdminForm();
     }
 
     // 渲染今日與本週投稿集中摘要
@@ -1932,14 +2078,6 @@
       localStorage.setItem('WANGZHOU_NOTIFY_PREF', 'batch');
       alert(`已將批次發信提醒設定為：每累積達 ${num} 則未讀投稿時發信提醒！`);
       refreshAdminView();
-    }
-
-    // 還原為 data.js 原始檔案數據（清除本地暫存）
-    function resetToDefaultData() {
-      if (confirm('確定要清除瀏覽器本地暫存，還原為原始 data.js 檔案內容嗎？')) {
-        localStorage.removeItem('WANGZHOU_SITE_DATA_OVERRIDE');
-        location.reload();
-      }
     }
 
     // 將真實維護日期標記為今日
@@ -4182,11 +4320,121 @@ ${sourceText}`;
       }
     }
 
+    // =====================================================================
+    // 🌿 《關於望舟》頁面文案管理
+    // =====================================================================
+    function populateAboutAdminForm() {
+      const cfg = (SITE_DATA && SITE_DATA.about) ? SITE_DATA.about : (window.DEFAULT_ABOUT_CONFIG || {});
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = (val !== undefined && val !== null) ? val : '';
+      };
+
+      setVal('aboutHeroEyebrowInput', cfg.heroEyebrow || 'ABOUT FARFARING');
+      setVal('aboutHeroTitleInput', cfg.heroTitle || '關於望舟・一個短暫停靠的地方');
+      setVal('aboutHeroSubtitleInput', cfg.heroSubtitle || '這裡是短暫停靠的水岸小棧，陪你在迷惘時看清前方的路\n當你整理好腳步、蓄滿能量，隨時都能從容啟航，通往真正想要的生活');
+
+      setVal('aboutIntroTitleInput', cfg.introTitle || '在小棧停靠，你能獲得什麼？');
+      let introVal = '';
+      if (typeof cfg.introText === 'string') {
+        introVal = cfg.introText;
+      } else if (Array.isArray(cfg.introTexts)) {
+        introVal = cfg.introTexts.join('\n\n');
+      } else {
+        introVal = '在生涯的河道上，很少有人是一路筆直划到底的。\n更多的時候，會遇到水霧、會覺得手臂痠痛，或是發現原本想去的地方，好像已經跟現在的自己不太一樣了。\n\n「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟。\n當你覺得累了、不知道下一步該往哪裡走的時候，可以先在這裡靠岸停一下。來這裡看看新事物，發現一點新靈感。\n等充好電了、看清楚方向了，隨時可以解開纜繩，帶著踏實的心情再次啟航。';
+      }
+      setVal('aboutIntroTextInput', introVal);
+
+      setVal('aboutCollabTitleInput', cfg.collabTitle || '一則真誠的小記：關於這裡的產出');
+      setVal('aboutCollabTextInput', cfg.collabText || '身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。\n「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。\n\n這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。\n\n科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。');
+
+      setVal('aboutConsultTitleInput', cfg.consultTitle || '一對一公益職涯諮詢');
+      setVal('aboutConsultDescInput', cfg.consultDesc || '如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：');
+
+      let rulesVal = '';
+      if (Array.isArray(cfg.consultRules)) {
+        rulesVal = cfg.consultRules.join('\n');
+      } else if (typeof cfg.consultRules === 'string') {
+        rulesVal = cfg.consultRules;
+      } else {
+        rulesVal = '參與費用：公益性質，不收取任何諮詢費用。\n深談時間：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。\n進行方式：線上視訊會談（Google Meet 或約定工具）。\n善循環回饋：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。';
+      }
+      setVal('aboutConsultRulesInput', rulesVal);
+      setVal('aboutConsultBtnTextInput', cfg.consultBtnText || '📅 填寫諮詢預約意向 ↓');
+
+      setVal('aboutContactTitleInput', cfg.contactTitle || '聯絡小棧長');
+      setVal('aboutContactDescInput', cfg.contactDesc || '如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。');
+    }
+
+    async function saveAboutConfig() {
+      const getVal = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+
+      const rulesStr = getVal('aboutConsultRulesInput');
+      const rulesArr = rulesStr ? rulesStr.split('\n').map(r => r.trim()).filter(Boolean) : [];
+
+      const newAbout = {
+        heroEyebrow: getVal('aboutHeroEyebrowInput') || 'ABOUT FARFARING',
+        heroTitle: getVal('aboutHeroTitleInput') || '關於望舟・一個短暫停靠的地方',
+        heroSubtitle: getVal('aboutHeroSubtitleInput'),
+        introTitle: getVal('aboutIntroTitleInput') || '在小棧停靠，你能獲得什麼？',
+        introText: getVal('aboutIntroTextInput'),
+        collabTitle: getVal('aboutCollabTitleInput') || '一則真誠的小記：關於這裡的產出',
+        collabText: getVal('aboutCollabTextInput'),
+        consultTitle: getVal('aboutConsultTitleInput') || '一對一公益職涯諮詢',
+        consultDesc: getVal('aboutConsultDescInput'),
+        consultRules: rulesArr,
+        consultBtnText: getVal('aboutConsultBtnTextInput') || '📅 填寫諮詢預約意向 ↓',
+        contactTitle: getVal('aboutContactTitleInput') || '聯絡小棧長',
+        contactDesc: getVal('aboutContactDescInput')
+      };
+
+      SITE_DATA.about = newAbout;
+      saveDataToLocalStorage();
+
+      const hintEl = document.getElementById('aboutSaveStatusHint');
+      if (hintEl) {
+        const timeNow = new Date().toLocaleTimeString('zh-TW', { hour12: false });
+        hintEl.innerHTML = `✅ 已於 ${timeNow} 儲存本機！正在同步至雲端...`;
+      }
+
+      showToast('💾 文案已暫存於本機！');
+
+      if (window.WangzhouCloud) {
+        try {
+          await window.WangzhouCloud.upsertSiteConfig('about', newAbout);
+          showToast('🎉 《關於望舟》文案已成功同步至雲端！前台已即刻生效');
+          if (hintEl) {
+            const timeNow = new Date().toLocaleTimeString('zh-TW', { hour12: false });
+            hintEl.innerHTML = `🟢 雲端同步完成（${timeNow}）。前台讀者已可見最新文案。`;
+          }
+        } catch (err) {
+          console.warn('雲端儲存關於頁提示：', err);
+          showToast('⚠️ 雲端資料庫尚未建立 site_configs 表，但本機已保留修改！請至 Supabase 執行最新 schema.sql');
+          if (hintEl) {
+            hintEl.innerHTML = `🟡 本機已保留修改。若要跨裝置生效，請至 Supabase 執行 site_configs 語法。`;
+          }
+        }
+      }
+    }
+
+    function resetAboutToDefault() {
+      if (!confirm('確定要將《關於望舟》頁面所有文案恢復為初始預設值嗎？\n尚未儲存的更動將會被覆蓋。')) return;
+      const def = window.DEFAULT_ABOUT_CONFIG || {};
+      SITE_DATA.about = JSON.parse(JSON.stringify(def));
+      populateAboutAdminForm();
+      saveAboutConfig();
+      showToast('🔄 已成功恢復為預設文案！');
+    }
+
     refreshAdminView();
 
-    // 支援網址 hash 快速直通指定面版（例如 admin.html#social）
+    // 支援網址 hash 快速直通指定面版（例如 admin.html#social、admin.html#about）
     const initialHash = window.location.hash.replace('#', '');
-    if (initialHash && ['dashboard', 'review', 'submissions', 'articles', 'social', 'courses', 'planks'].includes(initialHash)) {
+    if (initialHash && ['dashboard', 'review', 'submissions', 'articles', 'social', 'courses', 'planks', 'about'].includes(initialHash)) {
       switchPanel(initialHash);
     }
 

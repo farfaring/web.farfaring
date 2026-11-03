@@ -4,6 +4,7 @@
  * 當後台發布更新時，本檔案的 lastUpdated 與各項資料庫將同步更新。
  */
 
+// 只當雲端讀不到時的備用；網站介紹文字以雲端為準，後台不得一鍵覆蓋雲端
 // 《關於望舟》頁面預設文案（Single Source of Truth 初始範本）
 const DEFAULT_ABOUT_CONFIG = {
   heroEyebrow: "ABOUT FARFARING",

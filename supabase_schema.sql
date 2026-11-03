@@ -44,9 +44,9 @@ CREATE TABLE IF NOT EXISTS public.courses (
   name TEXT NOT NULL,
   organizer TEXT,
   types TEXT[],                  -- deep: 深度培訓, upskill: 技能增強, events: 講座工作坊
-  region TEXT DEFAULT '線上',
-  location TEXT DEFAULT '線上課程',
-  cost TEXT DEFAULT '免費政府補助',
+  region TEXT,                   -- 沒填就留空，前台顯示「請見官方頁面」，不替官方推論
+  location TEXT,
+  cost TEXT,
   deadline TEXT,                 -- 報名截止日 YYYY-MM-DD（台灣時間當日 23:59:59 後前台自動隱藏）
   summary TEXT,
   whisper TEXT,
@@ -107,6 +107,8 @@ CREATE TABLE IF NOT EXISTS public.social_posts (
   review_status TEXT DEFAULT 'pending',  -- 審稿：pending 待審, approved 可以發, revise 要修改, rejected 不要發
   review_note TEXT,                      -- 主理人的修改意見
   audit_note TEXT,                       -- Claude 預先稽核與風險提示
+  marketing_note TEXT,                   -- 行銷小教室：這則為什麼這樣寫（學習用，不影響審稿）
+  marketing_review TEXT,                 -- 發文後成效回顧（主理人在後台填，150 字內）
   source_url TEXT,                       -- 免費開放全文來源
   image_url TEXT,                        -- IG 圖卡（social-cards 圖片空間的公開網址）
   scheduled_at TIMESTAMPTZ,              -- 確切發文時間
@@ -487,18 +489,9 @@ INSERT INTO public.site_configs (key, value) VALUES
     'introTitle', '在小棧停靠，你能獲得什麼？',
     'introText', E'在生涯的河道上，很少有人是一路筆直划到底的。\n更多的時候，會遇到水霧、會覺得手臂痠痛，或是發現原本想去的地方，好像已經跟現在的自己不太一樣了。\n\n「望舟小棧」想做的，就是路途遇到的一段木棧道、一葉小舟。\n當你覺得累了、不知道下一步該往哪裡走的時候，可以先在這裡靠岸停一下。來這裡看看新事物，發現一點新靈感。\n等充好電了、看清楚方向了，隨時可以解開纜繩，帶著踏實的心情再次啟航。',
     'collabTitle', '一則真誠的小記：關於這裡的產出',
-    'collabText', E'身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。\n「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。\n\n這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。\n\n科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。',
-    'consultTitle', '一對一公益職涯諮詢',
-    'consultDesc', '如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：',
-    'consultRules', jsonb_build_array(
-      '參與費用：公益性質，不收取任何諮詢費用。',
-      '深談時間：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。',
-      '進行方式：線上視訊會談（Google Meet 或約定工具）。',
-      '善循環回饋：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。'
-    ),
-    'consultBtnText', '📅 填寫諮詢預約意向 ↓',
+    'collabText', E'在工作裡覺得卡住或焦慮的時候，常常需要的是一份實用的資源、一點新的靈感，或是一段能讓自己慢下來、好好梳理思緒的時光。\n「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。\n\n這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。\n\n科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。',
     'contactTitle', '聯絡小棧長',
-    'contactDesc', '如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。'
+    'contactDesc', '讀完有想法、發現需要補充或更正的地方，或只是想打聲招呼，都歡迎在此填表來信。'
   )
 )
 ON CONFLICT (key) DO NOTHING;

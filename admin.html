@@ -502,6 +502,7 @@
     }
     .auth-card button:disabled { opacity: 0.6; cursor: wait; }
     .auth-msg { min-height: 1.4em; font-size: 0.84rem; margin-top: 12px; color: #466D56; }
+    .auth-msg:empty { display: none; }
     .auth-msg.error { color: #C53030; }
   </style>
 </head>
@@ -939,9 +940,6 @@
           <a href="./about.html" target="_blank" class="btn-table-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="另開分頁查看前台關於望舟頁面">
             👁️ 預覽前台
           </a>
-          <button type="button" class="btn-table-sm" onclick="resetAboutToDefault()" title="恢復為初始預設文案">
-            🔄 恢復預設
-          </button>
           <button type="button" class="btn-create-item" onclick="saveAboutConfig()" id="btnSaveAboutTop" style="background:#285E61;">
             💾 儲存並發布文案
           </button>
@@ -4448,15 +4446,6 @@ ${sourceText}`;
       }
     }
 
-    function resetAboutToDefault() {
-      if (!confirm('確定要將《關於望舟》頁面所有文案恢復為初始預設值嗎？\n尚未儲存的更動將會被覆蓋。')) return;
-      const def = window.DEFAULT_ABOUT_CONFIG || {};
-      SITE_DATA.about = JSON.parse(JSON.stringify(def));
-      populateAboutAdminForm();
-      saveAboutConfig();
-      showToast('🔄 已成功恢復為預設文案！');
-    }
-
     refreshAdminView();
 
     // 支援網址 hash 快速直通指定面版（例如 admin.html#social、admin.html#about）
@@ -4543,6 +4532,7 @@ ${sourceText}`;
           expires_in: params.get('expires_in'),
           expires_at: params.get('expires_at')
         }, { newLogin: true });
+        this.justLoggedInByLink = true;
         return null;
       },
 
@@ -4744,7 +4734,21 @@ ${sourceText}`;
       }
       const token = await WangzhouAuth.getValidToken();
       if (token) await enterAdmin();
+      if (token && WangzhouAuth.justLoggedInByLink) showLinkLoginDone();
     })();
+
+    // 從信件連結登入完成後，若是在本機的一般瀏覽器分頁（不是營運中心內嵌畫面），提示可以關掉這個分頁。
+    // 只在本機（127.0.0.1／localhost）生效；正式網站上不會出現。
+    function showLinkLoginDone() {
+      const isLocal = ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+      if (!isLocal || window.top !== window) return;
+      const tip = document.createElement('div');
+      tip.setAttribute('role', 'status');
+      tip.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;padding:14px 18px;background:#466D56;color:#fff;text-align:center;font-size:1rem;';
+      tip.textContent = '登入完成，可以關掉這個分頁。';
+      document.body.appendChild(tip);
+      try { window.close(); } catch (e) {}
+    }
   </script>
 </body>
 </html>

@@ -469,6 +469,16 @@
   </style>
   <style>
     /* 主理人登入閘門：未登入前完全蓋住後台 */
+    .mkt-class { margin-top:12px; background:#FFF; border:1px dashed #D9D2C7; border-radius:8px; }
+    .mkt-class summary { list-style:none; cursor:pointer; min-height:44px; padding:0 14px; display:flex; align-items:center; gap:10px; font-size:0.84rem; color:#2B4C65; font-weight:600; white-space:nowrap; }
+    .mkt-class summary::-webkit-details-marker { display:none; }
+    .mkt-title { overflow:hidden; text-overflow:ellipsis; min-width:0; }
+    .mkt-hint { margin-left:auto; font-weight:400; font-size:0.74rem; color:#A0AEC0; }
+    .mkt-arrow { transition:transform 0.2s; flex-shrink:0; }
+    .mkt-class[open] .mkt-arrow { transform:rotate(180deg); }
+    .mkt-body { padding:4px 14px 14px; font-size:0.84rem; line-height:1.7; color:inherit; white-space:pre-wrap; border-top:1px solid #EDE8E0; padding-top:10px; }
+    @media (max-width:600px) { .mkt-hint, .mkt-sub { display:none; } .mkt-arrow { margin-left:auto; } }
+    @media (max-width:600px) { .review-decision-grid { grid-template-columns:1fr !important; } .review-decision-grid button { min-height:44px; white-space:nowrap; border-radius:8px; } }
     .auth-gate {
       position: fixed; inset: 0; z-index: 100000;
       display: flex; align-items: center; justify-content: center;
@@ -707,7 +717,7 @@
           <span>⛵ 小棧長全自動採集與審稿工作流：</span>
         </h3>
         <p style="margin:4px 0; color:#4A5568;">
-          <strong>1. 🧭 啟動全網採集：</strong>隨時在 AI 對話室指示特派員搜尋（例如：「採集本週公部門免費職訓與 1 篇職場手札靈感」），AI 會自動聯網搜尋、<strong>自動比對去重</strong>，並將草案直接匯入後台審稿箱。
+          <strong>1. 🧭 啟動全網採集：</strong>隨時在 AI 對話室指示特派員搜尋（例如：「採集本週公部門免費職訓與 1 篇職場手札靈感」），AI 會自動聯網搜尋、<strong>自動比對去重</strong>。寫好的稿件經「草稿收件匣」送出後，會以待審狀態出現在「📝 審稿工作台」。
         </p>
         <p style="margin:4px 0; color:#4A5568;">
           <strong>2. ✍️ 主理人逐一審稿：</strong>進入「📖 水岸手札」或「📋 課程活動」的【🟡 待審草稿】分頁，可直接於文字框快速微調；若需大幅度修正，只需在對話給予意見，AI 編輯團隊即時重新潤飾。
@@ -922,7 +932,7 @@
         <div>
           <h2 class="panel-title">🌿 關於望舟頁面文案管理</h2>
           <p style="font-size:0.86rem; color:#718096; margin-top:4px;">
-            直接在此微調《關於望舟》頁面的所有文字排版、初心小記與諮詢規則，點擊儲存即刻同步至雲端與前台，無須透過 GitHub 手動修改。
+            直接在此微調《關於望舟》頁面的所有文字排版、初心小記與聯絡說明，點擊儲存即刻同步至雲端與前台，無須透過 GitHub 手動修改。
           </p>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
@@ -987,42 +997,16 @@
               <label style="font-weight:600; font-size:0.88rem; color:#8C5E35; display:block; margin-bottom:6px;">
                 協作說明正文（空行分段，最後一段將自動加粗強調）：
               </label>
-              <textarea id="aboutCollabTextInput" rows="8" placeholder="身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人...&#10;&#10;科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+              <textarea id="aboutCollabTextInput" rows="8" placeholder="在工作裡覺得卡住或焦慮的時候，常常需要的是一份實用的資源...&#10;&#10;科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
             </div>
           </div>
         </div>
 
-        <!-- 卡片 3: 第二區塊：一對一公益職涯諮詢 -->
-        <div style="background:#FFF; border:1px solid var(--admin-border); border-radius:var(--radius-md); padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
-          <div style="font-size:1.05rem; font-weight:700; color:#2D3748; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
-            <span>🛶</span>
-            <span>第二區塊：一對一公益職涯諮詢</span>
-          </div>
-          <div class="form-group" style="margin-bottom:14px;">
-            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">諮詢區塊標題：</label>
-            <input type="text" id="aboutConsultTitleInput" placeholder="一對一公益職涯諮詢" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
-          </div>
-          <div class="form-group" style="margin-bottom:14px;">
-            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">諮詢前言引言：</label>
-            <textarea id="aboutConsultDescInput" rows="3" placeholder="如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
-          </div>
-          <div class="form-group" style="margin-bottom:14px;">
-            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">
-              諮詢規則清單（一行一條規則，冒號「：」前之文字將自動加粗，每行自動帶有 ✦ 星芒）：
-            </label>
-            <textarea id="aboutConsultRulesInput" rows="5" placeholder="參與費用：公益性質，不收取任何諮詢費用。&#10;深談時間：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。&#10;進行方式：線上視訊會談（Google Meet 或約定工具）。&#10;善循環回饋：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
-          </div>
-          <div class="form-group">
-            <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">預約意向按鈕文字：</label>
-            <input type="text" id="aboutConsultBtnTextInput" placeholder="📅 填寫諮詢預約意向 ↓" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem;">
-          </div>
-        </div>
-
-        <!-- 卡片 4: 第三區塊：聯絡小棧長（私密信箱） -->
+        <!-- 卡片 3: 第二區塊：聯絡小棧長（私密信箱） -->
         <div style="background:#FFF; border:1px solid var(--admin-border); border-radius:var(--radius-md); padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,0.02);">
           <div style="font-size:1.05rem; font-weight:700; color:#2D3748; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
             <span>✉️</span>
-            <span>第三區塊：聯絡小棧長</span>
+            <span>第二區塊：聯絡小棧長</span>
           </div>
           <div class="form-group" style="margin-bottom:14px;">
             <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">信箱區塊標題：</label>
@@ -1030,7 +1014,7 @@
           </div>
           <div class="form-group">
             <label style="font-weight:600; font-size:0.88rem; color:#4A5568; display:block; margin-bottom:6px;">信箱說明引言：</label>
-            <textarea id="aboutContactDescInput" rows="3" placeholder="如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
+            <textarea id="aboutContactDescInput" rows="3" placeholder="讀完有想法、發現需要補充或更正的地方，或只是想打聲招呼，都歡迎在此填表來信。" style="width:100%; padding:10px 12px; border:1px solid #CBD5E0; border-radius:6px; font-size:0.92rem; line-height:1.7; resize:vertical;"></textarea>
           </div>
         </div>
 
@@ -1083,12 +1067,13 @@
         </div>
         <div class="form-group">
           <label>辦訓單位（實際開課機構）：</label>
-          <input type="text" id="courseProviderInput" required placeholder="例如：社團法人台灣產學職涯發展協會">
+          <input type="text" id="courseProviderInput" required placeholder="例如：○○協會">
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <div class="form-group">
             <label>地點區域：</label>
-            <select id="courseRegionInput">
+            <select id="courseRegionInput" required>
+              <option value="">請選擇</option>
               <option value="線上">線上</option>
               <option value="北部">北部</option>
               <option value="中部">中部</option>
@@ -1396,12 +1381,17 @@
           </div>
           <div class="form-group" style="margin:0;">
             <label>排程發布狀態：</label>
-            <select id="socStatusInput">
+            <select id="socStatusInput" onchange="toggleSocReview()">
               <option value="draft">⚪ 構思草稿</option>
               <option value="scheduled" selected>🟡 預約排程中</option>
               <option value="published">🟢 已在社群發布</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-group" id="socReviewGroup" style="display:none; margin-top:14px;">
+          <label>📝 成效回顧（發文後再填，150 字內；只有你看得到）：</label>
+          <textarea id="socReviewInput" rows="3" maxlength="150" placeholder="例如：收藏數、留言反應，下次想保留或調整的地方。"></textarea>
         </div>
 
         <input type="hidden" id="socMetricsInput">
@@ -2293,7 +2283,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('editCourseId').value = idx;
         document.getElementById('courseTitleInput').value = c.title;
         document.getElementById('courseProviderInput').value = c.provider;
-        document.getElementById('courseRegionInput').value = c.region || '北部';
+        document.getElementById('courseRegionInput').value = c.region || '';
         document.getElementById('courseDeadlineInput').value = c.deadline;
         document.getElementById('courseSummaryInput').value = c.summary || '';
         document.getElementById('courseWhisperInput').value = c.whisper || '';
@@ -2310,7 +2300,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('editCourseId').value = '';
         document.getElementById('courseTitleInput').value = '';
         document.getElementById('courseProviderInput').value = '';
-        document.getElementById('courseRegionInput').value = '北部';
+        document.getElementById('courseRegionInput').value = '';
         document.getElementById('courseDeadlineInput').value = '';
         document.getElementById('courseSummaryInput').value = '';
         document.getElementById('courseWhisperInput').value = '';
@@ -2368,7 +2358,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         title: document.getElementById('courseTitleInput').value.trim(),
         provider: document.getElementById('courseProviderInput').value.trim(),
         region: document.getElementById('courseRegionInput').value,
-        locationLabel: `${document.getElementById('courseRegionInput').value} ． 培訓交流`,
+        locationLabel: document.getElementById('courseRegionInput').value,
         deadline: document.getElementById('courseDeadlineInput').value,
         summary: document.getElementById('courseSummaryInput').value.trim(),
         whisper: document.getElementById('courseWhisperInput').value.trim(),
@@ -2743,6 +2733,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
               ${post.topic ? `<span style="font-size:0.72rem; background:#EDF2F7; color:#4A5568; padding:1px 6px; border-radius:3px; white-space:nowrap !important; display:inline-block; word-break:keep-all !important;">#${escapeHtml(post.topic)}</span>` : ''}
             </div>
             ${previewBoxesHtml}
+            ${socMarketingBoxHtml(post, idx)}
           </td>
           <td style="font-size:0.85rem; line-height:1.4;">${dateDisplay}</td>
           <td style="font-size:0.83rem; color:#4A5568; line-height:1.4;">
@@ -2961,8 +2952,10 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('socDateInput').value = p.scheduledDate || '';
         document.getElementById('socTimeSlotInput').value = p.scheduledTimeSlot || 'evening';
         document.getElementById('socStatusInput').value = p.status || 'scheduled';
+        toggleSocReview();
         document.getElementById('socMetricsInput').value = p.metricsNote || '';
         document.getElementById('socAuditInput').value = p.auditNote || '';
+        document.getElementById('socReviewInput').value = p.marketingReview || '';
         document.getElementById('socSourceUrlInput').value = p.sourceUrl || '';
       } else {
         document.getElementById('socModalTitle').innerText = '起草社群貼文';
@@ -2983,6 +2976,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('socIgContentInput').value = '';
         document.getElementById('socMediaInput').value = '';
         document.getElementById('socAuditInput').value = '';
+        document.getElementById('socReviewInput').value = '';
         document.getElementById('socSourceUrlInput').value = '';
 
         if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = '';
@@ -2994,6 +2988,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('socDateInput').value = tomorrowStr;
         document.getElementById('socTimeSlotInput').value = 'evening';
         document.getElementById('socStatusInput').value = 'scheduled';
+        toggleSocReview();
         document.getElementById('socMetricsInput').value = '';
       }
 
@@ -3182,6 +3177,47 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       openSocialPostModal(idx);
     }
 
+    // 成效回顧欄位：只有「已在社群發布」的貼文才出現
+    function toggleSocReview() {
+      const g = document.getElementById('socReviewGroup');
+      const st = document.getElementById('socStatusInput');
+      if (g && st) g.style.display = st.value === 'published' ? 'block' : 'none';
+    }
+
+    // 已發出的貼文：行銷小教室（唯讀）＋成效回顧，同一個白底虛線盒
+    function socMarketingBoxHtml(post, idx) {
+      if (post.status !== 'published') return '';
+      const note = post.marketingNote || '';
+      const review = post.marketingReview || '';
+      const box = 'background:#FFF; border:1px dashed #D9D2C7; border-radius:6px; padding:8px 10px; margin-top:6px; font-size:0.8rem; line-height:1.6; color:#4A5568;';
+      const head = t => `<div style="font-weight:600; color:#2B4C65; font-size:0.75rem; margin-bottom:2px;">${t}</div>`;
+      const addBtn = `<button type="button" class="btn-table-sm" style="padding:2px 8px; font-size:0.72rem;" onclick="editSocialPost(${idx}); setTimeout(() => { const t = document.getElementById('socReviewInput'); if (t) t.focus(); }, 80);">＋ 記下成效</button>`;
+      if (!note && !review) return `<div style="margin-top:6px;">${addBtn}</div>`;
+      return `<div style="${box}">
+        ${note ? `${head('📈 行銷小教室')}<div style="white-space:pre-wrap;">${mktTextHtml(note)}</div>` : ''}
+        ${note && review ? '<div style="border-top:1px solid #EDE8E0; margin:8px 0;"></div>' : ''}
+        ${review ? `${head('📝 成效回顧')}<div style="white-space:pre-wrap;">${escapeHtml(review)}</div>` : `<div style="margin-top:6px;">${addBtn}</div>`}
+      </div>`;
+    }
+
+    // 行銷小教室文字：先逸出，再只把行首的「發出後可觀察：」加粗，不開放其他 HTML
+    function mktTextHtml(t) {
+      return escapeHtml(t).replace(/^(\s*(?:\d+[.、)）]\s*)?)(發出後可觀察：)/gm, '$1<strong>$2</strong>');
+    }
+
+    // 審稿卡：行銷小教室（摺疊，預設收合；沒有內容就不顯示）
+    function marketingDetailsHtml(p) {
+      const note = p && p.marketingNote;
+      if (!note) return '';
+      const n = note.split('\n').filter(l => /^\s*(\d+[.、)）]|[①-⑩]|[-•・])/.test(l)).length;
+      let open = false;
+      try { open = sessionStorage.getItem('wzMktOpen') === '1'; } catch (e) {}
+      return `<details class="mkt-class" ${open ? 'open' : ''} ontoggle="try{sessionStorage.setItem('wzMktOpen', this.open ? '1' : '0')}catch(e){}">
+        <summary><span class="mkt-title">📈 行銷小教室<span class="mkt-sub">｜這則為什麼這樣寫</span>${n ? `（${n} 點）` : ''}</span><span class="mkt-hint">學習用，不影響審稿</span><span class="mkt-arrow">▾</span></summary>
+        <div class="mkt-body">${mktTextHtml(note)}</div>
+      </details>`;
+    }
+
     // =====================================================================
     // 📝 審稿工作台：① 審稿 ➔ ② 排程確認與送出
     // 一張審稿卡 = 一個主題：手札或課程（連同為它寫的社群貼文），或一則獨立的社群貼文
@@ -3336,6 +3372,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           </div>` : ''}
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">${boxes}</div>
           <div style="text-align:right; margin-top:6px;"><button type="button" class="btn-table-sm" onclick="editSocialPost(${idx})">✏️ 編輯這則貼文</button></div>
+          ${marketingDetailsHtml(p)}
         </div>`;
     }
 
@@ -3438,7 +3475,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
             <textarea id="reviewNoteInput" rows="2" placeholder="點上面的快速標籤，或自己寫下想法。">${escapeHtml(note)}</textarea>
           </div>
 
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px;">
+          <div class="review-decision-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px;">
             <button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideReview('approved')">✅ 可以發</button>
             <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideReview('revise')">✏️ 要修改</button>
             <button type="button" class="btn-submit-action" style="margin:0; background:#718096;" onclick="decideReview('rejected')">❌ 不要發</button>
@@ -3842,6 +3879,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         ...existing,
         reviewStatus: (!existing.reviewStatus || existing.reviewStatus === 'revise' || contentChanged) ? 'pending' : existing.reviewStatus,
         auditNote: document.getElementById('socAuditInput').value.trim(),
+        marketingReview: document.getElementById('socReviewInput').value.trim().slice(0, 150),
         sourceUrl: document.getElementById('socSourceUrlInput').value.trim(),
         id: editIdx !== '' ? SITE_DATA.socialPosts[editIdx].id : "sp-" + Date.now(),
         title: document.getElementById('socTitleInput').value.trim(),
@@ -3999,19 +4037,29 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       document.getElementById('socSourceId').value = crs.id;
 
       // 後台課程物件的欄位是 title / provider / address（不是資料庫的 name / organizer / location）
-      const crsPlace = crs.address || crs.region || '線上課程';
+      const crsPlace = crs.address || '地點請見官方頁面'; // region 是分區，不是上課地點，不拿來頂替
       document.getElementById('socTitleInput').value = `【精選推薦】${crs.title}`;
       document.getElementById('socTopicInput').value = '職涯探索';
 
-      const threadsDraft = `精選課程推薦｜${crs.title}\n\n📍 地點：${crsPlace}\n💰 費用：${crs.cost || '完全免費'}\n⏳ 截止：${crs.deadline || '額滿為止'}\n\n${crs.whisper || crs.summary || ''}\n\n想了解更多或報名，可至望舟官網點擊開課連結 👉`;
+      // 官方未載明的欄位不推論：沒填費用印「費用請見官方頁面」，沒填截止日整行不印，標籤依實際內容加
+      const crsCost = crs.cost || '費用請見官方頁面';
+      const crsDeadlineLine = crs.deadline ? `⏳ 截止：${crs.deadline}\n` : '';
+      const crsDeadlineIg = crs.deadline ? `報名期限：${crs.deadline}\n` : '';
+      const crsTypes = crs.types || [];
+      const crsTags = ['#望舟小棧',
+        crsTypes.includes('deep') ? '#職訓課程' : '',
+        crsTypes.includes('upskill') ? '#技能增強' : '',
+        crsTypes.includes('events') ? '#講座活動' : '',
+        (crs.cost && crs.cost.includes('免費')) ? '#免費課程' : ''].filter(Boolean).join(' ');
+      const threadsDraft = `精選課程推薦｜${crs.title}\n\n📍 地點：${crsPlace}\n💰 費用：${crsCost}\n${crsDeadlineLine}\n${crs.whisper || crs.summary || ''}\n\n想了解更多或報名，可至望舟官網點擊開課連結 👉`;
       document.getElementById('socThreadsContentInput').value = threadsDraft;
 
-      const igDraft = `【望舟推薦課程】${crs.title}\n.\n主辦單位：${crs.provider || '精選機構'}\n開課地點：${crsPlace}\n費用屬性：${crs.cost || '免費政府補助'}\n報名期限：${crs.deadline || '額滿為止'}\n.\n💡 小棧長導讀：\n${crs.whisper || crs.summary || ''}\n.\n🔗 報名連結收錄於望舟小棧「課程活動」頁面（請點個人檔案連結）。\n.\n#望舟小棧 #職涯進修 #技能增強 #免費課程 #政府補助 #轉職準備`;
+      const igDraft = `【望舟推薦課程】${crs.title}\n.\n${crs.provider ? `主辦單位：${crs.provider}\n` : ''}開課地點：${crsPlace}\n費用屬性：${crsCost}\n${crsDeadlineIg}.\n💡 小棧長導讀：\n${crs.whisper || crs.summary || ''}\n.\n🔗 報名連結收錄於望舟小棧「課程活動」頁面（請點個人檔案連結）。\n.\n${crsTags}`;
       document.getElementById('socIgContentInput').value = igDraft;
 
       document.getElementById('socMediaInput').value = `活動宣傳視覺卡 / 重點資訊單圖`;
       if (document.getElementById('cardQuoteInput')) document.getElementById('cardQuoteInput').value = crs.title;
-      if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = `${crs.provider || '精選推薦'} ｜ ${crsPlace} ｜ ${crs.cost || '免費補助'}\n${crs.whisper || crs.summary || ''}`;
+      if (document.getElementById('cardSubInput')) document.getElementById('cardSubInput').value = `${[crs.provider, crs.address, crs.cost].filter(Boolean).join(' ｜ ')}\n${crs.whisper || crs.summary || ''}`;
       updateSocThreadsCharCount();
       updateSocIgCharCount();
       setTimeout(updateCardCanvas, 80);
@@ -4347,24 +4395,10 @@ ${sourceText}`;
       setVal('aboutIntroTextInput', introVal);
 
       setVal('aboutCollabTitleInput', cfg.collabTitle || '一則真誠的小記：關於這裡的產出');
-      setVal('aboutCollabTextInput', cfg.collabText || '身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。\n「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。\n\n這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。\n\n科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。');
-
-      setVal('aboutConsultTitleInput', cfg.consultTitle || '一對一公益職涯諮詢');
-      setVal('aboutConsultDescInput', cfg.consultDesc || '如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：');
-
-      let rulesVal = '';
-      if (Array.isArray(cfg.consultRules)) {
-        rulesVal = cfg.consultRules.join('\n');
-      } else if (typeof cfg.consultRules === 'string') {
-        rulesVal = cfg.consultRules;
-      } else {
-        rulesVal = '參與費用：公益性質，不收取任何諮詢費用。\n深談時間：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。\n進行方式：線上視訊會談（Google Meet 或約定工具）。\n善循環回饋：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。';
-      }
-      setVal('aboutConsultRulesInput', rulesVal);
-      setVal('aboutConsultBtnTextInput', cfg.consultBtnText || '📅 填寫諮詢預約意向 ↓');
+      setVal('aboutCollabTextInput', cfg.collabText || '在工作裡覺得卡住或焦慮的時候，常常需要的是一份實用的資源、一點新的靈感，或是一段能讓自己慢下來、好好梳理思緒的時光。\n「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。\n\n這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。\n\n科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。');
 
       setVal('aboutContactTitleInput', cfg.contactTitle || '聯絡小棧長');
-      setVal('aboutContactDescInput', cfg.contactDesc || '如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。');
+      setVal('aboutContactDescInput', cfg.contactDesc || '讀完有想法、發現需要補充或更正的地方，或只是想打聲招呼，都歡迎在此填表來信。');
     }
 
     async function saveAboutConfig() {
@@ -4372,9 +4406,6 @@ ${sourceText}`;
         const el = document.getElementById(id);
         return el ? el.value.trim() : '';
       };
-
-      const rulesStr = getVal('aboutConsultRulesInput');
-      const rulesArr = rulesStr ? rulesStr.split('\n').map(r => r.trim()).filter(Boolean) : [];
 
       const newAbout = {
         heroEyebrow: getVal('aboutHeroEyebrowInput') || 'ABOUT FARFARING',
@@ -4384,10 +4415,6 @@ ${sourceText}`;
         introText: getVal('aboutIntroTextInput'),
         collabTitle: getVal('aboutCollabTitleInput') || '一則真誠的小記：關於這裡的產出',
         collabText: getVal('aboutCollabTextInput'),
-        consultTitle: getVal('aboutConsultTitleInput') || '一對一公益職涯諮詢',
-        consultDesc: getVal('aboutConsultDescInput'),
-        consultRules: rulesArr,
-        consultBtnText: getVal('aboutConsultBtnTextInput') || '📅 填寫諮詢預約意向 ↓',
         contactTitle: getVal('aboutContactTitleInput') || '聯絡小棧長',
         contactDesc: getVal('aboutContactDescInput')
       };

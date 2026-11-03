@@ -83,46 +83,6 @@
       color: var(--ink-body);
     }
 
-    /* 公益諮詢專用條列 */
-    .consult-rules {
-      list-style: none;
-      font-size: 0.92rem;
-      color: var(--ink-body);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin: 20px 0 24px;
-      background: #F9FBFC;
-      border: 1px solid rgba(43, 76, 101, 0.12);
-      border-radius: var(--radius-md);
-      padding: 20px 24px;
-    }
-
-    .consult-rules li::before {
-      content: "✦ ";
-      color: var(--amber-pier);
-    }
-
-    .btn-consult-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--indigo-water);
-      color: #FFF;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 99px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      font-family: inherit;
-    }
-
-    .btn-consult-action:hover {
-      background: var(--amber-pier);
-    }
-
     /* 各區導流說明提示條 */
     .routing-notice-box {
       background: #FFFDF9;
@@ -175,7 +135,7 @@
     </p>
   </header>
 
-  <!-- Main Content（三大獨立主題卡片佈局：空間初心、公益諮詢、專屬私密信箱） -->
+  <!-- Main Content（兩大獨立主題卡片佈局：空間初心、專屬私密信箱） -->
   <main class="page-wrap">
     <div class="about-cards-container">
 
@@ -204,7 +164,7 @@
             <span id="aboutCollabTitle">一則真誠的小記：關於這裡的產出</span>
           </div>
           <div class="collab-confession-text" id="aboutCollabText">
-            身為職涯諮詢師的小棧長，看過許多在工作裡感到卡頓與焦慮的人，發現大家有時候需要的其實不是一場嚴肅的諮詢，而是一份實用資源的分享、一點新靈感的啟發，或是一段能讓自己慢下來、好好梳理思緒的時光。<br>
+            在工作裡覺得卡住或焦慮的時候，常常需要的是一份實用的資源、一點新的靈感，或是一段能讓自己慢下來、好好梳理思緒的時光。<br>
             「望舟小棧」源自一個小小的起心動念，希望來到這裡的人，都能在這裡找到力量自己幫助自己，走出屬於自己的方向。<br><br>
             這個小空間目前只有小棧長一人打理，時間與心力有限。為了不漏掉分散在各處的好資源與好觀點，內容由小棧長與 AI 共同協作——由 AI 協助追蹤龐雜的公開資訊與梳理初稿，再由小棧長親自逐篇查核、過濾與修正定稿。若有疏漏之處，請多包涵，也歡迎利用信箱提醒與交流。<br><br>
             <strong>科技是輔助前行的工具，但想陪你走向理想生活的心意，才是真正的原動力。</strong>
@@ -212,36 +172,14 @@
         </div>
       </section>
 
-      <!-- 第二大區塊：【一對一公益職涯諮詢】 -->
-      <section class="about-card" id="section-consult">
-        <h2 class="about-card-title">
-          <span>🛶</span>
-          <span id="aboutConsultTitle">一對一公益職涯諮詢</span>
-        </h2>
-        <p class="about-text" id="aboutConsultDesc">
-          如果你正面臨具體的職涯瓶頸、職場困惑，或需要一個客觀專業的視角陪伴你梳理思緒，小棧每月定期提供限量的公益深度諮詢：
-        </p>
-        <ul class="consult-rules" id="aboutConsultRules">
-          <li><strong>參與費用</strong>：公益性質，不收取任何諮詢費用。</li>
-          <li><strong>深談時間</strong>：每次 1 小時（50 分鐘聚焦深談 ＋ 10 分鐘彙整總結）。</li>
-          <li><strong>進行方式</strong>：線上視訊會談（Google Meet 或約定工具）。</li>
-          <li><strong>善循環回饋</strong>：接受諮詢服務後，鼓勵你在未來一個月內，為身邊的人或社會做至少一項小小的公益善事，讓善意在人間流動。</li>
-        </ul>
-        <div style="margin-top:20px;">
-          <button class="btn-consult-action" onclick="scrollToContact('consult')">
-            <span id="aboutConsultBtnText">📅 填寫諮詢預約意向 ↓</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- 第三大區塊：【聯絡小棧長】 -->
+      <!-- 第二大區塊：【聯絡小棧長】 -->
       <section class="about-card" id="section-contact">
         <h2 class="about-card-title">
           <span>✉️</span>
           <span id="aboutContactTitle">聯絡小棧長</span>
         </h2>
         <p class="about-text" id="aboutContactDesc" style="margin-bottom:20px;">
-          如果你想預約公益職涯諮詢、交流想法，或有任何想與小棧聊聊的事，歡迎在此填表來信。
+          讀完有想法、發現需要補充或更正的地方，或只是想打聲招呼，都歡迎在此填表來信。
         </p>
 
         <form onsubmit="handleAboutSubmit(event)">
@@ -251,8 +189,8 @@
           <div class="form-group">
             <label>信件主旨類別：</label>
             <select id="aboutLetterCategory" style="padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--hairline); width:100%; font-family:inherit; font-size:0.9rem;">
-              <option value="consult">🛶 預約一對一公益職涯諮詢</option>
               <option value="feedback">💬 讀者回饋與交流</option>
+              <option value="correction">🔎 內容提醒或更正</option>
               <option value="other">💡 其他</option>
             </select>
           </div>
@@ -270,7 +208,7 @@
 
           <div class="form-group">
             <label id="aboutTextareaLabel">信件內容：</label>
-            <textarea id="aboutFeedbackText" rows="5" placeholder="若是預約諮詢，請簡要說明您目前遇到的職涯瓶頸或想梳理的困惑；若是其他交流，歡迎在此留言..." required></textarea>
+            <textarea id="aboutFeedbackText" rows="5" placeholder="讀後的心得、想提醒的地方，或一句問候，都歡迎寫在這裡" required></textarea>
           </div>
 
           <button type="submit" class="btn-submit-action" style="margin-top:6px;">送出信件 ✉️</button>
@@ -385,41 +323,7 @@
         }
       }
 
-      // 3. 一對一公益職涯諮詢
-      if (cfg.consultTitle) {
-        const el = document.getElementById('aboutConsultTitle');
-        if (el) el.textContent = cfg.consultTitle;
-      }
-      if (cfg.consultDesc) {
-        const el = document.getElementById('aboutConsultDesc');
-        if (el) el.textContent = cfg.consultDesc;
-      }
-      if (cfg.consultRules) {
-        const el = document.getElementById('aboutConsultRules');
-        if (el) {
-          const rules = Array.isArray(cfg.consultRules) 
-            ? cfg.consultRules 
-            : String(cfg.consultRules).split('\n').map(r => r.trim()).filter(Boolean);
-          if (rules.length > 0) {
-            el.innerHTML = rules.map(rule => {
-              const match = rule.match(/^([^：:]+[：:])(.*)$/);
-              if (match) {
-                const title = match[1].slice(0, -1);
-                const colon = match[1].slice(-1);
-                const body = match[2];
-                return `<li><strong>${wzEscape(title)}</strong>${wzEscape(colon)}${wzEscape(body)}</li>`;
-              }
-              return `<li>${wzEscape(rule)}</li>`;
-            }).join('');
-          }
-        }
-      }
-      if (cfg.consultBtnText) {
-        const el = document.getElementById('aboutConsultBtnText');
-        if (el) el.textContent = cfg.consultBtnText;
-      }
-
-      // 4. 聯絡小棧長
+      // 3. 聯絡小棧長
       if (cfg.contactTitle) {
         const el = document.getElementById('aboutContactTitle');
         if (el) el.textContent = cfg.contactTitle;
@@ -435,20 +339,6 @@
     window.addEventListener('WangzhouDataSynced', () => {
       renderAboutPage();
     });
-
-    // 平滑滾動至私密聯絡信箱並切換類別
-    function scrollToContact(category = 'consult') {
-      const select = document.getElementById('aboutLetterCategory');
-      if (select) select.value = category;
-      const target = document.getElementById('section-contact');
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(() => {
-          const textarea = document.getElementById('aboutFeedbackText');
-          if (textarea) textarea.focus();
-        }, 500);
-      }
-    }
 
     // 訪客私密信件：防惡意刷單 ＋ 依主旨類別歸類存入後台審核箱
     function handleAboutSubmit(e) {

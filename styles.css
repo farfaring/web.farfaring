@@ -1292,9 +1292,6 @@ body {
     padding: 18px 16px;
     margin: 24px 0;
   }
-  .consult-box {
-    padding: 20px 16px;
-  }
 
   /* 彈出視窗 Modal 寬度防溢出 */
   .modal-overlay {

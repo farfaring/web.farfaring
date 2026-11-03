@@ -272,7 +272,7 @@
           <div>
             <!-- 頂部標籤 -->
             <div class="res-top-row">
-              <span class="res-type-pill">${wzEscape(item.locationLabel)}</span>
+              ${item.locationLabel ? `<span class="res-type-pill">${wzEscape(item.locationLabel)}</span>` : ''}
               <span class="res-status-pill ${isUrgent ? 'status-urgent' : 'status-open'}">
                 ${isUrgent ? `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）` : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}`}
               </span>
@@ -304,15 +304,15 @@
               </li>
               <li class="res-info-item">
                 <span class="res-info-label">⏰ 上課時間：</span>
-                <span>${wzEscape(item.timeCycle)}</span>
+                <span>${wzEscape(item.timeCycle || '請見官方頁面')}</span>
               </li>
               <li class="res-info-item">
                 <span class="res-info-label">📍 上課地點：</span>
-                <span>${wzEscape(item.address)}</span>
+                <span>${wzEscape(item.address || '請見官方頁面')}</span>
               </li>
               <li class="res-info-item">
                 <span class="res-info-label">💰 費用說明：</span>
-                <span style="color:var(--amber-dark); font-weight:500;">${wzEscape(item.cost)}</span>
+                ${item.cost ? `<span style="color:var(--amber-dark); font-weight:500;">${wzEscape(item.cost)}</span>` : '<span>請見官方頁面</span>'}
               </li>
               ${item.how ? `<li class="res-info-item">
                 <span class="res-info-label">📋 報名途徑：</span>

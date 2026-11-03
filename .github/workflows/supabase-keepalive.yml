@@ -1,0 +1,47 @@
+# 倉庫巡邏員：每 3 天讀一筆前台本來就公開的資料，避免 Supabase 免費專案閒置 7 天被暫停。
+#
+# 用的是前台公開的唯讀金鑰（anon / publishable key，與 data.js 的 SUPABASE_CONFIG 相同）。
+# 絕不放 service_role 或任何私密金鑰。若日後 data.js 換了金鑰，這裡也要一起改。
+#
+# 失敗通常代表什麼（GitHub 會寄信給倉庫擁有者）：
+#   - 連線逾時、伺服器 5xx：Supabase 專案多半已暫停（paused）。
+#     請登入 Supabase 後台，在專案頁按「Resume project」，等幾分鐘後再到 Actions 手動跑一次確認。
+#   - 401 / 403：公開金鑰被換掉了，請對照 data.js 裡的金鑰。
+#   - 404：資料表名稱或專案網址不對（讀的是 courses 表）。
+#
+# 注意：公開倉庫 60 天沒有任何活動，GitHub 會自動停用排程。
+# 若收到「scheduled workflows disabled」通知，到 Actions 分頁點這個流程，按「Enable workflow」即可。
+
+name: Supabase keepalive
+
+on:
+  schedule:
+    # cron 用 UTC。02:17 UTC = 台灣上午 10:17；避開整點以減少 GitHub 排隊延遲。
+    - cron: "17 2 */3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read one public row from courses
+        env:
+          SUPABASE_URL: https://zqkcnarvyklsifrqhfhd.supabase.co
+          ANON_KEY: sb_publishable_czCscDq--2300rOfRMsMOA_kJVBXeUa
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+            --max-time 30 --retry 2 --retry-delay 10 --retry-all-errors \
+            -H "apikey: $ANON_KEY" \
+            -H "Authorization: Bearer $ANON_KEY" \
+            -H "Accept: application/json" \
+            "$SUPABASE_URL/rest/v1/courses?select=id&limit=1") || code="000"
+          echo "HTTP status: $code"
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo "::error::Supabase 沒有正常回應（狀態 $code）。專案可能已暫停，請到 Supabase 後台按 Resume project。"
+            exit 1
+          fi
+          echo "資料庫有回應，讀取成功"

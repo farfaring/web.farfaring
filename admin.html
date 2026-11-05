@@ -517,7 +517,7 @@
     .row-note { flex:1 1 100%; max-width:220px; font-size:0.76rem; color:#744210; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
     .stack-table th, .stack-table td { padding-left:10px; padding-right:10px; }
     .stack-table td.name { max-width:240px; }
-    .stack-table td.region, .stack-table td.cost { white-space:nowrap; }
+    .stack-table td.region, .stack-table td.cost { min-width:7em; max-width:200px; }
     .stack-table td.actions { min-width:150px; }
     .row-more { display:inline-block; }
     .row-more summary { list-style:none; cursor:pointer; }
@@ -548,13 +548,14 @@
       .stack-table thead { display:none; }
       .stack-table tbody { display:block; padding:2px 0; }
       .stack-table tr { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 10px; border:1px solid var(--admin-border); border-radius:10px; padding:12px; margin:10px; background:#FFF; }
-      .stack-table td { border:0; padding:0; min-width:0; }
+      .stack-table td { border:0; padding:0; min-width:0; overflow-wrap:anywhere; }
+      .stack-table td * { min-width:0; }
       .stack-table td.status { grid-column:1; grid-row:1; }
       .stack-table td.deadline { grid-column:2; grid-row:1; text-align:right; }
       .stack-table td.name { grid-column:1 / -1; grid-row:2; }
-      .stack-table td.region { grid-column:1; grid-row:3; color:#4A5568; }
-      .stack-table td.cost { grid-column:2; grid-row:3; text-align:right; color:#4A5568; }
-      .stack-table td.actions { grid-column:1 / -1; grid-row:4; }
+      .stack-table td.region { grid-column:1 / -1; grid-row:3; color:#4A5568; white-space:normal; }
+      .stack-table td.cost { grid-column:1 / -1; grid-row:4; color:#4A5568; white-space:normal; }
+      .stack-table td.actions { grid-column:1 / -1; grid-row:5; }
       .stack-table td.stack-empty { grid-column:1 / -1; }
       .stack-table td { padding-left:0; padding-right:0; }
       .stack-table td.name, .stack-table td.actions { max-width:none; min-width:0; }
@@ -1146,7 +1147,7 @@
       <h3 class="modal-title">請 AI 重做這門課</h3>
       <input type="hidden" id="reviseCourseId">
       <p id="reviseCourseName" style="margin:0 0 6px; font-weight:600; color:#1E242B;"></p>
-      <p style="margin:0 0 14px; font-size:0.85rem; color:#718096;">網站上的舊版會照常顯示，等你核准新版才會替換。</p>
+      <p id="reviseOldNote" style="margin:0 0 14px; font-size:0.85rem; color:#718096;">網站上的舊版會照常顯示，等你核准新版才會替換。</p>
       <div class="form-group">
         <label>想請 AI 怎麼改？</label>
         <div id="reviseTagRow" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;"></div>
@@ -2391,6 +2392,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         if (courseIsLive(c) && (c.revisionState === 'submitted' || courseNeedsRegCheck(c))) attentionCount++;
         if (courseIsLive(c) && (c.revisionState === 'requested' || (courseNeedsRegCheck(c) && !c.revisionState))) copyCount++;
       });
+      copyCount += draftReviseCourses().length;
       const attBtnCnt = document.getElementById('cnt-course-attention');
       if (attBtnCnt) attBtnCnt.innerText = attentionCount;
       const copyBtn = document.getElementById('courseCopyBtn');
@@ -2452,7 +2454,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         if (c.isDraft) {
           actions = [
             `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleCoursePublish(${idx})">✓ 通過上架</button>`,
-            btn('', `editCourse(${idx})`, '編輯'), socialBtn, more([delBtn])
+            btn('', `editCourse(${idx})`, '編輯'),
+            c.reviewStatus === 'revise' ? btn('', `openReviseModal('${sid}')`, '✏️ 改重做意見') : btn('', `openReviseModal('${sid}')`, '🔄 請 AI 重做'),
+            socialBtn, more([delBtn])
           ];
         } else if (isExpired) {
           actions = [btn('', `editCourse(${idx})`, '修改截止日'), btn('', `editCourse(${idx})`, '編輯'), more([delBtn])];
@@ -2484,6 +2488,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (count === 0) {
         courseTbody.innerHTML = `<tr><td colspan="6" class="stack-empty" style="text-align:center; padding:24px; color:#A0AEC0;">暫無符合條件之課程活動</td></tr>`;
       }
+    }
+
+    // 草稿被標成「要修改」、且不在審稿台本期池裡的課程（複製給 AI 時另列，避免重複）
+    function draftReviseCourses() {
+      return (SITE_DATA.courses || []).filter(c => c.isDraft && c.reviewStatus === 'revise' && !reviewPoolKeys.includes('course:' + c.id));
     }
 
     function courseBySafeId(sid) {
@@ -2521,8 +2530,10 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       document.getElementById('reviseCourseId').value = sid;
       document.getElementById('reviseCourseName').innerText = c.title || '';
       const requested = c.revisionState === 'requested';
-      document.getElementById('reviseNoteInput').value = requested ? (c.revisionNote || '') : (preset ? REG_BELL_PRESET : '');
-      document.getElementById('reviseWithdrawBtn').style.display = requested ? 'inline-flex' : 'none';
+      const draft = !!c.isDraft;
+      document.getElementById('reviseOldNote').style.display = draft ? 'none' : '';
+      document.getElementById('reviseNoteInput').value = draft ? (c.reviewStatus === 'revise' ? (c.reviewNote || '') : '') : requested ? (c.revisionNote || '') : (preset ? REG_BELL_PRESET : '');
+      document.getElementById('reviseWithdrawBtn').style.display = requested && !draft ? 'inline-flex' : 'none';
       document.getElementById('reviseModal').classList.add('open');
     }
 
@@ -2532,6 +2543,22 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const note = document.getElementById('reviseNoteInput').value.trim();
       if (!note) {
         alert('請先選一個標籤，或寫下想請 AI 修改的地方。');
+        return;
+      }
+      if (c.isDraft) {
+        // 草稿：和審稿台「✏️ 要修改」同一條路徑
+        const unit = buildReviewUnit('course:' + c.id);
+        const tasks = applyItemDecision(unit, 'revise', note);
+        saveDataToLocalStorage();
+        closeModal('reviseModal');
+        refreshAdminView();
+        try {
+          for (const task of tasks) await task();
+          showToast('🔄 已記下。按「複製給 AI」貼給 AI，就會開始重做。', 5000);
+        } catch (err) {
+          console.error(err);
+          showToast('⚠️ 雲端儲存失敗：' + err.message, 5000);
+        }
         return;
       }
       try {
@@ -4207,12 +4234,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       // 重做中、以及已開放待複查的課程；已在重做的不重複列進 🔔，新版待審與尚未開放不複製
       const redo = courses.filter(c => courseIsLive(c) && c.revisionState === 'requested');
       const bells = courses.filter(c => courseNeedsRegCheck(c) && !c.revisionState);
-      if (pool.length === 0 && redo.length === 0 && bells.length === 0) {
+      const draftRevise = draftReviseCourses().map(c => ({ kind: 'course', item: c, posts: [], state: 'revise' }));
+      if (pool.length === 0 && redo.length === 0 && bells.length === 0 && draftRevise.length === 0) {
         alert('沒有資料可以複製。');
         return;
       }
       const groups = { approved: [], revise: [], rejected: [], pending: [] };
       pool.forEach(u => groups[u.state].push(u));
+      groups.revise.push(...draftRevise);
       const label = u => `[${REVIEW_KIND_LABELS[u.kind]}] ${u.item.title || '（無標題）'}${u.posts.length ? `（含 ${u.posts.length} 則社群貼文）` : ''}`;
       const noteOf = u => u.item.reviewNote || (u.posts.find(p => p.reviewNote) || {}).reviewNote || '';
       const today = new Date().toLocaleDateString('zh-TW');

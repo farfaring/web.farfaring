@@ -168,7 +168,7 @@
   </div>
 
   <!-- 引用全站共享數據核心 -->
-  <script src="./data.js"></script>
+  <script src="./data.js?v=20261105"></script>
 
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
@@ -264,7 +264,19 @@
 
       filtered.forEach(item => {
         const days = getDaysLeft(item.deadline);
-        const isUrgent = days !== null && days <= 5;
+        // 還沒到開放報名時間：不顯示「報名倒數中」，改在下方顯示預計開放時間
+        const notYetOpen = wzRegNotYetOpen(item.regOpenDate);
+        // 截止時刻今天已過：標籤改灰色「今日 HH:MM 已截止」（午夜才會下架）
+        const closedToday = wzDeadlineClosedToday(item.deadline, item.deadlineTime);
+        const isUrgent = !notYetOpen && !closedToday && days !== null && days <= 5;
+        const infoRows = [
+          item.cost ? `<li class="res-info-item"><span class="res-info-label">💰 費用說明：</span><span style="color:var(--amber-dark); font-weight:500;">${wzEscape(item.cost)}</span></li>` : '',
+          item.timeCycle ? `<li class="res-info-item"><span class="res-info-label">⏰ 上課時間：</span><span>${wzEscape(item.timeCycle)}</span></li>` : '',
+          item.address ? `<li class="res-info-item"><span class="res-info-label">📍 上課地點：</span><span>${wzEscape(item.address)}</span></li>` : '',
+          String(item.summary || '').trim() ? `<li class="res-info-item"><span class="res-info-label">📋 課程資訊：</span>${wzFacts(item.summary)}</li>` : '',
+          item.organizerNote ? `<li class="res-info-item"><span class="res-info-label">📝 備註：</span><span>${wzLinkify(item.organizerNote)}</span></li>` : '',
+          item.how ? `<li class="res-info-item"><span class="res-info-label">🧭 報名途徑：</span><span>${wzLinkify(item.how)}</span></li>` : ''
+        ].filter(Boolean);
         const card = document.createElement("article");
         card.className = "res-card";
 
@@ -273,10 +285,11 @@
             <!-- 頂部標籤 -->
             <div class="res-top-row">
               ${item.locationLabel ? `<span class="res-type-pill">${wzEscape(item.locationLabel)}</span>` : ''}
-              <span class="res-status-pill ${isUrgent ? 'status-urgent' : 'status-open'}">
-                ${isUrgent ? `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）` : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}`}
+              <span class="res-status-pill ${closedToday ? 'status-closed' : isUrgent ? 'status-urgent' : 'status-open'}">
+                ${closedToday ? `今日 ${wzEscape(item.deadlineTime)} 已截止` : isUrgent ? `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）` : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) : ''}`}
               </span>
             </div>
+            ${notYetOpen ? `<div class="res-open-row">⏳ 預計 ${wzEscape(wzFormatRegOpen(item.regOpenDate, { weekday: true }))} 開放報名</div>` : ''}
 
             <!-- 辦訓單位 -->
             <div style="margin-bottom:12px;">
@@ -289,36 +302,14 @@
             <!-- 標題 -->
             <h2 class="res-card-title">${wzEscape(item.title)}</h2>
 
-            <!-- 推薦看點（親切短句，去黑話） -->
-            <div class="wangzhou-note">
+            <!-- 推薦看點（親切短句，去黑話）：空值整塊不顯示 -->
+            ${String(item.whisper || '').trim() ? `<div class="wangzhou-note">
               <span class="wangzhou-note-label">✦ 推薦看點</span>
               ${wzEscape(item.whisper)}
-              ${item.organizerNote ? `<div class="organizer-optional-note">📢 備註：${wzEscape(item.organizerNote)}</div>` : ''}
-            </div>
+            </div>` : ''}
 
-            <!-- 核心資訊（嚴格排版對齊，禁止腰斬斷字） -->
-            <ul class="res-info-table">
-              <li class="res-info-item">
-                <span class="res-info-label">🎯 學習內容：</span>
-                <span>${wzEscape(item.summary)}</span>
-              </li>
-              <li class="res-info-item">
-                <span class="res-info-label">⏰ 上課時間：</span>
-                <span>${wzEscape(item.timeCycle || '請見官方頁面')}</span>
-              </li>
-              <li class="res-info-item">
-                <span class="res-info-label">📍 上課地點：</span>
-                <span>${wzEscape(item.address || '請見官方頁面')}</span>
-              </li>
-              <li class="res-info-item">
-                <span class="res-info-label">💰 費用說明：</span>
-                ${item.cost ? `<span style="color:var(--amber-dark); font-weight:500;">${wzEscape(item.cost)}</span>` : '<span>請見官方頁面</span>'}
-              </li>
-              ${item.how ? `<li class="res-info-item">
-                <span class="res-info-label">📋 報名途徑：</span>
-                <span>${wzEscape(item.how)}</span>
-              </li>` : ''}
-            </ul>
+            <!-- 核心資訊：官方頁面沒寫的欄位整列不顯示 -->
+            ${infoRows.length ? `<ul class="res-info-table">${infoRows.join('')}</ul>` : ''}
           </div>
 
           <!-- 底部直通官方按鈕（徹底移除編號字眼） -->

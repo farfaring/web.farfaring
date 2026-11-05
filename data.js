@@ -129,6 +129,56 @@ function wzSafeUrl(value) {
   }
 }
 
+// 網址的顯示文字：去掉 http(s)://，太長時截斷加「…」。
+// mode 'end'（預設）：保留開頭；'middle'：保留開頭與結尾，中間用「…」。
+function wzUrlShort(url, max, mode) {
+  let t = String(url || '').trim().replace(/^https?:\/\//i, '');
+  if (/^[^/?#]+\/$/.test(t)) t = t.slice(0, -1);
+  const chars = Array.from(t);
+  if (chars.length <= max) return t;
+  if (mode === 'middle') {
+    const tail = Math.floor((max - 1) * 0.35);
+    const head = max - 1 - tail;
+    return chars.slice(0, head).join('') + '…' + chars.slice(chars.length - tail).join('');
+  }
+  return chars.slice(0, max).join('') + '…';
+}
+
+// 網址是否以 http:// 或 https:// 開頭（不含空白）
+function wzIsHttpUrl(value) {
+  return /^https?:\/\/[^\s]+$/i.test(String(value || '').trim());
+}
+
+// 文字內的網址轉成可點連結（前後台共用）：先跳脫，再只把 http/https 網址換成連結；
+// 網址尾端標點不納入。預設連結文字只顯示網域加 ↗；opts.path 時顯示「網域＋路徑」（去 https://，超過 40 字截斷）。完整網址放 href 與 title。
+function wzLinkify(text, opts) {
+  const showPath = !!(opts && opts.path);
+  const parts = String(text === null || text === undefined ? '' : text).split(/(https?:\/\/[^\s<>"')）]+)/g);
+  return parts.map((seg, i) => {
+    if (i % 2 === 0) return wzEscape(seg);
+    const m = seg.match(/^(.*?)([。，、；：,;.!?！？]*)$/);
+    const url = m[1], tail = m[2];
+    const safe = wzSafeUrl(url);
+    if (safe === '#') return wzEscape(seg);
+    let label;
+    if (showPath) label = wzUrlShort(url, 40);
+    else { try { label = new URL(safe).host; } catch (e) { label = url.slice(0, 30); } }
+    return `<a href="${wzEscape(safe)}" title="${wzEscape(url)}" target="_blank" rel="noopener noreferrer" style="color:#2B4C65; text-decoration:underline; overflow-wrap:anywhere;">${wzEscape(label)} ↗</a>${wzEscape(tail)}`;
+  }).join('');
+}
+
+// 課程資訊條列（前後台共用）：每行「標籤：內容」（第一個全形「：」分隔）畫成兩欄清單；
+// 舊資料只要有一行沒有「：」或整段只有一行，就整段當一般文字顯示（保留換行），不會壞掉。
+// opts.linkify 時，內容裡的網址會變成可點連結（後台用）。
+function wzFacts(text, opts) {
+  const fmt = (opts && opts.linkify) ? (t => wzLinkify(t, { path: true })) : wzEscape;
+  const raw = String(text === null || text === undefined ? '' : text).trim();
+  const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const rows = lines.map(l => { const i = l.indexOf('：'); return i > 0 && i <= 6 ? [l.slice(0, i), l.slice(i + 1).trim()] : null; });
+  if (lines.length < 2 || rows.some(r => !r)) return `<span class="wz-plain">${fmt(raw)}</span>`;
+  return `<dl class="wz-facts">${rows.map(r => `<dt>${wzEscape(r[0])}</dt><dd>${fmt(r[1])}</dd>`).join('')}</dl>`;
+}
+
 // 用於 onclick 等屬性內的 id：只保留英數、底線與連字號
 function wzSafeId(value) {
   return String(value || '').replace(/[^A-Za-z0-9_-]/g, '');
@@ -140,6 +190,110 @@ function wzAddDefined(payload, fields) {
     if (fields[k] !== undefined) payload[k] = fields[k];
   });
   return payload;
+}
+
+// 台灣時間工具（前後台共用）：資料庫存的是有時區的時間點，畫面一律用台灣時間（Asia/Taipei），
+// 不依賴訪客或主理人電腦的時區。
+const WZ_TIMEZONE = 'Asia/Taipei';
+const WZ_WEEKDAY_ZH = { Mon: '一', Tue: '二', Wed: '三', Thu: '四', Fri: '五', Sat: '六', Sun: '日' };
+
+// 把時間點拆成台灣時間的年月日時分；無法解析回傳 null
+function wzTaipeiParts(value) {
+  const t = Date.parse(value);
+  if (!value || Number.isNaN(t)) return null;
+  const o = {};
+  new Intl.DateTimeFormat('en-GB', {
+    timeZone: WZ_TIMEZONE, hourCycle: 'h23', weekday: 'short',
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+  }).formatToParts(new Date(t)).forEach(p => { o[p.type] = p.value; });
+  return {
+    year: Number(o.year), month: Number(o.month), day: Number(o.day),
+    hour: o.hour, minute: o.minute, weekday: WZ_WEEKDAY_ZH[o.weekday] || ''
+  };
+}
+
+// 寫入雲端前：沒有時區的時間（例如 datetime-local 的 2026-11-09T10:00）一律視為台灣時間，補上 :00+08:00；
+// 已有時區的原樣保留；空值回傳 null
+function wzToCloudTime(value) {
+  if (value === null || value === undefined) return null;
+  const s = String(value).trim();
+  if (!s) return null;
+  if (/(?:Z|[+-]\d{2}:\d{2}|[+-]\d{4})$/.test(s)) return s;
+  const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})(?::\d{2})?$/.exec(s);
+  return m ? `${m[1]}T${m[2]}:${m[3]}:00+08:00` : s;
+}
+
+// 雲端的時間點 ➔ <input type="datetime-local"> 要的字串（台灣時間）；空值回傳空字串
+function wzToDatetimeLocal(value) {
+  const p = wzTaipeiParts(value);
+  if (!p) return '';
+  const two = n => String(n).padStart(2, '0');
+  return `${p.year}-${two(p.month)}-${two(p.day)}T${p.hour}:${p.minute}`;
+}
+
+// 開放報名日的顯示：同年省略年份、跨年才加年份；00:00 省略時間。opts.weekday 時加「（一）」
+function wzFormatRegOpen(value, opts) {
+  const p = wzTaipeiParts(value);
+  if (!p) return '';
+  const now = wzTaipeiParts(new Date().toISOString());
+  const year = now && now.year !== p.year ? `${p.year}/` : '';
+  const wd = opts && opts.weekday && p.weekday ? `（${p.weekday}）` : '';
+  const time = p.hour === '00' && p.minute === '00' ? '' : ` ${p.hour}:${p.minute}`;
+  return `${year}${p.month}/${p.day}${wd}${time}`;
+}
+
+// 報名截止的「時刻」今天已經過了嗎？（台灣時間；沒填時刻或截止日不是今天就回傳 false。午夜下架的邏輯不受影響）
+function wzDeadlineClosedToday(deadline, deadlineTime) {
+  if (!deadline || !/^([01]\d|2[0-3]):[0-5]\d$/.test(deadlineTime || '')) return false;
+  const n = wzTaipeiParts(new Date().toISOString());
+  if (!n) return false;
+  const two = x => String(x).padStart(2, '0');
+  if (`${n.year}-${two(n.month)}-${two(n.day)}` !== deadline) return false;
+  return `${n.hour}:${n.minute}` >= deadlineTime;
+}
+
+// 還沒到開放報名時間？沒填開放日、時間已過或格式不對都回傳 false
+function wzRegNotYetOpen(value) {
+  const t = Date.parse(value);
+  return !!value && !Number.isNaN(t) && t > Date.now();
+}
+
+// 前台（訪客）只讀這些欄位；內部欄位（稽核提示、修改意見、重做內容等）資料庫本來就不開放給訪客。
+// 日後要讓訪客看到新欄位，這裡與 supabase_schema.sql 第二段的欄位清單要一起加。
+const WZ_PUBLIC_COURSE_COLUMNS = 'id,name,organizer,types,region,location,cost,deadline,deadline_time,reg_open_date,summary,whisper,organizer_note,address,time_cycle,link,status,created_at';
+const WZ_PUBLIC_ARTICLE_COLUMNS = 'id,cat_key,cat_name,date,title,prose,status,created_at';
+
+// 資料庫的一列課程 ➔ 前後台使用的課程物件（前台讀不到的內部欄位會是空值）
+function wzCourseFromRow(c) {
+  return {
+    id: c.id,
+    title: c.name,
+    types: c.types || [],
+    region: c.region,
+    locationLabel: c.location,
+    provider: c.organizer,
+    cost: c.cost,
+    deadline: c.deadline,
+    deadlineTime: c.deadline_time || '',
+    regOpenDate: c.reg_open_date || '',
+    regCheckedAt: c.reg_checked_at || '',
+    summary: c.summary || '',
+    whisper: c.whisper || '',
+    organizerNote: c.organizer_note || '',
+    address: c.address || '',
+    timeCycle: c.time_cycle || '',
+    url: c.link,
+    active: c.status === 'active',
+    isDraft: c.status === 'draft',
+    reviewStatus: c.review_status || '',
+    reviewNote: c.review_note || '',
+    auditNote: c.audit_note || '',
+    revisionState: c.revision_state || '',
+    revisionNote: c.revision_note || '',
+    revisionPayload: c.revision_payload || null,
+    revisionSubmittedAt: c.revision_submitted_at || '',
+    createdAt: c.created_at || ''
+  };
 }
 
 const WangzhouCloud = {
@@ -169,6 +323,7 @@ const WangzhouCloud = {
   },
 
   // 1. 手札文章 (Articles)
+  // 後台（主理人登入）讀全部欄位；前台改用 WZ_PUBLIC_ARTICLE_COLUMNS 明列欄位
   async getArticles() {
     return await this.request('articles?select=*&order=created_at.desc');
   },
@@ -210,7 +365,7 @@ const WangzhouCloud = {
       name: course.title || course.name,
       organizer: course.provider || course.organizer,
       types: course.types || [],
-      // 沒填就留空，不替官方推論地區、地點或費用；前台空值時顯示「請見官方頁面」
+      // 沒填就留空，不替官方推論地區、地點或費用；前台空值整列不顯示
       region: course.region || null,
       location: course.locationLabel || course.location || null,
       cost: course.cost || null,
@@ -226,7 +381,10 @@ const WangzhouCloud = {
     wzAddDefined(payload, {
       review_status: course.reviewStatus,
       review_note: course.reviewNote,
-      audit_note: course.auditNote
+      audit_note: course.auditNote,
+      deadline_time: course.deadlineTime === undefined ? undefined : (course.deadlineTime || null),
+      // 沒填開放報名日存成 null；沒帶這個欄位的舊物件不動雲端的值
+      reg_open_date: course.regOpenDate === undefined ? undefined : wzToCloudTime(course.regOpenDate)
     });
     return await this.request('courses', {
       method: 'POST',
@@ -238,6 +396,85 @@ const WangzhouCloud = {
     return await this.request(`courses?id=eq.${encodeURIComponent(id)}`, {
       method: 'DELETE'
     });
+  },
+
+  // 課程「請 AI 重做」：重做的內容全放在這一列的內部欄位，核准前網站上的舊版不變。
+  // 每個動作都帶「讀到的狀態」當條件；狀態已被另一個分頁改過就不會寫入並回報錯誤（避免核准到沒看過的新版）。
+  async patchCourseGuarded(id, filters, body) {
+    const q = [`id=eq.${encodeURIComponent(id)}`, ...filters].join('&');
+    const rows = await this.request(`courses?${q}&select=*`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(body)
+    });
+    if (!Array.isArray(rows) || rows.length !== 1) {
+      throw new Error('這門課的狀態剛剛有變動（可能在另一個分頁處理過了），請按「從雲端同步」重新整理後再試。');
+    }
+    return rows[0];
+  },
+  _revisionFilters(expectState, expectSubmittedAt) {
+    const f = [expectState ? `revision_state=eq.${expectState}` : 'revision_state=is.null'];
+    if (expectState === 'submitted') f.push(`revision_submitted_at=eq.${encodeURIComponent(expectSubmittedAt || '')}`);
+    return f;
+  },
+  // 記下重做意見（沒有重做 ➔ 重做中；改意見；或把待審的新版退回再重做）。expect 是畫面上讀到的狀態。
+  async requestCourseRevision(id, note, expect) {
+    const e = expect || {};
+    return await this.patchCourseGuarded(id, ['status=eq.active', ...this._revisionFilters(e.state || '', e.submittedAt)], {
+      revision_state: 'requested',
+      revision_note: note,
+      revision_payload: null,
+      revision_submitted_at: null
+    });
+  },
+  // 撤回重做（只能撤回還在等 AI 的）
+  async withdrawCourseRevision(id) {
+    return await this.patchCourseGuarded(id, ['revision_state=eq.requested'], {
+      revision_state: null, revision_note: null, revision_payload: null, revision_submitted_at: null
+    });
+  },
+  // 不採用新版：丟棄新版與意見，網站維持舊版
+  async discardCourseRevision(id, submittedAt) {
+    return await this.patchCourseGuarded(id, this._revisionFilters('submitted', submittedAt), {
+      revision_state: null, revision_note: null, revision_payload: null, revision_submitted_at: null
+    });
+  },
+  // 核准新版：以新版白名單欄位整欄覆蓋（沒寫的欄位就是清空），並確認這一版就是畫面上看過的那一版
+  async approveCourseRevision(id, submittedAt, payload) {
+    const p = payload || {};
+    if (!p.name || !p.link || !Array.isArray(p.types) || p.types.length === 0) {
+      throw new Error('新版內容不完整（缺少名稱、報名網址或類別），不能替換。');
+    }
+    const orNull = v => (v === undefined || v === '' ? null : v);
+    return await this.patchCourseGuarded(id, this._revisionFilters('submitted', submittedAt), {
+      name: p.name,
+      organizer: orNull(p.organizer),
+      types: p.types,
+      region: orNull(p.region),
+      location: orNull(p.location),
+      cost: orNull(p.cost),
+      deadline: orNull(p.deadline),
+      deadline_time: orNull(p.deadline_time),
+      reg_open_date: wzToCloudTime(p.reg_open_date),
+      summary: orNull(p.summary),
+      whisper: orNull(p.whisper),
+      organizer_note: orNull(p.organizer_note),
+      address: orNull(p.address),
+      time_cycle: orNull(p.time_cycle),
+      link: p.link,
+      audit_note: orNull(p.audit_note),
+      status: 'active',
+      review_status: 'approved',
+      reg_checked_at: new Date().toISOString(),
+      revision_state: null,
+      revision_note: null,
+      revision_payload: null,
+      revision_submitted_at: null
+    });
+  },
+  // 開放報名後主理人確認「沒有變動」：只記下複查時間
+  async markCourseRegChecked(id) {
+    return await this.patchCourseGuarded(id, [], { reg_checked_at: new Date().toISOString() });
   },
 
   // 3. 木棧板小語 (Planks)
@@ -512,9 +749,9 @@ const WangzhouCloud = {
     try {
       const skip = Promise.resolve(null);
       const [articles, courses, submissions, posts, planks, aboutConfig] = await Promise.all([
-        (includePrivate ? this.getArticles() : this.request('articles?select=*&status=eq.active&order=created_at.desc'))
+        (includePrivate ? this.getArticles() : this.request(`articles?select=${WZ_PUBLIC_ARTICLE_COLUMNS}&status=eq.active&order=created_at.desc`))
           .catch(err => { console.warn('Articles sync failed:', err); return null; }),
-        (includePrivate ? this.getCourses() : this.request('courses?select=*&status=eq.active&order=created_at.desc'))
+        (includePrivate ? this.getCourses() : this.request(`courses?select=${WZ_PUBLIC_COURSE_COLUMNS}&status=eq.active&order=created_at.desc`))
           .catch(err => { console.warn('Courses sync failed:', err); return null; }),
         includePrivate ? this.getSubmissions().catch(err => { console.warn('Submissions sync failed:', err); return null; }) : skip,
         includePrivate ? this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; }) : skip,
@@ -557,28 +794,7 @@ const WangzhouCloud = {
       }
 
       if (Array.isArray(courses)) {
-        SITE_DATA.courses = courses.map(c => ({
-          id: c.id,
-          title: c.name,
-          types: c.types || [],
-          region: c.region,
-          locationLabel: c.location,
-          provider: c.organizer,
-          cost: c.cost,
-          deadline: c.deadline,
-          summary: c.summary || '',
-          whisper: c.whisper || '',
-          organizerNote: c.organizer_note || '',
-          address: c.address || '',
-          timeCycle: c.time_cycle || '',
-          url: c.link,
-          active: c.status === 'active',
-          isDraft: c.status === 'draft',
-          reviewStatus: c.review_status || '',
-          reviewNote: c.review_note || '',
-          auditNote: c.audit_note || '',
-          createdAt: c.created_at || ''
-        }));
+        SITE_DATA.courses = courses.map(wzCourseFromRow);
         changed = true;
       }
 

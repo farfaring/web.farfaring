@@ -332,6 +332,33 @@
       align-items: center;
     }
 
+    .wz-open-btn { display:inline-flex; align-items:center; min-height:40px; text-decoration:none; color:#2B4C65; border-color:#2B4C65; }
+    .wz-url-row { display:flex; gap:8px; align-items:stretch; }
+    .wz-url-row input { flex:1 1 auto; min-width:0; padding-right:18px; text-overflow:ellipsis; }
+    .wz-url-open { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; padding:0 16px; border:1px solid #2B4C65; border-radius:8px; background:#2B4C65; color:#FAF8F5; font-family:inherit; font-size:0.9rem; cursor:pointer; white-space:nowrap; }
+    .wz-url-open:disabled { background:#E2E8F0; border-color:#E2E8F0; color:#A0AEC0; cursor:not-allowed; }
+    .wz-url-hint { margin-top:4px; font-size:0.82rem; color:#8F5E32; }
+    .wz-url-hint[hidden] { display:none; }
+    .wz-url-fix { margin-left:8px; padding:2px 10px; font-size:0.78rem; border:1px solid #8F5E32; border-radius:99px; background:#FFF; color:#8F5E32; cursor:pointer; font-family:inherit; }
+    .wz-audit-urls { margin-top:4px; font-size:0.8rem; color:#4A5568; }
+    .wz-audit-urls[hidden] { display:none; }
+    .wz-audit-urls a { margin-right:10px; }
+    .wz-src-box { margin:0 0 12px; }
+    .wz-src-title { font-size:0.8rem; color:#718096; margin-bottom:6px; }
+    .wz-src-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .wz-src-main { display:inline-flex; align-items:center; min-height:40px; padding:0 16px; border-radius:8px; background:#2B4C65; color:#FAF8F5; text-decoration:none; font-size:0.9rem; white-space:nowrap; }
+    .wz-src-main.is-off { background:#E2E8F0; color:#A0AEC0; cursor:not-allowed; }
+    .wz-src-url { font-size:0.85rem; color:#2B4C65; text-decoration:underline; overflow-wrap:anywhere; min-width:0; }
+    .wz-src-muted { font-size:0.85rem; color:#718096; }
+    .wz-src-edit { border:0; background:none; color:#B87D4B; font-size:0.84rem; cursor:pointer; font-family:inherit; padding:6px 4px; }
+    .wz-src-input { flex:1 1 260px; min-width:0; padding:9px 12px; border:1px solid #CBD5E0; border-radius:8px; font-family:inherit; font-size:0.88rem; }
+    .wz-src-save { min-height:40px; padding:0 16px; border:0; border-radius:8px; background:#2B4C65; color:#FAF8F5; font-family:inherit; font-size:0.88rem; cursor:pointer; }
+    .wz-src-cancel { min-height:40px; padding:0 12px; border:0; background:none; color:#718096; font-family:inherit; font-size:0.88rem; cursor:pointer; }
+    .wz-src-note { font-size:0.82rem; color:#718096; }
+    .wz-src-note.is-ok { color:#466D56; }
+    .wz-src-note.is-warn { color:#8F5E32; }
+    .desk-row { display:grid; grid-template-columns:8em minmax(0,1fr); gap:0 4px; }
+    @media (max-width: 600px) { .desk-row { grid-template-columns:minmax(0,1fr); margin-bottom:6px; } }
     .btn-table-sm {
       background: #EDF2F7;
       border: 1px solid #CBD5E0;
@@ -479,6 +506,61 @@
     .mkt-body { padding:4px 14px 14px; font-size:0.84rem; line-height:1.7; color:inherit; white-space:pre-wrap; border-top:1px solid #EDE8E0; padding-top:10px; }
     @media (max-width:600px) { .mkt-hint, .mkt-sub { display:none; } .mkt-arrow { margin-left:auto; } }
     @media (max-width:600px) { .review-decision-grid { grid-template-columns:1fr !important; } .review-decision-grid button { min-height:44px; white-space:nowrap; border-radius:8px; } }
+    .course-top-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media (max-width:480px) { .course-top-grid { grid-template-columns:1fr; gap:0; } }
+    /* 課程列表：補充狀態標籤、「更多」收納 */
+    .row-tag { display:inline-block; font-size:0.72rem; font-weight:600; padding:2px 8px; border-radius:4px; white-space:nowrap; }
+    .tag-redo, .tag-bell { background:#FEFCBF; color:#744210; border:1px solid #FAF089; }
+    .tag-new { background:#EBF8FF; color:#2B6CB0; border:1px solid #BEE3F8; }
+    .tag-wait { background:#EDF2F7; color:#4A5568; border:1px solid #CBD5E0; }
+    .row-sub { margin-top:6px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .row-note { flex:1 1 100%; max-width:220px; font-size:0.76rem; color:#744210; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+    .stack-table th, .stack-table td { padding-left:10px; padding-right:10px; }
+    .stack-table td.name { max-width:240px; }
+    .stack-table td.region, .stack-table td.cost { white-space:nowrap; }
+    .stack-table td.actions { min-width:150px; }
+    .row-more { display:inline-block; }
+    .row-more summary { list-style:none; cursor:pointer; }
+    .row-more summary::-webkit-details-marker { display:none; }
+    .row-more[open] { flex-basis:100%; }
+    .row-more-menu { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+    /* 課程新版審稿卡：舊新並排 */
+    .rev-card { background:#FAF8F5; border:1px solid #E2E8F0; border-radius:12px; padding:18px; margin-bottom:16px; }
+    .rev-diff { border:1px solid #E2E8F0; border-radius:8px; background:#FFF; overflow:hidden; font-size:0.86rem; line-height:1.7; }
+    .rev-row { display:grid; grid-template-columns:9em minmax(0,1fr) minmax(0,1fr); gap:0; border-top:1px solid #EDF2F7; }
+    .rev-row:first-child { border-top:0; }
+    .rev-row > div { padding:8px 12px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .rev-head > div { background:#F8FAFC; font-weight:600; color:#4A5568; font-size:0.8rem; }
+    .rev-name { color:#718096; }
+    .rev-new { background:#F0FFF4; }
+    .rev-lab { display:none; font-size:0.74rem; color:#718096; }
+    .rev-empty { color:#A0AEC0; }
+    @media (max-width:600px) {
+      .rev-head { display:none; }
+      .rev-row { grid-template-columns:minmax(0,1fr); }
+      .rev-row > div { padding:4px 12px; }
+      .rev-name { padding-top:8px !important; font-weight:600; color:#2D3748; }
+      .rev-lab { display:block; }
+    }
+    /* 後台課程列表：手機改成一門課一張卡（要放在 .admin-table 基本規則之後） */
+    @media (max-width:768px) {
+      .stack-table { min-width:0 !important; display:block; }
+      .stack-table thead { display:none; }
+      .stack-table tbody { display:block; padding:2px 0; }
+      .stack-table tr { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 10px; border:1px solid var(--admin-border); border-radius:10px; padding:12px; margin:10px; background:#FFF; }
+      .stack-table td { border:0; padding:0; min-width:0; }
+      .stack-table td.status { grid-column:1; grid-row:1; }
+      .stack-table td.deadline { grid-column:2; grid-row:1; text-align:right; }
+      .stack-table td.name { grid-column:1 / -1; grid-row:2; }
+      .stack-table td.region { grid-column:1; grid-row:3; color:#4A5568; }
+      .stack-table td.cost { grid-column:2; grid-row:3; text-align:right; color:#4A5568; }
+      .stack-table td.actions { grid-column:1 / -1; grid-row:4; }
+      .stack-table td.stack-empty { grid-column:1 / -1; }
+      .stack-table td { padding-left:0; padding-right:0; }
+      .stack-table td.name, .stack-table td.actions { max-width:none; min-width:0; }
+      .row-note { max-width:100%; }
+      .stack-table .btn-table-sm { min-height:40px; }
+    }
     .auth-gate {
       position: fixed; inset: 0; z-index: 100000;
       display: flex; align-items: center; justify-content: center;
@@ -744,6 +826,7 @@
         <button type="button" id="deskStepBtn2" class="btn-table-sm" onclick="switchDeskStep(2)">② 排程確認與送出</button>
       </div>
       <div id="deskStep1">
+        <div id="reviewRevisions"></div>
         <div id="reviewProgress" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
         <div id="reviewCard"></div>
       </div>
@@ -885,12 +968,16 @@
             <button class="btn-table-sm" id="courseFilter-published" onclick="filterCourses('published')">🟢 已上架 (<span id="cnt-course-pub">0</span>)</button>
             <button class="btn-table-sm" id="courseFilter-draft" onclick="filterCourses('draft')">🟡 待審草稿 (<span id="cnt-course-draft">0</span>)</button>
             <button class="btn-table-sm" id="courseFilter-expired" onclick="filterCourses('expired')">⚠️ 已截止 (<span id="cnt-course-expired">0</span>)</button>
+            <button class="btn-table-sm" id="courseFilter-attention" onclick="filterCourses('attention')" title="新版待審，以及已開放報名、待複查的課程">🔔 待處理 ( <span id="cnt-course-attention">0</span> )</button>
           </div>
         </div>
-        <button class="btn-create-item" onclick="openCourseEditModal()">➕ 新增課程活動</button>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn-table-sm" id="courseCopyBtn" style="display:none;" onclick="copyReviewResults()" title="把重做意見與待複查的課程複製起來，貼給 AI">📋 複製給 AI（<span id="courseCopyCnt">0</span>）</button>
+          <button class="btn-create-item" onclick="openCourseEditModal()">➕ 新增課程活動</button>
+        </div>
       </div>
       <div class="admin-table-container">
-        <table class="admin-table">
+        <table class="admin-table stack-table">
           <thead>
             <tr>
               <th style="width:115px;">審核狀態</th>
@@ -1052,6 +1139,27 @@
     </div>
   </div>
 
+  <!-- 請 AI 重做 Modal -->
+  <div id="reviseModal" class="modal-overlay" onclick="if(event.target===this)closeModal('reviseModal')">
+    <div class="modal-content" style="max-width:520px;">
+      <button class="modal-close-btn" onclick="closeModal('reviseModal')">×</button>
+      <h3 class="modal-title">請 AI 重做這門課</h3>
+      <input type="hidden" id="reviseCourseId">
+      <p id="reviseCourseName" style="margin:0 0 6px; font-weight:600; color:#1E242B;"></p>
+      <p style="margin:0 0 14px; font-size:0.85rem; color:#718096;">網站上的舊版會照常顯示，等你核准新版才會替換。</p>
+      <div class="form-group">
+        <label>想請 AI 怎麼改？</label>
+        <div id="reviseTagRow" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;"></div>
+        <textarea id="reviseNoteInput" rows="3" maxlength="2000" placeholder="點上面的標籤，或自己寫下想法。"></textarea>
+      </div>
+      <div class="revise-actions" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
+        <button type="button" class="btn-table-sm" id="reviseWithdrawBtn" style="display:none; margin-right:auto; min-height:40px;" onclick="withdrawRevise()">↩ 撤回重做</button>
+        <button type="button" class="btn-table-sm" style="min-height:40px; flex:1 1 40%; justify-content:center;" onclick="closeModal('reviseModal')">取消</button>
+        <button type="button" class="btn-submit-action" style="margin:0; min-height:40px; flex:1 1 40%;" onclick="submitRevise()">請 AI 重做</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 課程編輯 Modal -->
   <div id="courseModal" class="modal-overlay" onclick="if(event.target===this)closeModal('courseModal')">
     <div class="modal-content" style="max-width:620px;">
@@ -1067,7 +1175,7 @@
           <label>辦訓單位（實際開課機構）：</label>
           <input type="text" id="courseProviderInput" required placeholder="例如：○○協會">
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="course-top-grid">
           <div class="form-group">
             <label>地點區域：</label>
             <select id="courseRegionInput" required>
@@ -1081,9 +1189,21 @@
             </select>
           </div>
           <div class="form-group">
-            <label>報名截止日 (YYYY-MM-DD)：</label>
-            <input type="date" id="courseDeadlineInput" required>
+            <label>報名截止：</label>
+            <div style="display:flex; gap:8px;">
+              <input type="date" id="courseDeadlineInput" required style="flex:1 1 auto; min-width:0;">
+              <input type="time" id="courseDeadlineTimeInput" style="flex:0 0 9.5em; min-width:0;">
+            </div>
+            <div style="margin-top:4px; font-size:0.78rem; color:#718096;">時間選填，不填就只顯示日期。</div>
           </div>
+        </div>
+        <div class="form-group">
+          <label>報名開放：</label>
+          <div style="display:flex; gap:18px; flex-wrap:wrap; margin-bottom:6px;">
+            <label style="font-weight:400; display:inline-flex; align-items:center; gap:6px;"><input type="radio" style="width:auto; flex:0 0 auto; margin:0;" name="courseRegOpenMode" value="now" checked onchange="syncRegOpenMode()"> 即日起開放報名</label>
+            <label style="font-weight:400; display:inline-flex; align-items:center; gap:6px;"><input type="radio" style="width:auto; flex:0 0 auto; margin:0;" name="courseRegOpenMode" value="set" onchange="syncRegOpenMode()"> 指定開放時間</label>
+          </div>
+          <input type="datetime-local" id="courseRegOpenInput" style="display:none;">
         </div>
         <div class="form-group">
           <label>資源類別（前台篩選用，至少勾選一項）：</label>
@@ -1094,8 +1214,8 @@
           </div>
         </div>
         <div class="form-group">
-          <label>學習內容簡介（必填）：</label>
-          <textarea id="courseSummaryInput" rows="2" required placeholder="例如：涵蓋生成式 AI 基礎概念、提示詞工程、辦公自動化實作..."></textarea>
+          <label>課程資訊（選填）：<span style="display:block; font-weight:400; font-size:0.78rem; color:#718096;">每行一項，寫成「標籤：內容」。報名時間請填在上方，這裡只寫報名方式。</span></label>
+          <textarea id="courseSummaryInput" rows="7" placeholder="例如：涵蓋生成式 AI 基礎概念、提示詞工程、辦公自動化實作..."></textarea>
         </div>
         <div class="form-group">
           <label>推薦看點（親切短句，寫給讀者看的亮點）：</label>
@@ -1118,12 +1238,14 @@
           <input type="text" id="courseTimeCycleInput" required placeholder="例如：每週二、四 18:30-21:30，共 48 小時">
         </div>
         <div class="form-group">
-          <label>官方真實報名網址：</label>
-          <input type="url" id="courseUrlInput" required placeholder="https://its.taiwanjobs.gov.tw/...">
+          <label>報名網址：</label>
+          <div class="wz-url-row"><input type="text" inputmode="url" id="courseUrlInput" required placeholder="https://its.taiwanjobs.gov.tw/..." oninput="wzSyncUrlField('courseUrlInput')"><button type="button" class="wz-url-open" id="courseUrlInputOpen" onclick="wzOpenField('courseUrlInput')" disabled>開啟 ↗</button></div>
+          <div class="wz-url-hint" id="courseUrlInputHint" hidden></div>
         </div>
         <div class="form-group">
           <label>🛡️ 預先稽核與風險提示（確認官方來源、費用與資格無誤）：</label>
-          <textarea id="courseAuditInput" rows="2" placeholder="例如：資訊取自勞動部台灣就業通官方頁，報名資格與費用已核對。"></textarea>
+          <textarea id="courseAuditInput" rows="2" placeholder="例如：資訊取自勞動部台灣就業通官方頁，報名資格與費用已核對。" oninput="wzSyncAuditUrls('courseAuditInput')"></textarea>
+          <div class="wz-audit-urls" id="courseAuditInputUrls" hidden></div>
         </div>
         <div class="form-group">
           <label>發布與審核狀態：</label>
@@ -1162,11 +1284,13 @@
         </div>
         <div class="form-group">
           <label>🛡️ 預先稽核與風險提示（版權、個資、公務員兼職、非營利倫理）：</label>
-          <textarea id="artAuditInput" rows="2" placeholder="例如：轉譯 Ibarra 研究觀點，僅摘述、未轉載原文。"></textarea>
+          <textarea id="artAuditInput" rows="2" placeholder="例如：轉譯 Ibarra 研究觀點，僅摘述、未轉載原文。" oninput="wzSyncAuditUrls('artAuditInput')"></textarea>
+          <div class="wz-audit-urls" id="artAuditInputUrls" hidden></div>
         </div>
         <div class="form-group">
           <label>📖 免費開放全文來源網址（不收付費牆或純摘要）：</label>
-          <input type="url" id="artSourceUrlInput" placeholder="https://...">
+          <div class="wz-url-row"><input type="text" inputmode="url" id="artSourceUrlInput" placeholder="https://..." oninput="wzSyncUrlField('artSourceUrlInput')"><button type="button" class="wz-url-open" id="artSourceUrlInputOpen" onclick="wzOpenField('artSourceUrlInput')" disabled>開啟 ↗</button></div>
+          <div class="wz-url-hint" id="artSourceUrlInputHint" hidden></div>
         </div>
         <div class="form-group">
           <label>發布與審核狀態：</label>
@@ -1354,11 +1478,13 @@
         <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:12px 14px; margin-bottom:14px;">
           <div class="form-group" style="margin-bottom:10px;">
             <label>🛡️ 預先稽核與風險提示（版權、個資、公務員兼職、非營利倫理）：</label>
-            <textarea id="socAuditInput" rows="2" placeholder="例如：引用 HBR 文章僅摘述觀點、未轉載原文；未涉及個資。"></textarea>
+            <textarea id="socAuditInput" rows="2" placeholder="例如：引用 HBR 文章僅摘述觀點、未轉載原文；未涉及個資。" oninput="wzSyncAuditUrls('socAuditInput')"></textarea>
+          <div class="wz-audit-urls" id="socAuditInputUrls" hidden></div>
           </div>
           <div class="form-group" style="margin:0;">
             <label>📖 免費開放全文來源網址（不收付費牆或純摘要）：</label>
-            <input type="url" id="socSourceUrlInput" placeholder="https://...">
+            <div class="wz-url-row"><input type="text" inputmode="url" id="socSourceUrlInput" placeholder="https://..." oninput="wzSyncUrlField('socSourceUrlInput')"><button type="button" class="wz-url-open" id="socSourceUrlInputOpen" onclick="wzOpenField('socSourceUrlInput')" disabled>開啟 ↗</button></div>
+            <div class="wz-url-hint" id="socSourceUrlInputHint" hidden></div>
           </div>
         </div>
 
@@ -1506,7 +1632,7 @@
   <script>window.WANGZHOU_ADMIN_MODE = true;</script>
 
   <!-- 引用共享核心數據 -->
-  <script src="./data.js"></script>
+  <script src="./data.js?v=20261105"></script>
 
   <script>
     // 切換面板
@@ -1540,6 +1666,61 @@
     let currentArticleFilter = 'all';
     let currentSocialFilter = 'all';
     let currentSocialPlatform = 'all';
+
+    // 開啟輸入框裡的網址（只認 http/https，新分頁）
+    function wzOpenField(id) {
+      const v = (document.getElementById(id).value || '').trim();
+      if (!wzIsHttpUrl(v)) return;
+      const u = wzSafeUrl(v);
+      if (u !== '#') window.open(u, '_blank', 'noopener,noreferrer');
+    }
+
+    // 網址欄的狀態：empty 空白／ok 可開啟／fixable 缺 https:// 但看起來是網域／bad 其他格式錯誤
+    function wzUrlState(v) {
+      v = String(v || '').trim();
+      if (!v) return 'empty';
+      if (wzIsHttpUrl(v)) return 'ok';
+      if (/^(www\.)?[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+([\/?#]\S*)?$/.test(v)) return 'fixable';
+      return 'bad';
+    }
+
+    // 編輯表單的網址欄：同步「開啟」按鈕（空白或格式錯誤時停用）與格式提示
+    function wzSyncUrlField(id) {
+      const input = document.getElementById(id);
+      const btn = document.getElementById(id + 'Open');
+      const hint = document.getElementById(id + 'Hint');
+      if (!input || !btn || !hint) return;
+      const st = wzUrlState(input.value);
+      btn.disabled = st !== 'ok';
+      if (st === 'empty' || st === 'ok') { hint.hidden = true; hint.textContent = ''; return; }
+      hint.hidden = false;
+      hint.textContent = '網址開頭要有 https://（例如 https://www.…），才打得開。';
+      if (st === 'fixable') {
+        const fix = document.createElement('button');
+        fix.type = 'button';
+        fix.className = 'wz-url-fix';
+        fix.textContent = '幫我補上開頭';
+        fix.onclick = () => { input.value = 'https://' + input.value.trim(); wzSyncUrlField(id); input.focus(); };
+        hint.appendChild(fix);
+      }
+    }
+
+    // 預先稽核文字框下方：列出文中的網址（可點）
+    function wzSyncAuditUrls(id) {
+      const ta = document.getElementById(id);
+      const box = document.getElementById(id + 'Urls');
+      if (!ta || !box) return;
+      const found = (ta.value.match(/https?:\/\/[^\s<>"')）]+/g) || []).map(u => u.replace(/[。，、；：,;.!?！？]+$/, ''));
+      const uniq = [...new Set(found)].filter(u => wzSafeUrl(u) !== '#');
+      if (!uniq.length) { box.hidden = true; box.innerHTML = ''; return; }
+      box.hidden = false;
+      box.innerHTML = '文中的網址：' + uniq.map(u => wzLinkify(u, { path: true })).join(' ');
+    }
+
+    function wzSyncUrlFields() {
+      ['courseUrlInput', 'artSourceUrlInput', 'socSourceUrlInput'].forEach(wzSyncUrlField);
+      ['courseAuditInput', 'artAuditInput', 'socAuditInput'].forEach(wzSyncAuditUrls);
+    }
 
     // HTML 跳脫防護
     function escapeHtml(str) {
@@ -2170,15 +2351,33 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       alert(`✅ 已完成發布！最新更新時間已烙印為【${SITE_DATA.siteInfo.lastUpdated}】。\n已為您下載最新「data.js」檔案，將它放入資料夾取代舊檔即可永久生效！`);
     }
 
-    // 課程活動審核與篩選（支援已上架、草稿與已過期過濾）
+    // 課程活動審核與篩選（支援已上架、草稿、已過期與待處理過濾）
     function filterCourses(filter) {
       currentCourseFilter = filter;
-      ['all', 'published', 'draft', 'expired'].forEach(f => {
+      ['all', 'published', 'draft', 'expired', 'attention'].forEach(f => {
         const btn = document.getElementById('courseFilter-' + f);
         if (btn) btn.classList.toggle('active', f === filter);
       });
       renderCoursesTable(currentCourseFilter);
     }
+
+    // 已上架、未截止的課程（「重做」「開放報名」相關狀態只在這些課程上出現）
+    function courseIsExpired(c) {
+      const t = new Date(`${c.deadline}T23:59:59+08:00`).getTime();
+      return !isNaN(t) && t < Date.now();
+    }
+    function courseIsLive(c) {
+      return !c.isDraft && c.active !== false && !courseIsExpired(c);
+    }
+    // 🔔 已開放報名、還沒複查：開放時間已過，且複查時間早於開放時間（或從沒複查過）
+    function courseNeedsRegCheck(c) {
+      if (!courseIsLive(c) || !c.regOpenDate) return false;
+      const open = Date.parse(c.regOpenDate);
+      if (isNaN(open) || open > Date.now()) return false;
+      const checked = c.regCheckedAt ? Date.parse(c.regCheckedAt) : NaN;
+      return isNaN(checked) || checked < open;
+    }
+    const REG_BELL_PRESET = '🔍 資訊需再查證；報名已開放，請複查報名方式、名額與截止日';
 
     function renderCoursesTable(filter = 'all') {
       const courseTbody = document.getElementById('courseTableBody');
@@ -2186,14 +2385,29 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       courseTbody.innerHTML = '';
       const list = SITE_DATA.courses || [];
       let count = 0;
+      let attentionCount = 0;
+      let copyCount = 0;
+      list.forEach(c => {
+        if (courseIsLive(c) && (c.revisionState === 'submitted' || courseNeedsRegCheck(c))) attentionCount++;
+        if (courseIsLive(c) && (c.revisionState === 'requested' || (courseNeedsRegCheck(c) && !c.revisionState))) copyCount++;
+      });
+      const attBtnCnt = document.getElementById('cnt-course-attention');
+      if (attBtnCnt) attBtnCnt.innerText = attentionCount;
+      const copyBtn = document.getElementById('courseCopyBtn');
+      if (copyBtn) {
+        copyBtn.style.display = copyCount > 0 ? 'inline-flex' : 'none';
+        document.getElementById('courseCopyCnt').innerText = copyCount;
+      }
+
       list.forEach((c, idx) => {
-        const expiryTime = new Date(`${c.deadline}T23:59:59+08:00`).getTime();
-        const isExpired = !isNaN(expiryTime) && expiryTime < Date.now();
+        const isExpired = courseIsExpired(c);
         const isRejected = !c.isDraft && c.active === false && !isExpired;
+        const live = courseIsLive(c);
 
         if (filter === 'published' && (c.isDraft || isExpired || isRejected)) return;
         if (filter === 'draft' && !c.isDraft) return;
         if (filter === 'expired' && !isExpired) return;
+        if (filter === 'attention' && !(live && (c.revisionState === 'submitted' || courseNeedsRegCheck(c)))) return;
         count++;
 
         const tr = document.createElement('tr');
@@ -2208,39 +2422,275 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           statusBadge = `<span style="background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; white-space:nowrap;">🟢 已上架</span>`;
         }
 
-        // 已截止的課程要重新上架，必須先改截止日，所以直接開編輯視窗
-        const approveBtn = c.isDraft
-          ? `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleCoursePublish(${idx})">✓ 通過上架</button>`
-          : isExpired
-            ? `<button class="btn-table-sm" onclick="editCourse(${idx})">修改截止日</button>`
-            : `<button class="btn-table-sm" onclick="toggleCoursePublish(${idx})">轉草稿</button>`;
-
         const deadlineDisplay = isExpired
           ? `<span style="color:#E53E3E; font-weight:600;">${escapeHtml(c.deadline)}</span><br><span style="font-size:0.72rem; color:#E53E3E; white-space:nowrap;">（前台已自動隱藏）</span>`
-          : `<span>${escapeHtml(c.deadline)}</span>`;
+          : `<span>${escapeHtml(c.deadline)}</span>${c.deadlineTime ? `<br><span style="font-size:0.72rem; color:#718096; white-space:nowrap;">${escapeHtml(c.deadlineTime)} 截止</span>` : ''}`;
+
+        // 名稱欄下方的補充狀態：🆕 新版待審 → 🔔 待複查 → 🔄 重做中 → 📅 尚未開放
+        const sid = wzSafeId(c.id);
+        const subs = [];
+        if (live && c.revisionState === 'submitted') {
+          subs.push(`<div class="row-sub"><span class="row-tag tag-new">🆕 新版待審</span></div>`);
+        }
+        if (courseNeedsRegCheck(c)) {
+          const bellBtns = c.revisionState ? '' : ` <button type="button" class="btn-table-sm" onclick="markRegChecked('${sid}')">✓ 沒有變動</button>`;
+          subs.push(`<div class="row-sub"><span class="row-tag tag-bell">🔔 已開放報名，待複查</span>${bellBtns}</div>`);
+        }
+        if (live && c.revisionState === 'requested') {
+          subs.push(`<div class="row-sub"><span class="row-tag tag-redo">🔄 重做中</span><span class="row-note" title="${escapeHtml(c.revisionNote)}">意見：${escapeHtml(c.revisionNote)}</span></div>`);
+        }
+        if (live && wzRegNotYetOpen(c.regOpenDate)) {
+          subs.push(`<div class="row-sub"><span class="row-tag tag-wait">📅 尚未開放報名（預計 ${escapeHtml(wzFormatRegOpen(c.regOpenDate))} 開放）</span></div>`);
+        }
+
+        // 操作欄：常用的放外面，轉草稿與刪除收進「更多」
+        const btn = (cls, onclick, text, title) => `<button class="btn-table-sm ${cls || ''}" ${title ? `title="${title}"` : ''} onclick="${onclick}">${text}</button>`;
+        const socialBtn = `<button class="btn-table-sm" style="background:#FAF5FF; color:#6B46C1; border-color:#E9D8FD;" onclick="createSocialFromCourse(${idx})" title="以此課程為來源，起草社群宣傳貼文">📱 擬定社群貼文</button>`;
+        const more = items => `<details class="row-more"><summary class="btn-table-sm">更多</summary><div class="row-more-menu">${items.join('')}</div></details>`;
+        const delBtn = btn('btn-table-delete', `deleteCourse(${idx})`, '刪除');
+        let actions;
+        if (c.isDraft) {
+          actions = [
+            `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleCoursePublish(${idx})">✓ 通過上架</button>`,
+            btn('', `editCourse(${idx})`, '編輯'), socialBtn, more([delBtn])
+          ];
+        } else if (isExpired) {
+          actions = [btn('', `editCourse(${idx})`, '修改截止日'), btn('', `editCourse(${idx})`, '編輯'), more([delBtn])];
+        } else {
+          const reviseBtn = !live ? '' : c.revisionState === 'submitted'
+            ? btn('', `goReviewRevision('${sid}')`, '🆕 去審新版')
+            : c.revisionState === 'requested'
+              ? btn('', `openReviseModal('${sid}')`, '✏️ 改重做意見')
+              : btn('', `openReviseModal('${sid}', ${courseNeedsRegCheck(c)})`, '🔄 請 AI 重做');
+          actions = [btn('', `editCourse(${idx})`, '編輯'), reviseBtn, socialBtn, more([btn('', `toggleCoursePublish(${idx})`, '轉草稿'), delBtn])];
+        }
 
         tr.innerHTML = `
-          <td>${statusBadge}</td>
-          <td>
+          <td class="status">${statusBadge}</td>
+          <td class="name">
             <strong>${escapeHtml(c.title)}</strong><br>
             <span style="font-size:0.78rem; color:#718096;">🏛️ ${escapeHtml(c.provider)}</span>
+            ${subs.join('')}
           </td>
-          <td>${escapeHtml(c.locationLabel)}</td>
-          <td>${deadlineDisplay}</td>
-          <td>${escapeHtml(c.cost)}</td>
-          <td>
-            <div class="table-actions">
-              ${approveBtn}
-              <button class="btn-table-sm" style="background:#FAF5FF; color:#6B46C1; border-color:#E9D8FD;" onclick="createSocialFromCourse(${idx})" title="以此課程為來源，起草社群宣傳貼文">📱 擬定社群貼文</button>
-              <button class="btn-table-sm" onclick="editCourse(${idx})">編輯</button>
-              <button class="btn-table-sm btn-table-delete" onclick="deleteCourse(${idx})">刪除</button>
-            </div>
+          <td class="region">${escapeHtml(c.locationLabel)}</td>
+          <td class="deadline">${deadlineDisplay}</td>
+          <td class="cost">${escapeHtml(c.cost)}</td>
+          <td class="actions">
+            <div class="table-actions">${actions.join('')}</div>
           </td>
         `;
         courseTbody.appendChild(tr);
       });
       if (count === 0) {
-        courseTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:#A0AEC0;">暫無符合條件之課程活動</td></tr>`;
+        courseTbody.innerHTML = `<tr><td colspan="6" class="stack-empty" style="text-align:center; padding:24px; color:#A0AEC0;">暫無符合條件之課程活動</td></tr>`;
+      }
+    }
+
+    function courseBySafeId(sid) {
+      return (SITE_DATA.courses || []).find(c => wzSafeId(c.id) === sid);
+    }
+
+    // 🔔 已開放報名、官方頁面沒有變動：只記下複查時間
+    async function markRegChecked(sid) {
+      const c = courseBySafeId(sid);
+      if (!c) return;
+      try {
+        const row = await window.WangzhouCloud.markCourseRegChecked(c.id);
+        Object.assign(c, wzCourseFromRow(row));
+        saveDataToLocalStorage();
+        refreshAdminView();
+        showToast('🔔 已記下，這門課不用再複查。');
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
+    }
+
+    // ---- 請 AI 重做 ----
+    function renderReviseTags() {
+      const row = document.getElementById('reviseTagRow');
+      if (!row || row.dataset.ready) return;
+      row.innerHTML = REVISE_TAGS.map(t => `<button type="button" class="btn-table-sm" style="font-size:0.75rem; min-height:36px;" onclick="addReviewTag(this.textContent, 'reviseNoteInput')">${t}</button>`).join('');
+      row.dataset.ready = '1';
+    }
+
+    function openReviseModal(sid, preset) {
+      const c = courseBySafeId(sid);
+      if (!c) return;
+      renderReviseTags();
+      document.getElementById('reviseCourseId').value = sid;
+      document.getElementById('reviseCourseName').innerText = c.title || '';
+      const requested = c.revisionState === 'requested';
+      document.getElementById('reviseNoteInput').value = requested ? (c.revisionNote || '') : (preset ? REG_BELL_PRESET : '');
+      document.getElementById('reviseWithdrawBtn').style.display = requested ? 'inline-flex' : 'none';
+      document.getElementById('reviseModal').classList.add('open');
+    }
+
+    async function submitRevise() {
+      const c = courseBySafeId(document.getElementById('reviseCourseId').value);
+      if (!c) return;
+      const note = document.getElementById('reviseNoteInput').value.trim();
+      if (!note) {
+        alert('請先選一個標籤，或寫下想請 AI 修改的地方。');
+        return;
+      }
+      try {
+        const row = await window.WangzhouCloud.requestCourseRevision(c.id, note, { state: c.revisionState, submittedAt: c.revisionSubmittedAt });
+        Object.assign(c, wzCourseFromRow(row));
+        saveDataToLocalStorage();
+        closeModal('reviseModal');
+        refreshAdminView();
+        showToast('🔄 已記下。按「複製給 AI」貼給 AI，就會開始重做。', 5000);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message, 5000);
+      }
+    }
+
+    async function withdrawRevise() {
+      const c = courseBySafeId(document.getElementById('reviseCourseId').value);
+      if (!c) return;
+      try {
+        const row = await window.WangzhouCloud.withdrawCourseRevision(c.id);
+        Object.assign(c, wzCourseFromRow(row));
+        saveDataToLocalStorage();
+        closeModal('reviseModal');
+        refreshAdminView();
+        showToast('已撤回，這門課維持原樣。');
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message, 5000);
+      }
+    }
+
+    // 跳到審稿台頂部的「課程新版」卡
+    function goReviewRevision(sid) {
+      switchPanel('review');
+      switchDeskStep(1);
+      const el = document.getElementById('revCard-' + sid);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ---- 審稿台：課程新版卡（獨立顯示在頂部，不佔每期 4 篇）----
+    const typeLabelZh = t => ({ deep: '深度培訓', upskill: '技能增強', events: '講座工作坊' })[t] || t;
+    const REVISION_FIELDS = [
+      ['課程名稱', c => c.title, p => p.name],
+      ['🏛️ 辦訓單位', c => c.provider, p => p.organizer],
+      ['類別', c => (c.types || []).map(typeLabelZh).join('、'), p => (p.types || []).map(typeLabelZh).join('、')],
+      ['地點區域', c => c.region, p => p.region],
+      ['地點標籤', c => c.locationLabel, p => p.location],
+      ['⏳ 報名截止', c => (c.deadline ? c.deadline + (c.deadlineTime ? ' ' + c.deadlineTime : '') : ''), p => (p.deadline ? p.deadline + (p.deadline_time ? ' ' + p.deadline_time : '') : '')],
+      ['📅 開放報名日', c => (c.regOpenDate ? wzToDatetimeLocal(c.regOpenDate).replace('T', ' ') : '即日起開放報名'), p => (p.reg_open_date ? wzToDatetimeLocal(p.reg_open_date).replace('T', ' ') : '即日起開放報名')],
+      ['💰 費用說明', c => c.cost, p => p.cost],
+      ['⏰ 上課時間', c => c.timeCycle, p => p.time_cycle],
+      ['📍 上課地點', c => c.address, p => p.address],
+      ['✦ 推薦看點', c => c.whisper, p => p.whisper],
+      ['📋 課程資訊', c => c.summary, p => p.summary],
+      ['📝 備註', c => c.organizerNote, p => p.organizer_note],
+      ['報名網址', c => c.url, p => p.link]
+    ];
+
+    function revisionDiff(c) {
+      const p = c.revisionPayload || {};
+      const norm = v => String(v === null || v === undefined ? '' : v).trim();
+      const changed = [];
+      const same = [];
+      REVISION_FIELDS.forEach(([label, cur, nxt]) => {
+        const a = norm(cur(c));
+        const b = norm(nxt(p));
+        (a === b ? same : changed).push({ label, a, b });
+      });
+      return { changed, same };
+    }
+
+    function revisionCardHtml(c) {
+      const sid = wzSafeId(c.id);
+      const p = c.revisionPayload || {};
+      const { changed, same } = revisionDiff(c);
+      const cell = v => v ? escapeHtml(v) : '<span class="rev-empty">（未填）</span>';
+      const diffHtml = changed.length === 0
+        ? '<div style="font-size:0.86rem; color:#718096; margin:8px 0;">新版和目前網站上的內容一樣。</div>'
+        : `<div class="rev-diff">
+            <div class="rev-row rev-head"><div></div><div>目前網站上的</div><div>新版</div></div>
+            ${changed.map(r => `<div class="rev-row"><div class="rev-name">${escapeHtml(r.label)}</div><div><span class="rev-lab">目前網站上的</span>${cell(r.a)}</div><div class="rev-new"><span class="rev-lab">新版</span>${cell(r.b)}</div></div>`).join('')}
+          </div>`;
+      const sameHtml = same.length
+        ? `<details style="margin:8px 0; font-size:0.82rem; color:#718096;"><summary style="cursor:pointer;">其餘 ${same.length} 項沒有變動（點開查看）</summary><div style="padding:6px 0; line-height:1.7;">${same.map(r => escapeHtml(r.label)).join('、')}</div></details>`
+        : '';
+      const audit = p.audit_note
+        ? auditBodyHtml(p.audit_note)
+        : '<div style="color:#C05621;">⚠️ 新版沒有附預先稽核與風險提示，建議先請 AI 補上再決定。</div>';
+      const url = String(p.link || '').trim();
+      const urlHtml = url && wzIsHttpUrl(url)
+        ? `<div class="wz-src-box"><div class="wz-src-title">報名網址</div><div class="wz-src-row"><a class="wz-src-main" href="${escapeHtml(wzSafeUrl(url))}" target="_blank" rel="noopener noreferrer">開啟報名頁查證 ↗</a><a class="wz-src-url" href="${escapeHtml(wzSafeUrl(url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(wzUrlShort(url, 50, 'middle'))}</a></div></div>`
+        : `<div class="wz-src-box"><div class="wz-src-title">報名網址</div><span class="wz-src-muted">${url ? '這個網址打不開：' + escapeHtml(wzUrlShort(url, 40)) : '尚未填網址'}</span></div>`;
+      const tagChips = REVISE_TAGS.map(t => `<button type="button" class="btn-table-sm" style="font-size:0.75rem;" onclick="addReviewTag(this.textContent, 'revNote-${sid}')">${t}</button>`).join(' ');
+      return `
+        <div class="rev-card" id="revCard-${sid}">
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+            <span class="sub-badge" style="background:#EBF8FF; color:#2B6CB0;">🔄 課程新版</span>
+            <span style="margin-left:auto; font-size:0.82rem; font-weight:600; color:#2B4C65;">${REVIEW_LABELS.pending}</span>
+          </div>
+          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 12px;">${escapeHtml(c.title || '（無標題）')}</h3>
+          <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px; margin-bottom:10px; font-size:0.84rem; line-height:1.7;"><strong>🛡️ 預先稽核與風險提示（新版附的）</strong>${audit}</div>
+          <div style="font-size:0.86rem; margin-bottom:10px;"><strong>你的意見：</strong>${escapeHtml(c.revisionNote) || '<span class="rev-empty">（沒有填）</span>'}</div>
+          ${urlHtml}
+          <div style="font-size:0.86rem; margin:0 0 6px; color:#2D3748;">${escapeHtml(regOpenLineText(p.reg_open_date))}（新版）</div>
+          <div style="font-weight:600; font-size:0.9rem; margin:10px 0 6px;">新版改了這些地方（${changed.length} 項）</div>
+          ${diffHtml}
+          ${sameHtml}
+          <div class="form-group" style="margin:14px 0 8px;">
+            <label>修改意見（選「✏️ 再重做一次」時必填，會一併複製給 AI）：</label>
+            <div style="margin-bottom:6px;">${tagChips}</div>
+            <textarea id="revNote-${sid}" rows="2" maxlength="2000" placeholder="點上面的標籤，或自己寫下想法。"></textarea>
+          </div>
+          <div class="review-decision-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:10px;">
+            <button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideRevision('${sid}', 'approve')">✅ 換成新版</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideRevision('${sid}', 'again')">✏️ 再重做一次</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#718096;" onclick="decideRevision('${sid}', 'discard')">❌ 不採用新版</button>
+          </div>
+          <div style="font-size:0.78rem; color:#718096;">✅ 換成新版：網站上的課程會換成新版。✏️ 再重做一次：舊版繼續顯示，意見會再送給 AI。❌ 不採用新版：保留舊版，結束這次重做。</div>
+        </div>`;
+    }
+
+    function renderRevisionCards() {
+      const box = document.getElementById('reviewRevisions');
+      if (!box) return;
+      const subs = (SITE_DATA.courses || []).filter(c => courseIsLive(c) && c.revisionState === 'submitted' && c.revisionPayload);
+      box.innerHTML = subs.length
+        ? `<div style="font-weight:600; font-size:0.9rem; color:#2B6CB0; margin-bottom:8px;">🆕 課程新版待審（${subs.length}）</div>${subs.map(revisionCardHtml).join('')}`
+        : '';
+    }
+
+    async function decideRevision(sid, action) {
+      const c = courseBySafeId(sid);
+      if (!c || c.revisionState !== 'submitted') return;
+      const noteBox = document.getElementById('revNote-' + sid);
+      const note = noteBox ? noteBox.value.trim() : '';
+      try {
+        let row;
+        if (action === 'approve') {
+          row = await window.WangzhouCloud.approveCourseRevision(c.id, c.revisionSubmittedAt, c.revisionPayload);
+        } else if (action === 'again') {
+          if (!note) {
+            alert('請寫下要修改的地方（可以點快速標籤），AI 才知道怎麼重做。');
+            if (noteBox) noteBox.focus();
+            return;
+          }
+          row = await window.WangzhouCloud.requestCourseRevision(c.id, note, { state: 'submitted', submittedAt: c.revisionSubmittedAt });
+        } else {
+          if (!confirm('確定不採用新版？這次 AI 送來的新版不會保留，網站維持目前內容。')) return;
+          row = await window.WangzhouCloud.discardCourseRevision(c.id, c.revisionSubmittedAt);
+        }
+        Object.assign(c, wzCourseFromRow(row));
+        saveDataToLocalStorage();
+        refreshAdminView();
+        showToast(action === 'approve' ? '✅ 已換成新版。'
+          : action === 'again' ? '已記下。按「複製給 AI」貼給 AI，就會再重做一次。舊版仍在網站上。'
+          : '已保留舊版，這次重做結束。', 5000);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message, 6000);
       }
     }
 
@@ -2249,6 +2699,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (!c) return;
       c.isDraft = !c.isDraft;
       c.active = !c.isDraft;
+      // 上架的課程一律記為「已核准」，之後才能走「請 AI 重做」
+      if (!c.isDraft) c.reviewStatus = 'approved';
       saveDataToLocalStorage();
       refreshAdminView();
       try {
@@ -2272,8 +2724,19 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       });
     }
 
+    // 報名開放：即日起（預設）或指定開放時間
+    function setRegOpenMode(mode) {
+      document.querySelectorAll('input[name="courseRegOpenMode"]').forEach(r => { r.checked = r.value === mode; });
+      syncRegOpenMode();
+    }
+    function syncRegOpenMode() {
+      const sel = document.querySelector('input[name="courseRegOpenMode"]:checked');
+      document.getElementById('courseRegOpenInput').style.display = sel && sel.value === 'set' ? 'block' : 'none';
+    }
+
     // 課程 CRUD
     function openCourseEditModal(idx = null) {
+      setTimeout(wzSyncUrlFields, 0);
       document.getElementById('courseModal').classList.add('open');
       if (idx !== null) {
         const c = SITE_DATA.courses[idx];
@@ -2283,6 +2746,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('courseProviderInput').value = c.provider;
         document.getElementById('courseRegionInput').value = c.region || '';
         document.getElementById('courseDeadlineInput').value = c.deadline;
+        document.getElementById('courseDeadlineTimeInput').value = c.deadlineTime || '';
+        document.getElementById('courseRegOpenInput').value = wzToDatetimeLocal(c.regOpenDate);
+        setRegOpenMode(c.regOpenDate ? 'set' : 'now');
         document.getElementById('courseSummaryInput').value = c.summary || '';
         document.getElementById('courseWhisperInput').value = c.whisper || '';
         document.getElementById('courseOrganizerNoteInput').value = c.organizerNote || '';
@@ -2300,6 +2766,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         document.getElementById('courseProviderInput').value = '';
         document.getElementById('courseRegionInput').value = '';
         document.getElementById('courseDeadlineInput').value = '';
+        document.getElementById('courseDeadlineTimeInput').value = '';
+        document.getElementById('courseRegOpenInput').value = '';
+        setRegOpenMode('now');
         document.getElementById('courseSummaryInput').value = '';
         document.getElementById('courseWhisperInput').value = '';
         document.getElementById('courseOrganizerNoteInput').value = '';
@@ -2346,6 +2815,21 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         return;
       }
 
+      // 開放報名日（台灣時間）不能晚於截止日
+      const regMode = (document.querySelector('input[name="courseRegOpenMode"]:checked') || {}).value;
+      const regOpenLocal = regMode === 'set' ? document.getElementById('courseRegOpenInput').value : '';
+      const deadlineValue = document.getElementById('courseDeadlineInput').value;
+      const deadlineTimeValue = document.getElementById('courseDeadlineTimeInput').value;
+      if (regMode === 'set' && !regOpenLocal) {
+        alert('請填寫開放報名的日期與時間，或改選「即日起開放報名」。');
+        return;
+      }
+      // 開放時間（台灣時間）不能晚於截止時間；沒填截止時刻就算到當天 23:59
+      if (regOpenLocal && deadlineValue && regOpenLocal > `${deadlineValue}T${deadlineTimeValue || '23:59'}`) {
+        alert('開放時間不能晚於截止時間。');
+        return;
+      }
+
       // 保留審稿紀錄；被標「要修改」的課程改完後重新回到待審
       const existing = editIdx !== '' ? SITE_DATA.courses[editIdx] : {};
       const courseObj = {
@@ -2357,7 +2841,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         provider: document.getElementById('courseProviderInput').value.trim(),
         region: document.getElementById('courseRegionInput').value,
         locationLabel: document.getElementById('courseRegionInput').value,
-        deadline: document.getElementById('courseDeadlineInput').value,
+        deadline: deadlineValue,
+        deadlineTime: deadlineTimeValue || '',
+        regOpenDate: wzToCloudTime(regOpenLocal),
         summary: document.getElementById('courseSummaryInput').value.trim(),
         whisper: document.getElementById('courseWhisperInput').value.trim(),
         organizerNote: document.getElementById('courseOrganizerNoteInput').value.trim(),
@@ -2467,6 +2953,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     // 手札 CRUD
     function openArticleEditModal(idx = null) {
+      setTimeout(wzSyncUrlFields, 0);
       document.getElementById('articleModal').classList.add('open');
       if (idx !== null) {
         const a = SITE_DATA.articles[idx];
@@ -2901,6 +3388,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
 
     function openSocialPostModal(idx = null) {
+      setTimeout(wzSyncUrlFields, 0);
       document.getElementById('socialPostModal').classList.add('open');
       switchSocEditTab('threads');
 
@@ -3224,7 +3712,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     const REVIEW_QUOTA = 4;
     const REVIEW_LABELS = { pending: '⏳ 待審', approved: '✅ 可以發', revise: '✏️ 要修改', rejected: '❌ 不要發' };
     const REVIEW_KIND_LABELS = { article: '📖 水岸手札', course: '📋 課程活動', social: '📱 社群貼文' };
-    const REVISE_TAGS = ['🛶 語氣更溫暖', '✂️ 篇幅縮短', '💡 重點更聚焦', '🔍 資訊需再查證'];
+    const REVISE_TAGS = ['🛶 語氣更溫暖', '✂️ 篇幅縮短', '💡 重點更聚焦', '🔍 資訊需再查證', '📋 資訊不夠完整'];
     const REJECT_TAGS = ['🎯 議題調性不合', '🔁 內容重複', '📦 留待以後再發'];
     const DESK_SLOTS = {
       morning: { label: '☀️ 晨間通勤 08:30', time: '08:30' },
@@ -3340,6 +3828,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
 
     function renderReviewDesk() {
+      renderRevisionCards();
       renderReviewStep();
       renderScheduleStep();
     }
@@ -3374,6 +3863,21 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         </div>`;
     }
 
+    // 稽核欄：第一行以「官方頁面未載明：」開頭時，獨立成粗體琥珀字一行，其餘照原樣接在下面
+    function auditBodyHtml(note) {
+      const text = String(note || '');
+      const nl = text.indexOf('\n');
+      const first = (nl < 0 ? text : text.slice(0, nl)).trim();
+      if (!first.startsWith('官方頁面未載明：')) return `<div style="white-space:pre-wrap;">${wzLinkify(text, { path: true })}</div>`;
+      const rest = nl < 0 ? '' : text.slice(nl + 1).trim();
+      return `<div style="font-weight:700; color:#8F5C30; margin:2px 0;">🔎 ${escapeHtml(first)}</div>${rest ? `<div style="white-space:pre-wrap;">${wzLinkify(rest, { path: true })}</div>` : ''}`;
+    }
+
+    // 報名開放那一行的文字（審稿卡）
+    function regOpenLineText(regOpenDate) {
+      return regOpenDate ? `📅 報名開放：${wzToDatetimeLocal(regOpenDate).replace('T', ' ')} 起` : '報名開放：即日起';
+    }
+
     function deskMainContentHtml(unit) {
       const { kind, item } = unit;
       if (kind === 'article') {
@@ -3381,15 +3885,140 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
       if (kind === 'course') {
         const rows = [
-          ['🏛️ 辦訓單位', item.provider], ['⏳ 報名截止', item.deadline], ['📍 上課地點', item.address || item.region],
-          ['⏰ 上課時間', item.timeCycle], ['💰 費用說明', item.cost], ['🎯 學習內容', item.summary], ['✦ 推薦看點', item.whisper],
-          ['📢 備註', item.organizerNote]
+          ['✦ 推薦看點', item.whisper], ['🏛️ 辦訓單位', item.provider],
+          ['報名開放', regOpenLineText(item.regOpenDate).replace(/^(📅 )?報名開放：/, ''), 'open', item.regOpenDate],
+          ['⏳ 報名截止', item.deadline ? item.deadline + (item.deadlineTime ? ' ' + item.deadlineTime : '') : ''],
+          ['💰 費用說明', item.cost], ['⏰ 上課時間', item.timeCycle], ['📍 上課地點', item.address || item.region],
+          ['📋 課程資訊', item.summary, 'facts'], ['📝 備註', item.organizerNote, 'link']
         ].filter(r => r[1]);
-        return `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:12px 14px; font-size:0.88rem; line-height:1.8;">
-          ${rows.map(r => `<div><span style="color:#718096;">${r[0]}：</span>${escapeHtml(r[1])}</div>`).join('')}
+        return `<div class="desk-course-rows" style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:12px 14px; font-size:0.88rem; line-height:1.8; overflow-wrap:anywhere;">
+          ${rows.map(r => `<div class="desk-row"><span style="color:#718096; white-space:nowrap;">${r[2] === 'open' && r[3] ? '📅 報名開放' : r[0]}：</span><div style="min-width:0;">${r[2] === 'facts' ? wzFacts(r[1], { linkify: true }) : r[2] === 'link' ? wzLinkify(r[1], { path: true }) : escapeHtml(r[1])}</div></div>`).join('')}
         </div>`;
       }
       return deskPostHtml(item, false);
+    }
+
+    // 審稿卡「報名網址／來源網址」區：主按鈕、完整網址連結、原地修改
+    let reviewUrlEditKey = '';
+    let reviewUrlDraft = '';
+    let reviewUrlNote = { key: '', text: '' };
+    const WZ_URL_NOT_SAVED = '還沒存到網站';
+
+    function reviewSourceHtml(unit, sourceUrl) {
+      const isCourse = unit.kind === 'course';
+      const title = isCourse ? '報名網址' : '來源網址';
+      const mainText = isCourse ? '開啟報名頁查證 ↗' : '開啟來源全文 ↗';
+      const oaTip = isCourse ? '' : '<div class="wz-src-muted" style="font-size:0.75rem; margin-top:4px;">請確認可免費閱讀全文（非付費牆、非純摘要）。</div>';
+      const noteOn = reviewUrlNote.key === unit.key && reviewUrlNote.text;
+      const note = `<span class="wz-src-note${noteOn && reviewUrlNote.text === WZ_URL_NOT_SAVED ? ' is-warn' : noteOn && reviewUrlNote.text === '已儲存' ? ' is-ok' : ''}" id="reviewUrlNote">${noteOn ? escapeHtml(reviewUrlNote.text) : ''}</span>`;
+      const wrap = inner => `<div class="wz-src-box"><div class="wz-src-title">${title}</div>${inner}${oaTip}</div>`;
+
+      if (reviewUrlEditKey === unit.key) {
+        return wrap(`<div class="wz-src-row">
+          <input type="text" inputmode="url" id="reviewUrlInput" class="wz-src-input" value="${escapeHtml(reviewUrlDraft)}" placeholder="https://..." autocomplete="off" oninput="reviewUrlTyping()" onkeydown="reviewUrlKey(event)">
+          <button type="button" class="wz-src-save" onclick="saveReviewUrl()">儲存</button>
+          <button type="button" class="wz-src-cancel" onclick="cancelReviewUrl()">取消</button>
+        </div><div class="wz-url-hint" id="reviewUrlHint" hidden></div>`);
+      }
+
+      const url = String(sourceUrl || '').trim();
+      if (!url) {
+        return wrap(`<div class="wz-src-row"><span class="wz-src-muted">尚未填網址</span><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit()">＋ 填入網址</button>${note}</div>`);
+      }
+      if (!wzIsHttpUrl(url)) {
+        return wrap(`<div class="wz-src-row"><span class="wz-src-main is-off">${mainText}</span><span class="wz-src-muted" title="${escapeHtml(url)}">這個網址打不開：${escapeHtml(wzUrlShort(url, 40))}</span><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit()">✎ 修改</button>${note}</div>`);
+      }
+      const safe = wzSafeUrl(url);
+      return wrap(`<div class="wz-src-row"><a class="wz-src-main" href="${escapeHtml(safe)}" title="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${mainText}</a><a class="wz-src-url" href="${escapeHtml(safe)}" title="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(wzUrlShort(url, 50, 'middle'))}</a><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit()">✎ 修改</button>${note}</div>`);
+    }
+
+    function currentReviewUnit() {
+      return getReviewPool()[reviewCursor] || null;
+    }
+
+    function startReviewUrlEdit() {
+      const unit = currentReviewUnit();
+      if (!unit) return;
+      const cur = unit.kind === 'course' ? unit.item.url : (unit.item.sourceUrl || (unit.posts.find(p => p.sourceUrl) || {}).sourceUrl || '');
+      reviewUrlEditKey = unit.key;
+      reviewUrlDraft = cur || '';
+      renderReviewStep();
+      const box = document.getElementById('reviewUrlInput');
+      if (box) { box.focus(); box.select(); reviewUrlTyping(); }
+    }
+
+    function reviewUrlTyping() {
+      const box = document.getElementById('reviewUrlInput');
+      const hint = document.getElementById('reviewUrlHint');
+      if (!box || !hint) return;
+      reviewUrlDraft = box.value;
+      const st = wzUrlState(box.value);
+      if (st === 'empty' || st === 'ok') { hint.hidden = true; hint.textContent = ''; return; }
+      hint.hidden = false;
+      hint.textContent = '網址開頭要有 https://（例如 https://www.…），才打得開。';
+      if (st === 'fixable') {
+        const fix = document.createElement('button');
+        fix.type = 'button';
+        fix.className = 'wz-url-fix';
+        fix.textContent = '幫我補上開頭';
+        fix.onclick = () => { box.value = 'https://' + box.value.trim(); reviewUrlTyping(); box.focus(); };
+        hint.appendChild(fix);
+      }
+    }
+
+    function reviewUrlKey(ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); saveReviewUrl(); }
+      else if (ev.key === 'Escape') { ev.preventDefault(); cancelReviewUrl(); }
+    }
+
+    function cancelReviewUrl() {
+      reviewUrlEditKey = '';
+      reviewUrlDraft = '';
+      renderReviewStep();
+    }
+
+    // 只更新網址欄（課程 link／手札與社群 source_url），不動審稿狀態與其他欄位；沿用既有的雲端存檔函式
+    async function saveReviewUrl() {
+      const unit = currentReviewUnit();
+      const box = document.getElementById('reviewUrlInput');
+      if (!unit || !box) return;
+      const v = box.value.trim();
+      if (!v) {
+        const hint = document.getElementById('reviewUrlHint');
+        if (hint) { hint.hidden = false; hint.textContent = '請先輸入網址。'; }
+        return;
+      }
+      const { kind, item } = unit;
+      if (kind === 'course') item.url = v; else item.sourceUrl = v;
+      saveDataToLocalStorage();
+      reviewUrlEditKey = '';
+      reviewUrlDraft = '';
+      reviewUrlNote = { key: unit.key, text: '儲存中…' };
+      refreshAdminView();
+      const noteDone = text => {
+        reviewUrlNote = { key: unit.key, text };
+        const el = document.getElementById('reviewUrlNote');
+        if (el) {
+          el.textContent = text;
+          el.classList.toggle('is-warn', text === WZ_URL_NOT_SAVED);
+          el.classList.toggle('is-ok', text === '已儲存');
+        }
+      };
+      const notSaved = () => {
+        noteDone(WZ_URL_NOT_SAVED);
+        showToast('網址還沒存到網站，這台電腦先記下了。請確認網路後，再按一次儲存。', 5000);
+      };
+      if (!window.WangzhouCloud) { notSaved(); return; }
+      try {
+        if (kind === 'course') await window.WangzhouCloud.upsertCourse(item);
+        else if (kind === 'article') await window.WangzhouCloud.upsertArticle(item);
+        else await window.WangzhouCloud.upsertSocialPost(item);
+        noteDone('已儲存');
+        setTimeout(() => { if (reviewUrlNote.key === unit.key && reviewUrlNote.text === '已儲存') noteDone(''); }, 2500);
+      } catch (err) {
+        console.error(err);
+        notSaved();
+      }
     }
 
     function renderReviewStep() {
@@ -3425,14 +4054,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const { kind, item, posts } = unit;
       const auditNote = item.auditNote || (posts.find(p => p.auditNote) || {}).auditNote || '';
       const sourceUrl = kind === 'course' ? item.url : (item.sourceUrl || (posts.find(p => p.sourceUrl) || {}).sourceUrl || '');
-      const sourceLabel = kind === 'course' ? '📖 官方報名頁' : '📖 免費開放全文來源';
 
       const auditHtml = auditNote
-        ? `<div style="white-space:pre-wrap;">${escapeHtml(auditNote)}</div>`
+        ? auditBodyHtml(auditNote)
         : `<div style="color:#C05621;">⚠️ 尚未提供預先稽核與風險提示，建議先補上再決定。</div>`;
-      const sourceHtml = sourceUrl
-        ? `<a href="${escapeHtml(wzSafeUrl(sourceUrl))}" target="_blank" rel="noopener noreferrer" style="color:#2B6CB0; word-break:break-all;">${escapeHtml(sourceUrl)} ↗</a>${kind === 'course' ? '' : '<div style="font-size:0.75rem; color:#718096; margin-top:2px;">請確認可免費閱讀全文（非付費牆、非純摘要）。</div>'}`
-        : `<div style="color:#C05621;">⚠️ 尚未提供來源連結。</div>`;
+      const sourceHtml = reviewSourceHtml(unit, sourceUrl);
 
       const itemIdx = deskList(kind).indexOf(item);
       const editItemBtn = kind === 'article' ? `<button type="button" class="btn-table-sm" onclick="editArticle(${itemIdx})">✏️ 編輯手札</button>`
@@ -3457,10 +4083,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           </div>
           <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 14px;">${escapeHtml(item.title || '（無標題）')}</h3>
 
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; margin-bottom:12px; font-size:0.84rem; line-height:1.7;">
-            <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px;"><strong>🛡️ 預先稽核與風險提示</strong>${auditHtml}</div>
-            <div style="background:#EBF8FF; border:1px solid #BEE3F8; border-radius:8px; padding:10px 12px;"><strong>${sourceLabel}</strong>${sourceHtml}</div>
-          </div>
+          <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px; margin-bottom:10px; font-size:0.84rem; line-height:1.7;"><strong>🛡️ 預先稽核與風險提示</strong>${auditHtml}</div>
+          ${sourceHtml}
 
           ${deskMainContentHtml(unit)}
           ${editItemBtn ? `<div style="text-align:right; margin-top:6px;">${editItemBtn}</div>` : ''}
@@ -3490,12 +4114,13 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
 
     function gotoReview(i) {
+      reviewUrlEditKey = ''; reviewUrlDraft = '';
       reviewCursor = i;
       renderReviewStep();
     }
 
-    function addReviewTag(tag) {
-      const box = document.getElementById('reviewNoteInput');
+    function addReviewTag(tag, targetId) {
+      const box = document.getElementById(targetId || 'reviewNoteInput');
       if (!box || box.value.includes(tag)) return;
       box.value = box.value.trim() ? `${box.value.trim()}；${tag}` : tag;
     }
@@ -3578,8 +4203,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     // 「提早審稿一鍵複製結果給 AI」：整理成純文字，直接貼進對話
     async function copyReviewResults() {
       const pool = getReviewPool();
-      if (pool.length === 0) {
-        alert('本期沒有審稿資料可以複製。');
+      const courses = SITE_DATA.courses || [];
+      // 重做中、以及已開放待複查的課程；已在重做的不重複列進 🔔，新版待審與尚未開放不複製
+      const redo = courses.filter(c => courseIsLive(c) && c.revisionState === 'requested');
+      const bells = courses.filter(c => courseNeedsRegCheck(c) && !c.revisionState);
+      if (pool.length === 0 && redo.length === 0 && bells.length === 0) {
+        alert('沒有資料可以複製。');
         return;
       }
       const groups = { approved: [], revise: [], rejected: [], pending: [] };
@@ -3592,6 +4221,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (groups.revise.length) lines.push('', '✏️ 要修改：', ...groups.revise.map(u => `・${label(u)}\n  修改意見：${noteOf(u) || '（未填）'}`));
       if (groups.rejected.length) lines.push('', '❌ 不要發：', ...groups.rejected.map(u => `・${label(u)}${noteOf(u) ? `（${noteOf(u)}）` : ''}`));
       if (groups.pending.length) lines.push('', '⏳ 尚未審：', ...groups.pending.map(u => `・${label(u)}`));
+      if (redo.length) {
+        lines.push('', '🔄 請 AI 重做（網站上的舊版維持顯示）：');
+        redo.forEach(c => lines.push(`・[課程] ${c.title || '（無標題）'}（課程 id：${c.id}）`, `  官方連結：${c.url || '（未填）'}`, `  修改意見：${c.revisionNote || '（未填）'}`));
+      }
+      if (bells.length) {
+        lines.push('', '🔔 已開放報名，請複查官方頁面（有變動請回報要改哪裡；沒有變動請回「無變動」）：');
+        bells.forEach(c => lines.push(`・[課程] ${c.title || '（無標題）'}（課程 id：${c.id}）`, `  開放時間：${wzToDatetimeLocal(c.regOpenDate).replace('T', ' ')}`, `  官方連結：${c.url || '（未填）'}`));
+      }
       const text = lines.join('\n');
       try {
         await navigator.clipboard.writeText(text);

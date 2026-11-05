@@ -357,6 +357,17 @@
     .wz-src-note { font-size:0.82rem; color:#718096; }
     .wz-src-note.is-ok { color:#466D56; }
     .wz-src-note.is-warn { color:#8F5E32; }
+    .desk-tab-wrap { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .desk-tab-wrap > .btn-table-sm { min-height:44px; font-size:0.92rem; }
+    .desk-tab-sub { font-size:0.76rem; color:#718096; padding-left:2px; }
+    .desk-tab-badge { background:#2B4C65; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:4px; font-weight:700; }
+    .desk-section-title { font-size:1rem; color:#2D3748; margin:0 0 10px; }
+    .social-stages { display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:10px 14px; margin-bottom:12px; }
+    .social-stages .stage-count { font-weight:700; color:#2B4C65; font-size:0.9rem; margin-right:6px; }
+    .social-stages .stage-btn { border:0; background:none; cursor:pointer; font:inherit; font-size:0.86rem; color:#718096; padding:6px 4px; min-height:36px; }
+    .social-stages .stage-btn.is-on { color:#2B4C65; font-weight:700; }
+    .social-stages .stage-line { color:#CBD5E0; letter-spacing:-2px; }
+    @media (max-width: 600px) { .desk-tab-wrap { flex:1 1 100%; } .social-stages { gap:2px 6px; padding:8px 10px; } .social-stages .stage-count { margin-right:2px; } .social-stages .stage-btn { font-size:0.8rem; padding:6px 2px; } .social-stages .stage-line { display:none; } }
     .desk-row { display:grid; grid-template-columns:8em minmax(0,1fr); gap:0 4px; }
     @media (max-width: 600px) { .desk-row { grid-template-columns:minmax(0,1fr); margin-bottom:6px; } }
     .btn-table-sm {
@@ -633,7 +644,7 @@
       <div class="admin-nav-item" data-panel="review" onclick="switchPanel('review', this)">
         <span>📝</span>
         <span>審稿工作台</span>
-        <span id="badgeReviewPending" style="background:#2B4C65; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="本期待審篇數">0</span>
+        <span id="badgeReviewPending" style="background:#2B4C65; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="待審總數">0</span>
       </div>
       <div class="admin-nav-item" data-panel="submissions" onclick="switchPanel('submissions', this)">
         <span>📬</span>
@@ -813,26 +824,46 @@
     </main>
 
     <!-- 主面板 2: 訪客投稿審核箱（集中收納所有前台推薦、故事、來信與勘誤） -->
-    <!-- 主面板：審稿工作台（① 審稿：手札、課程、社群貼文一起審 ➔ ② 排程確認與送出 Buffer） -->
+    <!-- 主面板：審稿工作台（兩條線：網站上架審稿＝手札與課程；社群貼文＝審稿 ➔ 選發文時間 ➔ 送 Buffer） -->
     <main id="panel-review" class="admin-panel">
       <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
         <div>
           <h2 class="panel-title">📝 審稿工作台</h2>
-          <p style="margin:4px 0 0; font-size:0.84rem; color:#718096;">先審內容，再確認發文時間、送進 Buffer，都在這一頁完成。</p>
         </div>
-        <button type="button" class="btn-table-sm" onclick="copyReviewResults()" title="把本期審稿結果複製起來，貼給 AI 修改">📋 複製審稿結果給 AI</button>
       </div>
-      <div style="display:flex; gap:8px; margin-bottom:14px;">
-        <button type="button" id="deskStepBtn1" class="btn-table-sm" style="background:#2B4C65; color:#FFF;" onclick="switchDeskStep(1)">① 審稿</button>
-        <button type="button" id="deskStepBtn2" class="btn-table-sm" onclick="switchDeskStep(2)">② 排程確認與送出</button>
+      <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+        <div class="desk-tab-wrap">
+          <button type="button" id="deskTabBtn-site" class="btn-table-sm" style="background:#2B4C65; color:#FFF;" onclick="switchDeskTab('site')">🌊 網站上架審稿 <span id="badgeSitePending" class="desk-tab-badge" style="display:none;" title="待審篇數">0</span></button>
+          <div class="desk-tab-sub">手札與課程，按「可以發」就上架網站。</div>
+        </div>
+        <div class="desk-tab-wrap">
+          <button type="button" id="deskTabBtn-social" class="btn-table-sm" onclick="switchDeskTab('social')">📣 社群貼文 <span id="badgeSocialPending" class="desk-tab-badge" style="display:none;" title="待審則數">0</span></button>
+          <div class="desk-tab-sub">每週 4 則，審完後選發文時間、送 Buffer。</div>
+        </div>
       </div>
-      <div id="deskStep1">
-        <div id="reviewRevisions"></div>
-        <div id="reviewProgress" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
-        <div id="reviewCard"></div>
+      <div id="deskTab-site">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+          <button type="button" class="btn-table-sm" onclick="copySiteResults()" title="把網站內容的審稿結果複製起來，貼給 AI 修改">📋 複製網站內容審稿結果</button>
+        </div>
+        <div id="reviewProgress-site" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
+        <div id="reviewCard-site"></div>
+        <div id="reviewRevisions" style="margin-top:18px;"></div>
       </div>
-      <div id="deskStep2" style="display:none;">
-        <div id="scheduleBoard"></div>
+      <div id="deskTab-social" style="display:none;">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+          <button type="button" class="btn-table-sm" onclick="copySocialResults()" title="把社群貼文的審稿結果複製起來，貼給 AI 修改">📋 複製社群貼文審稿結果</button>
+        </div>
+        <div id="socialStages" class="social-stages"></div>
+        <div id="reviewProgress-social" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
+        <div id="reviewCard-social"></div>
+        <div id="socialScheduleSection" style="margin-top:22px;">
+          <h3 class="desk-section-title">🕒 選發文時間</h3>
+          <div id="scheduleBoard"></div>
+        </div>
+        <div id="socialSentSection" style="margin-top:22px;">
+          <h3 class="desk-section-title">📬 已送進 Buffer</h3>
+          <div id="sentBoard"></div>
+        </div>
       </div>
     </main>
 
@@ -973,7 +1004,7 @@
           </div>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <button type="button" class="btn-table-sm" id="courseCopyBtn" style="display:none;" onclick="copyReviewResults()" title="把重做意見與待複查的課程複製起來，貼給 AI">📋 複製給 AI（<span id="courseCopyCnt">0</span>）</button>
+          <button type="button" class="btn-table-sm" id="courseCopyBtn" style="display:none;" onclick="copySiteResults()" title="把重做意見與待複查的課程複製起來，貼給 AI">📋 複製給 AI（<span id="courseCopyCnt">0</span>）</button>
           <button class="btn-create-item" onclick="openCourseEditModal()">➕ 新增課程活動</button>
         </div>
       </div>
@@ -2490,9 +2521,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
     }
 
-    // 草稿被標成「要修改」、且不在審稿台本期池裡的課程（複製給 AI 時另列，避免重複）
+    // 草稿被標成「要修改」、且不在審稿台網站線審稿池裡的課程（複製給 AI 時另列，避免重複）
     function draftReviseCourses() {
-      return (SITE_DATA.courses || []).filter(c => c.isDraft && c.reviewStatus === 'revise' && !reviewPoolKeys.includes('course:' + c.id));
+      return (SITE_DATA.courses || []).filter(c => c.isDraft && c.reviewStatus === 'revise' && !reviewPoolKeys.site.includes('course:' + c.id));
     }
 
     function courseBySafeId(sid) {
@@ -2593,7 +2624,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     // 跳到審稿台頂部的「課程新版」卡
     function goReviewRevision(sid) {
       switchPanel('review');
-      switchDeskStep(1);
+      switchDeskTab('site');
       const el = document.getElementById('revCard-' + sid);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -2685,7 +2716,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (!box) return;
       const subs = (SITE_DATA.courses || []).filter(c => courseIsLive(c) && c.revisionState === 'submitted' && c.revisionPayload);
       box.innerHTML = subs.length
-        ? `<div style="font-weight:600; font-size:0.9rem; color:#2B6CB0; margin-bottom:8px;">🆕 課程新版待審（${subs.length}）</div>${subs.map(revisionCardHtml).join('')}`
+        ? `<div style="font-weight:600; font-size:0.9rem; color:#2B6CB0; margin-bottom:8px;">🆕 課程修訂（新版待審 ${subs.length}）</div>${subs.map(revisionCardHtml).join('')}`
         : '';
     }
 
@@ -3732,11 +3763,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
 
     // =====================================================================
-    // 📝 審稿工作台：① 審稿 ➔ ② 排程確認與送出
-    // 一張審稿卡 = 一個主題：手札或課程（連同為它寫的社群貼文），或一則獨立的社群貼文
-    // 每期固定 4 張卡：審過的留在本期，按「開始下一期」才換下一批，審稿量不會無限膨脹
+    // 📝 審稿工作台：兩條線
+    // 🌊 網站上架審稿：手札與課程（含課程修訂卡），不設篇數上限，按「可以發」就上架網站
+    // 📣 社群貼文：每週 4 則，審稿 ➔ 選發文時間 ➔ 送進 Buffer；審過的留在本週，按「開始下週」才換下一批
+    // 兩條線的資料互不牽動：網站線的決定不會改動社群貼文的審稿狀態
     // =====================================================================
-    const REVIEW_QUOTA = 4;
+    const SOCIAL_WEEKLY_QUOTA = 4;
     const REVIEW_LABELS = { pending: '⏳ 待審', approved: '✅ 可以發', revise: '✏️ 要修改', rejected: '❌ 不要發' };
     const REVIEW_KIND_LABELS = { article: '📖 水岸手札', course: '📋 課程活動', social: '📱 社群貼文' };
     const REVISE_TAGS = ['🛶 語氣更溫暖', '✂️ 篇幅縮短', '💡 重點更聚焦', '🔍 資訊需再查證', '📋 資訊不夠完整'];
@@ -3748,10 +3780,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       weekend: { label: '☕ 週末午後 15:00', time: '15:00' }
     };
     const PLATFORM_TEXT_LIMITS = { threads: 500, instagram: 2200 };
-    let reviewPoolKeys = [];
+    const reviewPoolKeys = { site: [], social: [] };
+    const reviewCursor = { site: 0, social: 0 };
+    const reviewNotice = { site: '', social: '' };
+    const deskPendingCount = { site: 0, social: 0 };
     const deskDecidedKeys = new Set();
-    let reviewCursor = 0;
-    let deskStep = 1;
+    let deskTab = 'site';
 
     function deskList(kind) {
       if (kind === 'article') return SITE_DATA.articles || [];
@@ -3807,56 +3841,56 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const kind = key.slice(0, sep);
       const item = deskFind(kind, key.slice(sep + 1));
       if (!item) return null;
-      const posts = kind === 'social' ? [] : linkedPosts(kind, item.id);
-      const states = [itemReviewState(kind, item), ...posts.map(reviewStatusOf)];
-      const state = states.includes('pending') ? 'pending'
-        : states.includes('revise') ? 'revise'
-        : states.every(s => s === 'rejected') ? 'rejected' : 'approved';
-      return { key, kind, item, posts, state };
+      return { key, kind, item, state: itemReviewState(kind, item) };
     }
 
-    // 所有待審的審稿卡（不含本期已在池中的），由最早建立的開始
-    function pendingReviewKeys() {
+    // 待審的審稿卡（不含已在池中的），由最早建立的開始。網站線＝手札與課程；社群線＝所有社群貼文（含有來源課程的）
+    function pendingReviewKeys(line) {
       const found = [];
-      ['course', 'article'].forEach(kind => deskList(kind).forEach(item => {
-        const unit = buildReviewUnit(`${kind}:${item.id}`);
-        if (unit && unit.state === 'pending') found.push({ key: unit.key, at: item.createdAt || item.id });
-      }));
-      (SITE_DATA.socialPosts || []).forEach(p => {
-        const hasSource = (p.sourceType === 'article' || p.sourceType === 'course') && deskFind(p.sourceType, p.sourceId);
-        if (!hasSource && reviewStatusOf(p) === 'pending' && isReviewable(p)) found.push({ key: `social:${p.id}`, at: p.createdAt || p.id });
-      });
+      if (line === 'site') {
+        ['course', 'article'].forEach(kind => deskList(kind).forEach(item => {
+          const unit = buildReviewUnit(`${kind}:${item.id}`);
+          if (unit && unit.state === 'pending') found.push({ key: unit.key, at: item.createdAt || item.id });
+        }));
+      } else {
+        (SITE_DATA.socialPosts || []).forEach(p => {
+          if (reviewStatusOf(p) === 'pending' && isReviewable(p)) found.push({ key: `social:${p.id}`, at: p.createdAt || p.id });
+        });
+      }
       return found
-        .filter(f => !reviewPoolKeys.includes(f.key))
+        .filter(f => !reviewPoolKeys[line].includes(f.key))
         .sort((a, b) => String(a.at).localeCompare(String(b.at)))
         .map(f => f.key);
     }
 
-    // 本期審稿池：順序固定，不足 4 張時由最早的待審補上
-    function getReviewPool() {
-      reviewPoolKeys = reviewPoolKeys.filter(k => buildReviewUnit(k));
-      if (reviewPoolKeys.length < REVIEW_QUOTA) {
-        reviewPoolKeys.push(...pendingReviewKeys().slice(0, REVIEW_QUOTA - reviewPoolKeys.length));
+    // 審稿池：順序固定。網站線不設上限，所有待審都在池中；社群線不足 4 則時由最早的待審補上
+    function getReviewPool(line) {
+      reviewPoolKeys[line] = reviewPoolKeys[line].filter(k => buildReviewUnit(k));
+      if (line === 'site') reviewPoolKeys.site.push(...pendingReviewKeys('site'));
+      else if (reviewPoolKeys.social.length < SOCIAL_WEEKLY_QUOTA) {
+        reviewPoolKeys.social.push(...pendingReviewKeys('social').slice(0, SOCIAL_WEEKLY_QUOTA - reviewPoolKeys.social.length));
       }
-      return reviewPoolKeys.map(buildReviewUnit);
+      return reviewPoolKeys[line].map(buildReviewUnit);
     }
+    const getSitePool = () => getReviewPool('site');
+    const getSocialPool = () => getReviewPool('social');
 
-    function switchDeskStep(step) {
-      deskStep = step;
-      document.getElementById('deskStep1').style.display = step === 1 ? 'block' : 'none';
-      document.getElementById('deskStep2').style.display = step === 2 ? 'block' : 'none';
-      [1, 2].forEach(n => {
-        const btn = document.getElementById('deskStepBtn' + n);
+    function switchDeskTab(tab) {
+      deskTab = tab === 'social' ? 'social' : 'site';
+      ['site', 'social'].forEach(t => {
+        document.getElementById('deskTab-' + t).style.display = t === deskTab ? 'block' : 'none';
+        const btn = document.getElementById('deskTabBtn-' + t);
         if (btn) {
-          btn.style.background = n === step ? '#2B4C65' : '';
-          btn.style.color = n === step ? '#FFF' : '';
+          btn.style.background = t === deskTab ? '#2B4C65' : '';
+          btn.style.color = t === deskTab ? '#FFF' : '';
         }
       });
     }
 
     function renderReviewDesk() {
       renderRevisionCards();
-      renderReviewStep();
+      renderReviewStep('site');
+      renderReviewStep('social');
       renderScheduleStep();
     }
 
@@ -3931,52 +3965,55 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     let reviewUrlNote = { key: '', text: '' };
     const WZ_URL_NOT_SAVED = '還沒存到網站';
 
-    function reviewSourceHtml(unit, sourceUrl) {
+    let reviewUrlLine = 'site';
+
+    function reviewSourceHtml(unit, sourceUrl, line) {
       const isCourse = unit.kind === 'course';
       const title = isCourse ? '報名網址' : '來源網址';
       const mainText = isCourse ? '開啟報名頁查證 ↗' : '開啟來源全文 ↗';
       const oaTip = isCourse ? '' : '<div class="wz-src-muted" style="font-size:0.75rem; margin-top:4px;">請確認可免費閱讀全文（非付費牆、非純摘要）。</div>';
       const noteOn = reviewUrlNote.key === unit.key && reviewUrlNote.text;
-      const note = `<span class="wz-src-note${noteOn && reviewUrlNote.text === WZ_URL_NOT_SAVED ? ' is-warn' : noteOn && reviewUrlNote.text === '已儲存' ? ' is-ok' : ''}" id="reviewUrlNote">${noteOn ? escapeHtml(reviewUrlNote.text) : ''}</span>`;
+      const note = `<span class="wz-src-note${noteOn && reviewUrlNote.text === WZ_URL_NOT_SAVED ? ' is-warn' : noteOn && reviewUrlNote.text === '已儲存' ? ' is-ok' : ''}" id="reviewUrlNote-${line}">${noteOn ? escapeHtml(reviewUrlNote.text) : ''}</span>`;
       const wrap = inner => `<div class="wz-src-box"><div class="wz-src-title">${title}</div>${inner}${oaTip}</div>`;
 
       if (reviewUrlEditKey === unit.key) {
         return wrap(`<div class="wz-src-row">
-          <input type="text" inputmode="url" id="reviewUrlInput" class="wz-src-input" value="${escapeHtml(reviewUrlDraft)}" placeholder="https://..." autocomplete="off" oninput="reviewUrlTyping()" onkeydown="reviewUrlKey(event)">
+          <input type="text" inputmode="url" id="reviewUrlInput-${line}" class="wz-src-input" value="${escapeHtml(reviewUrlDraft)}" placeholder="https://..." autocomplete="off" oninput="reviewUrlTyping()" onkeydown="reviewUrlKey(event)">
           <button type="button" class="wz-src-save" onclick="saveReviewUrl()">儲存</button>
           <button type="button" class="wz-src-cancel" onclick="cancelReviewUrl()">取消</button>
-        </div><div class="wz-url-hint" id="reviewUrlHint" hidden></div>`);
+        </div><div class="wz-url-hint" id="reviewUrlHint-${line}" hidden></div>`);
       }
 
       const url = String(sourceUrl || '').trim();
       if (!url) {
-        return wrap(`<div class="wz-src-row"><span class="wz-src-muted">尚未填網址</span><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit()">＋ 填入網址</button>${note}</div>`);
+        return wrap(`<div class="wz-src-row"><span class="wz-src-muted">尚未填網址</span><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit('${line}')">＋ 填入網址</button>${note}</div>`);
       }
       if (!wzIsHttpUrl(url)) {
-        return wrap(`<div class="wz-src-row"><span class="wz-src-main is-off">${mainText}</span><span class="wz-src-muted" title="${escapeHtml(url)}">這個網址打不開：${escapeHtml(wzUrlShort(url, 40))}</span><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit()">✎ 修改</button>${note}</div>`);
+        return wrap(`<div class="wz-src-row"><span class="wz-src-main is-off">${mainText}</span><span class="wz-src-muted" title="${escapeHtml(url)}">這個網址打不開：${escapeHtml(wzUrlShort(url, 40))}</span><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit('${line}')">✎ 修改</button>${note}</div>`);
       }
       const safe = wzSafeUrl(url);
-      return wrap(`<div class="wz-src-row"><a class="wz-src-main" href="${escapeHtml(safe)}" title="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${mainText}</a><a class="wz-src-url" href="${escapeHtml(safe)}" title="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(wzUrlShort(url, 50, 'middle'))}</a><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit()">✎ 修改</button>${note}</div>`);
+      return wrap(`<div class="wz-src-row"><a class="wz-src-main" href="${escapeHtml(safe)}" title="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${mainText}</a><a class="wz-src-url" href="${escapeHtml(safe)}" title="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(wzUrlShort(url, 50, 'middle'))}</a><button type="button" class="wz-src-edit" onclick="startReviewUrlEdit('${line}')">✎ 修改</button>${note}</div>`);
     }
 
-    function currentReviewUnit() {
-      return getReviewPool()[reviewCursor] || null;
+    function currentReviewUnit(line) {
+      return getReviewPool(line)[reviewCursor[line]] || null;
     }
 
-    function startReviewUrlEdit() {
-      const unit = currentReviewUnit();
+    function startReviewUrlEdit(line) {
+      reviewUrlLine = line;
+      const unit = currentReviewUnit(line);
       if (!unit) return;
-      const cur = unit.kind === 'course' ? unit.item.url : (unit.item.sourceUrl || (unit.posts.find(p => p.sourceUrl) || {}).sourceUrl || '');
+      const cur = unit.kind === 'course' ? unit.item.url : (unit.item.sourceUrl || '');
       reviewUrlEditKey = unit.key;
       reviewUrlDraft = cur || '';
-      renderReviewStep();
-      const box = document.getElementById('reviewUrlInput');
+      renderReviewStep(line);
+      const box = document.getElementById('reviewUrlInput-' + line);
       if (box) { box.focus(); box.select(); reviewUrlTyping(); }
     }
 
     function reviewUrlTyping() {
-      const box = document.getElementById('reviewUrlInput');
-      const hint = document.getElementById('reviewUrlHint');
+      const box = document.getElementById('reviewUrlInput-' + reviewUrlLine);
+      const hint = document.getElementById('reviewUrlHint-' + reviewUrlLine);
       if (!box || !hint) return;
       reviewUrlDraft = box.value;
       const st = wzUrlState(box.value);
@@ -4001,17 +4038,18 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     function cancelReviewUrl() {
       reviewUrlEditKey = '';
       reviewUrlDraft = '';
-      renderReviewStep();
+      renderReviewStep(reviewUrlLine);
     }
 
     // 只更新網址欄（課程 link／手札與社群 source_url），不動審稿狀態與其他欄位；沿用既有的雲端存檔函式
     async function saveReviewUrl() {
-      const unit = currentReviewUnit();
-      const box = document.getElementById('reviewUrlInput');
+      const line = reviewUrlLine;
+      const unit = currentReviewUnit(line);
+      const box = document.getElementById('reviewUrlInput-' + line);
       if (!unit || !box) return;
       const v = box.value.trim();
       if (!v) {
-        const hint = document.getElementById('reviewUrlHint');
+        const hint = document.getElementById('reviewUrlHint-' + line);
         if (hint) { hint.hidden = false; hint.textContent = '請先輸入網址。'; }
         return;
       }
@@ -4024,7 +4062,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       refreshAdminView();
       const noteDone = text => {
         reviewUrlNote = { key: unit.key, text };
-        const el = document.getElementById('reviewUrlNote');
+        const el = document.getElementById('reviewUrlNote-' + line);
         if (el) {
           el.textContent = text;
           el.classList.toggle('is-warn', text === WZ_URL_NOT_SAVED);
@@ -4048,64 +4086,112 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
     }
 
-    function renderReviewStep() {
-      const card = document.getElementById('reviewCard');
-      const progress = document.getElementById('reviewProgress');
+    const LINE_TEXT = {
+      site: {
+        prev: '← 上一篇', next: '下一篇 →',
+        empty: '🌊 目前沒有待審的手札或課程。新的草稿會出現在這裡。',
+        decision: '<div>✅ 可以發：立即上架到網站，到此結束。</div><div>❌ 不要發：從網站撤下並標為未採用。</div>'
+      },
+      social: {
+        prev: '← 上一則', next: '下一則 →',
+        empty: '目前沒有待審的社群貼文。貼文來源：課程管理的「📱 擬定社群貼文」，或每週 AI 送來的稿。',
+        decision: '<div>✅ 可以發：接著選發文時間、送 Buffer。</div><div>❌ 不要發：不會送進 Buffer，也不會排時間。</div>'
+      }
+    };
+
+    function scrollDeskTo(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // 社群線三段式進度：審稿 → 排時間 → 已送 Buffer（只是狀態指示，點各段捲到對應區塊）
+    function renderSocialProgress(pool, pendingCount) {
+      const box = document.getElementById('socialStages');
+      if (!box) return;
+      const stage = pendingCount > 0 ? 0 : scheduleCandidates().length > 0 ? 1 : upcomingSentPosts().length > 0 ? 2 : 0;
+      const steps = [['審稿', 'reviewCard-social'], ['排時間', 'socialScheduleSection'], ['已送 Buffer', 'socialSentSection']];
+      box.innerHTML = `<span class="stage-count">本週 ${pool.length} / ${SOCIAL_WEEKLY_QUOTA}</span>` +
+        steps.map((s, i) => `${i > 0 ? '<span class="stage-line">━━━</span>' : ''}<button type="button" class="stage-btn${i === stage ? ' is-on' : ''}" onclick="scrollDeskTo('${s[1]}')">${s[0]} ${i <= stage ? '●' : '○'}</button>`).join('');
+    }
+
+    function renderReviewStep(line) {
+      const card = document.getElementById('reviewCard-' + line);
+      const progress = document.getElementById('reviewProgress-' + line);
       if (!card || !progress) return;
+      const T = LINE_TEXT[line];
 
-      const pool = getReviewPool();
+      const pool = getReviewPool(line);
       const pendingCount = pool.filter(u => u.state === 'pending').length;
-      const waiting = pendingReviewKeys().length;
+      const waiting = line === 'social' ? pendingReviewKeys('social').length : 0;
 
-      const badge = document.getElementById('badgeReviewPending');
+      const badge = document.getElementById(line === 'site' ? 'badgeSitePending' : 'badgeSocialPending');
       if (badge) {
         badge.innerText = pendingCount;
         badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
       }
+      deskPendingCount[line] = pendingCount;
+      const navBadge = document.getElementById('badgeReviewPending');
+      if (navBadge) {
+        const total = deskPendingCount.site + deskPendingCount.social;
+        navBadge.innerText = total;
+        navBadge.style.display = total > 0 ? 'inline-block' : 'none';
+      }
+      if (line === 'social') renderSocialProgress(pool, pendingCount);
 
       if (pool.length === 0) {
         progress.innerHTML = '';
-        card.innerHTML = `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:40px 20px; text-align:center; color:#718096;">
-          🌊 目前沒有待審的內容。<br>手札草稿、課程草稿與新的社群貼文，都會自動出現在這裡。</div>`;
+        card.innerHTML = `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:40px 20px; text-align:center; color:#718096;">${T.empty}</div>`;
         return;
       }
 
-      if (reviewCursor >= pool.length) reviewCursor = pool.length - 1;
-      if (reviewCursor < 0) reviewCursor = 0;
+      if (reviewCursor[line] >= pool.length) reviewCursor[line] = pool.length - 1;
+      if (reviewCursor[line] < 0) reviewCursor[line] = 0;
+      const cursor = reviewCursor[line];
 
-      progress.innerHTML = `<span style="font-size:0.82rem; color:#4A5568; margin-right:4px;">本期 ${pool.length} / ${REVIEW_QUOTA}：</span>` +
-        pool.map((u, i) => `<button type="button" class="btn-table-sm" style="${i === reviewCursor ? 'background:#2B4C65; color:#FFF; border-color:#2B4C65;' : ''}" onclick="gotoReview(${i})">${i + 1}. ${REVIEW_LABELS[u.state]}</button>`).join('') +
-        (waiting > 0 ? `<span style="font-size:0.78rem; color:#A0AEC0; margin-left:6px;">另有 ${waiting} 張排在下一期</span>` : '');
+      progress.innerHTML = `<span style="font-size:0.82rem; color:#4A5568; margin-right:4px;">${line === 'site' ? `待審 ${pendingCount} 篇：` : '審稿：'}</span>` +
+        pool.map((u, i) => `<button type="button" class="btn-table-sm" style="${i === cursor ? 'background:#2B4C65; color:#FFF; border-color:#2B4C65;' : ''}" onclick="gotoReview('${line}', ${i})">${i + 1}. ${REVIEW_LABELS[u.state]}</button>`).join('') +
+        (waiting > 0 ? `<span style="font-size:0.78rem; color:#A0AEC0; margin-left:6px;">另有 ${waiting} 則排在下週</span>` : '');
 
-      const unit = pool[reviewCursor];
-      const { kind, item, posts } = unit;
-      const auditNote = item.auditNote || (posts.find(p => p.auditNote) || {}).auditNote || '';
-      const sourceUrl = kind === 'course' ? item.url : (item.sourceUrl || (posts.find(p => p.sourceUrl) || {}).sourceUrl || '');
+      const unit = pool[cursor];
+      const { kind, item } = unit;
+      const auditNote = item.auditNote || '';
+      const sourceUrl = kind === 'course' ? item.url : (item.sourceUrl || '');
 
       const auditHtml = auditNote
         ? auditBodyHtml(auditNote)
         : `<div style="color:#C05621;">⚠️ 尚未提供預先稽核與風險提示，建議先補上再決定。</div>`;
-      const sourceHtml = reviewSourceHtml(unit, sourceUrl);
+      const sourceHtml = reviewSourceHtml(unit, sourceUrl, line);
 
       const itemIdx = deskList(kind).indexOf(item);
       const editItemBtn = kind === 'article' ? `<button type="button" class="btn-table-sm" onclick="editArticle(${itemIdx})">✏️ 編輯手札</button>`
         : kind === 'course' ? `<button type="button" class="btn-table-sm" onclick="editCourse(${itemIdx})">✏️ 編輯課程</button>` : '';
-      const note = item.reviewNote || (posts.find(p => p.reviewNote) || {}).reviewNote || '';
-      const tagChips = (tags) => tags.map(t => `<button type="button" class="btn-table-sm" style="font-size:0.75rem;" onclick="addReviewTag(this.textContent)">${t}</button>`).join(' ');
+      const note = item.reviewNote || '';
+      const noteId = `reviewNoteInput-${line}`;
+      const tagChips = (tags) => tags.map(t => `<button type="button" class="btn-table-sm" style="font-size:0.75rem;" onclick="addReviewTag(this.textContent, '${noteId}')">${t}</button>`).join(' ');
 
-      const nextRoundHtml = pendingCount === 0
-        ? `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <span>🎉 本期 ${pool.length} 張都審完了。可以到「② 排程確認與送出」安排時間。${waiting > 0 ? `還有 ${waiting} 張待審。` : ''}</span>
-            ${waiting > 0 ? '<button type="button" class="btn-table-sm" onclick="startNextReviewRound()">開始下一期 →</button>' : ''}
-          </div>`
+      const linkedCount = line === 'site' ? linkedPosts(kind, item.id).length : 0;
+
+      const doneHtml = pendingCount === 0
+        ? (line === 'site'
+          ? `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D;">🎉 待審的都處理完了，內容都已在網站上。</div>`
+          : `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span>🎉 本週 ${pool.length} 則都審完了，往下選發文時間。</span>
+              <span style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn-table-sm" onclick="scrollDeskTo('socialScheduleSection')">前往選時間</button>
+                ${waiting > 0 ? '<button type="button" class="btn-table-sm" onclick="startNextSocialRound()">開始下週 →</button>' : ''}
+              </span>
+            </div>`)
+        : '';
+      const noticeHtml = reviewNotice[line]
+        ? `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D;">${reviewNotice[line]}</div>`
         : '';
 
       card.innerHTML = `
-        ${nextRoundHtml}
+        ${doneHtml}
+        ${noticeHtml}
         <div style="background:#FAF8F5; border:1px solid #E2E8F0; border-radius:12px; padding:18px;">
           <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
             <span class="sub-badge" style="background:#EDF2F7; color:#2D3748;">${REVIEW_KIND_LABELS[kind]}</span>
-            ${posts.length ? `<span class="sub-badge" style="background:#FAF5FF; color:#6B46C1;">＋ ${posts.length} 則社群貼文</span>` : ''}
             <span style="margin-left:auto; font-size:0.82rem; font-weight:600; color:#2B4C65;">${REVIEW_LABELS[unit.state]}</span>
           </div>
           <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 14px;">${escapeHtml(item.title || '（無標題）')}</h3>
@@ -4115,54 +4201,55 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
           ${deskMainContentHtml(unit)}
           ${editItemBtn ? `<div style="text-align:right; margin-top:6px;">${editItemBtn}</div>` : ''}
-          ${posts.map(p => deskPostHtml(p, true)).join('')}
 
           <div class="form-group" style="margin:16px 0 8px;">
             <label>修改意見（選「✏️ 要修改」時必填，會一併複製給 AI）：</label>
             <div style="margin-bottom:6px;">${tagChips(REVISE_TAGS)}</div>
             <div style="margin-bottom:6px;">${tagChips(REJECT_TAGS)}</div>
-            <textarea id="reviewNoteInput" rows="2" placeholder="點上面的快速標籤，或自己寫下想法。">${escapeHtml(note)}</textarea>
+            <textarea id="${noteId}" rows="2" placeholder="點上面的快速標籤，或自己寫下想法。">${escapeHtml(note)}</textarea>
           </div>
 
           <div class="review-decision-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px;">
-            <button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideReview('approved')">✅ 可以發</button>
-            <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideReview('revise')">✏️ 要修改</button>
-            <button type="button" class="btn-submit-action" style="margin:0; background:#718096;" onclick="decideReview('rejected')">❌ 不要發</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideReview('${line}', 'approved')">✅ 可以發</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideReview('${line}', 'revise')">✏️ 要修改</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#718096;" onclick="decideReview('${line}', 'rejected')">❌ 不要發</button>
           </div>
-          <div style="font-size:0.78rem; color:#718096; margin-bottom:10px;">
-            ${kind === 'social' ? '決定只影響這則社群貼文。' : `✅ 可以發：${kind === 'article' ? '手札' : '課程'}會立即上架到網站，社群貼文進入排程確認。❌ 不要發：從網站撤下並標為未採用。`}
-          </div>
+          <div style="font-size:0.78rem; color:#718096; margin-bottom:10px;">${T.decision}</div>
+          ${linkedCount > 0 ? `<div style="font-size:0.78rem; color:#718096; margin-bottom:10px;">這門課另有 ${linkedCount} 則社群貼文，在『📣 社群貼文』頁處理。</div>` : ''}
 
           <div style="display:flex; justify-content:space-between; gap:8px;">
-            <button type="button" class="btn-table-sm" onclick="gotoReview(${reviewCursor - 1})" ${reviewCursor === 0 ? 'disabled' : ''}>← 上一張</button>
-            <button type="button" class="btn-table-sm" onclick="gotoReview(${reviewCursor + 1})" ${reviewCursor >= pool.length - 1 ? 'disabled' : ''}>下一張 →</button>
+            <button type="button" class="btn-table-sm" onclick="gotoReview('${line}', ${cursor - 1})" ${cursor === 0 ? 'disabled' : ''}>${T.prev}</button>
+            <button type="button" class="btn-table-sm" onclick="gotoReview('${line}', ${cursor + 1})" ${cursor >= pool.length - 1 ? 'disabled' : ''}>${T.next}</button>
           </div>
         </div>`;
     }
 
-    function gotoReview(i) {
+    function gotoReview(line, i) {
       reviewUrlEditKey = ''; reviewUrlDraft = '';
-      reviewCursor = i;
-      renderReviewStep();
+      reviewNotice[line] = '';
+      reviewCursor[line] = i;
+      renderReviewStep(line);
     }
 
     function addReviewTag(tag, targetId) {
-      const box = document.getElementById(targetId || 'reviewNoteInput');
+      const box = document.getElementById(targetId);
       if (!box || box.value.includes(tag)) return;
       box.value = box.value.trim() ? `${box.value.trim()}；${tag}` : tag;
     }
 
-    function startNextReviewRound() {
-      // 只把已做出決定的卡移出本期；被改回待審的會留下
-      reviewPoolKeys = reviewPoolKeys.filter(k => {
+    // 社群線：只把已做出決定的貼文移出本週；被改回待審的會留下
+    function startNextSocialRound() {
+      reviewPoolKeys.social = reviewPoolKeys.social.filter(k => {
         const unit = buildReviewUnit(k);
         return unit && unit.state === 'pending';
       });
-      reviewCursor = 0;
+      reviewCursor.social = 0;
+      reviewNotice.social = '';
       renderReviewDesk();
     }
 
     // 手札／課程：只有還在審稿中的才跟著決定上下架；已上架的舊內容不會因為新貼文被撤下
+    // 這裡只改這一張卡本身，不連帶改動任何社群貼文
     function applyItemDecision(unit, decision, note) {
       const { kind, item, key } = unit;
       const tasks = [];
@@ -4184,24 +4271,18 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           tasks.push(() => window.WangzhouCloud.upsertCourse(item));
         }
       }
-      unit.posts.forEach(p => {
-        if (['pending', 'revise'].includes(reviewStatusOf(p)) || deskDecidedKeys.has(key)) {
-          p.reviewStatus = decision;
-          p.reviewNote = note;
-          tasks.push(() => window.WangzhouCloud.upsertSocialPost(p));
-        }
-      });
       return tasks;
     }
 
-    async function decideReview(decision) {
-      const pool = getReviewPool();
-      const unit = pool[reviewCursor];
+    async function decideReview(line, decision) {
+      const pool = getReviewPool(line);
+      const unit = pool[reviewCursor[line]];
       if (!unit) return;
-      const note = document.getElementById('reviewNoteInput').value.trim();
+      const noteBox = document.getElementById('reviewNoteInput-' + line);
+      const note = noteBox.value.trim();
       if (decision === 'revise' && !note) {
         alert('請寫下要修改的地方（可以點快速標籤），AI 才知道怎麼改。');
-        document.getElementById('reviewNoteInput').focus();
+        noteBox.focus();
         return;
       }
 
@@ -4209,32 +4290,38 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       deskDecidedKeys.add(unit.key);
       saveDataToLocalStorage();
 
+      reviewNotice[line] = decision !== 'approved' ? ''
+        : line === 'site' ? '✅ 已上架網站。' : '✅ 已通過，請到下方選發文時間。';
+
       // 自動跳到下一張待審
-      const updated = getReviewPool();
-      const nextIdx = updated.findIndex((u, i) => i > reviewCursor && u.state === 'pending');
+      const updated = getReviewPool(line);
+      const nextIdx = updated.findIndex((u, i) => i > reviewCursor[line] && u.state === 'pending');
       const firstIdx = updated.findIndex(u => u.state === 'pending');
-      if (nextIdx >= 0) reviewCursor = nextIdx;
-      else if (firstIdx >= 0) reviewCursor = firstIdx;
+      if (nextIdx >= 0) reviewCursor[line] = nextIdx;
+      else if (firstIdx >= 0) reviewCursor[line] = firstIdx;
       refreshAdminView();
 
       if (!window.WangzhouCloud) return;
       try {
         for (const task of tasks) await task();
-        showToast(`${REVIEW_LABELS[decision]}：已儲存「${unit.item.title || '（無標題）'}」`);
+        showToast(decision === 'approved'
+          ? (line === 'site' ? '✅ 已上架網站' : '✅ 已通過，請到下方選發文時間')
+          : `${REVIEW_LABELS[decision]}：已儲存「${unit.item.title || '（無標題）'}」`);
       } catch (err) {
         console.error(err);
         showToast('⚠️ 雲端儲存失敗：' + err.message);
       }
     }
 
-    // 「提早審稿一鍵複製結果給 AI」：整理成純文字，直接貼進對話
-    async function copyReviewResults() {
-      const pool = getReviewPool();
+    // 「提早審稿一鍵複製結果給 AI」：兩條線各自整理成純文字，直接貼進對話
+    async function copyResults(line) {
+      const pool = getReviewPool(line);
       const courses = SITE_DATA.courses || [];
-      // 重做中、以及已開放待複查的課程；已在重做的不重複列進 🔔，新版待審與尚未開放不複製
-      const redo = courses.filter(c => courseIsLive(c) && c.revisionState === 'requested');
-      const bells = courses.filter(c => courseNeedsRegCheck(c) && !c.revisionState);
-      const draftRevise = draftReviseCourses().map(c => ({ kind: 'course', item: c, posts: [], state: 'revise' }));
+      const isSite = line === 'site';
+      // 網站線才處理課程：重做中、已開放待複查、草稿要修改；已在重做的不重複列進 🔔，新版待審與尚未開放不複製
+      const redo = isSite ? courses.filter(c => courseIsLive(c) && c.revisionState === 'requested') : [];
+      const bells = isSite ? courses.filter(c => courseNeedsRegCheck(c) && !c.revisionState) : [];
+      const draftRevise = isSite ? draftReviseCourses().map(c => ({ kind: 'course', item: c, state: 'revise' })) : [];
       if (pool.length === 0 && redo.length === 0 && bells.length === 0 && draftRevise.length === 0) {
         alert('沒有資料可以複製。');
         return;
@@ -4242,10 +4329,10 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const groups = { approved: [], revise: [], rejected: [], pending: [] };
       pool.forEach(u => groups[u.state].push(u));
       groups.revise.push(...draftRevise);
-      const label = u => `[${REVIEW_KIND_LABELS[u.kind]}] ${u.item.title || '（無標題）'}${u.posts.length ? `（含 ${u.posts.length} 則社群貼文）` : ''}`;
-      const noteOf = u => u.item.reviewNote || (u.posts.find(p => p.reviewNote) || {}).reviewNote || '';
+      const label = u => `[${REVIEW_KIND_LABELS[u.kind]}] ${u.item.title || '（無標題）'}`;
+      const noteOf = u => u.item.reviewNote || '';
       const today = new Date().toLocaleDateString('zh-TW');
-      const lines = [`望舟小棧審稿結果（${today}）`];
+      const lines = [`望舟小棧${isSite ? '網站內容' : '社群貼文'}審稿結果（${today}）`];
       if (groups.approved.length) lines.push('', '✅ 可以發：', ...groups.approved.map(u => `・${label(u)}`));
       if (groups.revise.length) lines.push('', '✏️ 要修改：', ...groups.revise.map(u => `・${label(u)}\n  修改意見：${noteOf(u) || '（未填）'}`));
       if (groups.rejected.length) lines.push('', '❌ 不要發：', ...groups.rejected.map(u => `・${label(u)}${noteOf(u) ? `（${noteOf(u)}）` : ''}`));
@@ -4261,14 +4348,16 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const text = lines.join('\n');
       try {
         await navigator.clipboard.writeText(text);
-        showToast('📋 已複製審稿結果，可以直接貼給 AI');
+        showToast(`📋 已複製${isSite ? '網站內容' : '社群貼文'}審稿結果，可以直接貼給 AI`);
       } catch (e) {
         alert(text);
       }
     }
+    const copySiteResults = () => copyResults('site');
+    const copySocialResults = () => copyResults('social');
 
     // ---------------------------------------------------------------------
-    // ② 排程確認與送出
+    // 📣 社群貼文線：選發文時間 ➔ 送進 Buffer
     // ---------------------------------------------------------------------
     function taipeiToday() {
       return new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
@@ -4330,7 +4419,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     function renderScheduleStep() {
       const board = document.getElementById('scheduleBoard');
-      if (!board) return;
+      const sentBoard = document.getElementById('sentBoard');
+      if (!board || !sentBoard) return;
       const list = scheduleCandidates();
       suggestSchedule(list);
       list.sort((a, b) => postDueIso(a).localeCompare(postDueIso(b)));
@@ -4356,6 +4446,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
             <div>
               <div style="font-weight:600; color:#1E242B; margin-bottom:4px;">${escapeHtml(p.title || '（無標題）')}</div>
               <div style="margin-bottom:8px;">${platChips}
+                <span class="sub-badge" style="background:#FEFCBF; color:#744210;">待排時間</span>
                 ${deadline ? `<span style="font-size:0.78rem; color:${late ? '#C53030' : '#B87D4B'}; margin-left:4px;">⚡ 報名截止 ${escapeHtml(deadline)}${late ? '（⚠️ 排在截止日之後）' : ''}</span>` : ''}
               </div>
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -4368,19 +4459,24 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           </div>`;
       }).join('');
 
-      const sentHtml = sent.length
-        ? `<h4 style="margin:20px 0 8px; color:#2D3748;">📬 已排進 Buffer（${sent.length} 篇）</h4>` + sent.map(p => {
-          const when = new Date(p.scheduledAt).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' });
-          return `<div style="font-size:0.85rem; color:#4A5568; padding:6px 0; border-bottom:1px dashed #E2E8F0;">✅ ${escapeHtml(when)}｜${escapeHtml(p.title || '（無標題）')}｜${platformsOf(p).map(pl => (pl === 'threads' ? 'Threads' : 'Instagram')).join('、')}</div>`;
+      sentBoard.innerHTML = sent.length
+        ? sent.map(p => {
+          const d = new Date(Date.parse(p.scheduledAt) + 8 * 3600 * 1000);
+          const pad = n => String(n).padStart(2, '0');
+          const when = `${d.getUTCMonth() + 1}/${d.getUTCDate()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+          return `<div style="font-size:0.85rem; color:#4A5568; padding:6px 0; border-bottom:1px dashed #E2E8F0;">✅ 已送進 Buffer，預定 ${when}｜${escapeHtml(p.title || '（無標題）')}｜${platformsOf(p).map(pl => (pl === 'threads' ? 'Threads' : 'Instagram')).join('、')}</div>`;
         }).join('')
-        : '';
+        : '<div style="font-size:0.84rem; color:#A0AEC0;">還沒有送進 Buffer 的貼文。</div>';
 
+      const waitingReview = (SITE_DATA.socialPosts || []).filter(p => reviewStatusOf(p) === 'pending' && isReviewable(p)).length;
+      const emptyText = waitingReview > 0
+        ? `還有 ${waitingReview} 則貼文待審，審完按『可以發』後會出現在這裡。`
+        : '目前沒有等著排時間的貼文。';
       board.innerHTML = list.length
         ? `<p style="font-size:0.84rem; color:#718096; margin:0 0 12px;">已通過審稿的社群貼文。時間是系統建議的（有截止日的課程排在前面），可以直接修改。送出後由 Buffer 在排定時間自動發布。</p>
            ${rows}
-           <button type="button" id="btnSendToBuffer" class="btn-submit-action" style="background:#2C7A7B;" onclick="sendScheduledToBuffer()">🚀 送進 Buffer（${list.length} 篇）</button>
-           ${sentHtml}`
-        : `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:32px 20px; text-align:center; color:#718096;">目前沒有等待排程的貼文。審稿時按「✅ 可以發」的社群貼文會出現在這裡。</div>${sentHtml}`;
+           <button type="button" id="btnSendToBuffer" class="btn-submit-action" style="background:#2C7A7B;" onclick="sendScheduledToBuffer()">🚀 送進 Buffer（${list.length} 則）</button>`
+        : `<div style="font-size:0.84rem; color:#A0AEC0;">${emptyText}</div>`;
     }
 
     async function setPostSchedule(id, field, value) {
@@ -4449,7 +4545,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         alert('還不能送出：\n\n' + problems.join('\n'));
         return;
       }
-      if (!confirm(`即將把 ${list.length} 篇貼文送進 Buffer，到排定時間會自動發布到 Threads／Instagram。\n確定送出嗎？`)) return;
+      if (!confirm(`即將把 ${list.length} 則貼文送進 Buffer，到排定時間會自動發布到 Threads／Instagram。\n確定送出嗎？`)) return;
 
       const btn = document.getElementById('btnSendToBuffer');
       if (btn) {
@@ -4492,7 +4588,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
       saveDataToLocalStorage();
       refreshAdminView();
-      alert(failed ? `完成 ${ok} 篇，${failed} 篇有問題，原因已標在該篇下方，修正後可再按一次送出（已成功的平台不會重複送）。` : `🎉 ${ok} 篇都已排進 Buffer！`);
+      alert(failed ? `完成 ${ok} 則，${failed} 則有問題，原因已標在該則下方，修正後可再按一次送出（已成功的平台不會重複送）。` : `🎉 ${ok} 則都已排進 Buffer！`);
     }
 
     async function handleSaveSocialPost(e) {

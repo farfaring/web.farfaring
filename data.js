@@ -561,6 +561,8 @@ const WangzhouCloud = {
       status: post.status || 'scheduled',
       metrics_note: post.metricsNote || post.metrics_note || ''
     };
+    // IG 圖卡：imageUrls（依頁序，第 1 張＝封面）為準，image_url 永遠同步成封面，舊資料與舊程式照常運作
+    const hasImageList = Array.isArray(post.imageUrls);
     wzAddDefined(payload, {
       review_status: post.reviewStatus,
       review_note: post.reviewNote,
@@ -568,7 +570,8 @@ const WangzhouCloud = {
       marketing_note: post.marketingNote,
       marketing_review: post.marketingReview,
       source_url: post.sourceUrl,
-      image_url: post.imageUrl,
+      image_url: hasImageList ? (post.imageUrls[0] || null) : post.imageUrl,
+      image_urls: hasImageList ? post.imageUrls : undefined,
       scheduled_at: post.scheduledAt,
       buffer_post_ids: post.bufferPostIds,
       buffer_error: post.bufferError
@@ -839,6 +842,7 @@ const WangzhouCloud = {
           marketingReview: p.marketing_review || '',
           sourceUrl: p.source_url || '',
           imageUrl: p.image_url || '',
+          imageUrls: Array.isArray(p.image_urls) && p.image_urls.length ? p.image_urls : (p.image_url ? [p.image_url] : []),
           scheduledAt: p.scheduled_at || null,
           bufferPostIds: p.buffer_post_ids || {},
           bufferError: p.buffer_error || '',

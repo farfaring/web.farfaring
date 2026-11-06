@@ -598,6 +598,30 @@
     .auth-msg { min-height: 1.4em; font-size: 0.84rem; margin-top: 12px; color: #466D56; }
     .auth-msg:empty { display: none; }
     .auth-msg.error { color: #C53030; }
+
+    /* IG 圖卡縮圖列與燈箱 */
+    .desk-post-grid { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(420px, 1.4fr); gap: 10px; align-items: start; }
+    .desk-post-grid > div { min-width: 0; }
+    @media (max-width: 640px) { .desk-post-grid { grid-template-columns: 1fr; } }
+    .ig-strip { margin-bottom: 10px; }
+    .ig-strip-count { font-size: 0.78rem; color: #718096; margin-bottom: 6px; }
+    .ig-strip-count.over { color: #C53030; font-weight: 600; }
+    .ig-strip-row { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 4px; }
+    .ig-thumb { flex: 0 0 84px; scroll-snap-align: start; text-align: center; background: none; border: 0; padding: 0; cursor: zoom-in; font-size: 0.72rem; color: #718096; font-family: inherit; }
+    .ig-thumb img { display: block; width: 84px; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 6px; border: 1px solid #E2E8F0; background: #F7FAFC; margin-bottom: 2px; }
+    .ig-empty { border: 1.5px dashed #D69E2E; border-radius: 8px; color: #8F5C30; padding: 14px; text-align: center; font-size: 0.85rem; margin-bottom: 10px; }
+    .ig-lightbox { position: fixed; inset: 0; z-index: 3000; background: rgba(15, 20, 26, 0.96); display: none; flex-direction: column; align-items: center; justify-content: center; }
+    .ig-lightbox.open { display: flex; }
+    .ig-lb-stage { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; flex: 1; min-height: 0; touch-action: pan-y; }
+    .ig-lb-stage img { max-height: 85vh; max-width: min(92vw, 720px); object-fit: contain; border-radius: 4px; }
+    .ig-lb-btn { position: absolute; background: rgba(20, 26, 34, 0.75); border: 1px solid rgba(255, 255, 255, 0.5) !important; color: #FFF; border: 0; border-radius: 50%; width: 48px; height: 48px; font-size: 2.1rem; cursor: pointer; line-height: 1; }
+    .ig-lb-prev { left: 12px; top: 50%; transform: translateY(-50%); }
+    .ig-lb-next { right: 12px; top: 50%; transform: translateY(-50%); }
+    .ig-lb-close { right: 12px; top: 12px; width: 44px; height: 44px; font-size: 1.2rem; }
+    .ig-lb-foot { color: #E2E8F0; font-size: 0.9rem; padding: 10px 0 18px; text-align: center; }
+    .ig-lb-dots { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+    .ig-lb-dots button { width: 10px; height: 10px; border-radius: 50%; border: 0; padding: 0; background: rgba(255, 255, 255, 0.35); cursor: pointer; }
+    .ig-lb-dots button.on { background: #B87D4B; }
   </style>
 </head>
 <body>
@@ -1664,7 +1688,7 @@
   <script>window.WANGZHOU_ADMIN_MODE = true;</script>
 
   <!-- 引用共享核心數據 -->
-  <script src="./data.js?v=20261105"></script>
+  <script src="./data.js?v=20261106"></script>
 
   <script>
     // 切換面板
@@ -3779,7 +3803,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       evening: { label: '🌙 晚間靠岸 21:00', time: '21:00' },
       weekend: { label: '☕ 週末午後 15:00', time: '15:00' }
     };
-    const PLATFORM_TEXT_LIMITS = { threads: 500, instagram: 2200 };
+    const PLATFORM_TEXT_LIMITS = { threads: 500, instagram: 2196 };
+    const IG_MAX_IMAGES = 10;
     const reviewPoolKeys = { site: [], social: [] };
     const reviewCursor = { site: 0, social: 0 };
     const reviewNotice = { site: '', social: '' };
@@ -3805,6 +3830,99 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     function platformsOf(p) {
       const plats = p.targetPlatforms || (p.platform ? [p.platform] : ['threads']);
       return plats.map(x => (x === 'ig' ? 'instagram' : x)).filter(x => x === 'threads' || x === 'instagram');
+    }
+
+    // IG 圖卡清單（依頁序，第 1 張＝封面）；全站只用這個函式取圖
+    function postImagesOf(p) {
+      const list = Array.isArray(p.imageUrls) && p.imageUrls.length ? p.imageUrls : (p.imageUrl ? [p.imageUrl] : []);
+      return list.filter(u => typeof u === 'string' && u);
+    }
+
+    // 縮圖列：審稿卡用；單張只放大不顯示頁碼；沒有圖顯示虛線框
+    function igStripHtml(p) {
+      const imgs = postImagesOf(p);
+      const id = wzSafeId(p.id);
+      if (!imgs.length) return '<div class="ig-empty">這則還沒有 IG 圖卡</div>';
+      const n = imgs.length;
+      const over = n > IG_MAX_IMAGES;
+      const thumbs = imgs.map((u, i) => `<button type="button" class="ig-thumb" aria-label="第 ${i + 1} 張／共 ${n} 張" onclick="openLightbox('${id}', ${i})"><img src="${escapeHtml(wzSafeUrl(u))}" alt="" loading="lazy">${n > 1 ? (i === 0 ? '封面' : i + 1) : ''}</button>`).join('');
+      return `<div class="ig-strip"><div class="ig-strip-count${over ? ' over' : ''}">${over ? `⚠️ 圖卡 ${n} 張，超過 IG 上限 ${IG_MAX_IMAGES} 張` : `共 ${n} 張`}</div><div class="ig-strip-row">${thumbs}</div></div>`;
+    }
+
+    // 燈箱：全螢幕看圖卡，鍵盤左右翻頁、Esc 關閉，手機左右滑翻頁、點背景關閉
+    const lightboxState = { urls: [], i: 0 };
+    function ensureLightbox() {
+      let el = document.getElementById('igLightbox');
+      if (el) return el;
+      el = document.createElement('div');
+      el.id = 'igLightbox';
+      el.className = 'ig-lightbox';
+      el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-modal', 'true');
+      el.innerHTML = `
+        <div class="ig-lb-stage" id="igLbStage">
+          <button type="button" class="ig-lb-btn ig-lb-close" aria-label="關閉" onclick="closeLightbox()">✕</button>
+          <button type="button" class="ig-lb-btn ig-lb-prev" id="igLbPrev" aria-label="上一張" onclick="lightboxStep(-1)">‹</button>
+          <img id="igLbImg" alt="">
+          <button type="button" class="ig-lb-btn ig-lb-next" id="igLbNext" aria-label="下一張" onclick="lightboxStep(1)">›</button>
+        </div>
+        <div class="ig-lb-foot"><div id="igLbCount"></div><div class="ig-lb-dots" id="igLbDots"></div></div>`;
+      document.body.appendChild(el);
+      el.addEventListener('click', e => { if (e.target === el || e.target.id === 'igLbStage') closeLightbox(); });
+      const stage = el.querySelector('#igLbStage');
+      let startX = null;
+      stage.addEventListener('touchstart', e => { startX = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+      stage.addEventListener('touchend', e => {
+        if (startX === null) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        startX = null;
+        if (Math.abs(dx) > 40) lightboxStep(dx < 0 ? 1 : -1);
+      });
+      document.addEventListener('keydown', e => {
+        if (!el.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        else if (e.key === 'ArrowLeft') lightboxStep(-1);
+        else if (e.key === 'ArrowRight') lightboxStep(1);
+      });
+      return el;
+    }
+
+    function renderLightbox() {
+      const { urls, i } = lightboxState;
+      const n = urls.length;
+      document.getElementById('igLbImg').src = wzSafeUrl(urls[i]);
+      document.getElementById('igLbImg').alt = `第 ${i + 1} 張／共 ${n} 張`;
+      document.getElementById('igLbCount').textContent = n > 1 ? `${i + 1} / ${n}` : '';
+      document.getElementById('igLbPrev').style.display = n > 1 ? '' : 'none';
+      document.getElementById('igLbNext').style.display = n > 1 ? '' : 'none';
+      document.getElementById('igLbDots').innerHTML = n > 1
+        ? urls.map((u, k) => `<button type="button" class="${k === i ? 'on' : ''}" aria-label="第 ${k + 1} 張／共 ${n} 張" onclick="lightboxStep(${k - i})"></button>`).join('')
+        : '';
+    }
+
+    function openLightbox(postId, i) {
+      const p = deskFind('social', postId);
+      const urls = p ? postImagesOf(p) : [];
+      if (!urls.length) return;
+      ensureLightbox();
+      lightboxState.urls = urls;
+      lightboxState.i = Math.min(Math.max(i || 0, 0), urls.length - 1);
+      renderLightbox();
+      document.getElementById('igLightbox').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function lightboxStep(d) {
+      const n = lightboxState.urls.length;
+      if (n < 2) return;
+      lightboxState.i = Math.min(Math.max(lightboxState.i + d, 0), n - 1);
+      renderLightbox();
+    }
+
+    function closeLightbox() {
+      const el = document.getElementById('igLightbox');
+      if (el) el.classList.remove('open');
+      document.body.style.overflow = '';
     }
 
     function postTextFor(p, platform) {
@@ -3911,14 +4029,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const plats = platformsOf(p);
       let boxes = '';
       if (plats.includes('threads')) boxes += deskTextBox('🧵 Threads', postTextFor(p, 'threads'), PLATFORM_TEXT_LIMITS.threads);
-      if (plats.includes('instagram')) boxes += deskTextBox('📸 Instagram', postTextFor(p, 'instagram'), PLATFORM_TEXT_LIMITS.instagram);
+      if (plats.includes('instagram')) boxes += `<div>${igStripHtml(p)}${deskTextBox('📸 Instagram', postTextFor(p, 'instagram'), PLATFORM_TEXT_LIMITS.instagram)}</div>`;
       return `
         <div style="margin-top:12px;">
           ${withHeader ? `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#4A5568;">
             <strong>📱 社群貼文：${escapeHtml(p.title || '（無標題）')}</strong>
             <span>${REVIEW_LABELS[reviewStatusOf(p)]}</span>
           </div>` : ''}
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">${boxes}</div>
+          <div class="desk-post-grid">${boxes}</div>
           <div style="text-align:right; margin-top:6px;"><button type="button" class="btn-table-sm" onclick="editSocialPost(${idx})">✏️ 編輯這則貼文</button></div>
           ${marketingDetailsHtml(p)}
         </div>`;
@@ -4436,11 +4554,24 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         const sentIds = p.bufferPostIds || {};
         const platChips = plats.map(pl => `<span class="sub-badge" style="background:${pl === 'threads' ? '#000' : '#C13584'}; color:#FFF;">${pl === 'threads' ? '🧵 Threads' : '📸 Instagram'}${sentIds[pl] ? ' ✅' : ''}</span>`).join(' ');
         const needsCard = plats.includes('instagram');
-        const cardHtml = needsCard
-          ? (p.imageUrl
-            ? `<img src="${escapeHtml(wzSafeUrl(p.imageUrl))}" alt="IG 圖卡" style="width:88px; border-radius:6px; border:1px solid #E2E8F0;"><br><button type="button" class="btn-table-sm" style="font-size:0.72rem; margin-top:4px;" onclick="generateCardForPost('${wzSafeId(p.id)}')">🔄 重新產生</button>`
-            : `<button type="button" class="btn-table-sm" onclick="generateCardForPost('${wzSafeId(p.id)}')">🎨 產生 IG 圖卡</button>`)
-          : '<span style="font-size:0.75rem; color:#A0AEC0;">純文字</span>';
+        const imgs = postImagesOf(p);
+        const pid = wzSafeId(p.id);
+        let cardHtml;
+        if (!needsCard) cardHtml = '<span style="font-size:0.75rem; color:#A0AEC0;">純文字</span>';
+        else if (!imgs.length) cardHtml = `<button type="button" class="btn-table-sm" onclick="generateCardForPost('${pid}')">🎨 產生 IG 圖卡</button>`;
+        else {
+          const cover = `<button type="button" class="ig-thumb" style="flex:none; width:88px;" aria-label="第 1 張／共 ${imgs.length} 張" onclick="openLightbox('${pid}', 0)"><img src="${escapeHtml(wzSafeUrl(imgs[0]))}" alt="" loading="lazy" style="width:88px;"></button>`;
+          cardHtml = imgs.length > 1
+            ? `${cover}<div style="font-size:0.74rem; color:#718096;">共 ${imgs.length} 張</div>`
+            : `${cover}<button type="button" class="btn-table-sm" style="font-size:0.72rem; margin-top:4px;" onclick="generateCardForPost('${pid}')">🔄 重新產生</button>`;
+        }
+        const tooMany = needsCard && imgs.length > IG_MAX_IMAGES;
+        const igErr = igErrorReason(p);
+        const errHtml = igErr !== null && imgs.length > 1 && !(p.bufferPostIds || {}).instagram
+          ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">⚠️ IG 輪播沒有送成：${escapeHtml(igErr)}</div>
+             <div style="font-size:0.74rem; color:#718096;">IG 還沒有送出任何內容。</div>
+             <button type="button" class="btn-table-sm" style="margin-top:6px;" onclick="sendCoverOnly('${pid}')">只送封面（1 張）</button>`
+          : (p.bufferError ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">❌ 上次送出失敗：${escapeHtml(p.bufferError)}</div>` : '');
         return `
           <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:12px 14px; margin-bottom:10px; display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center;">
             <div>
@@ -4453,7 +4584,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
                 <input type="date" value="${escapeHtml(p.scheduledDate || '')}" min="${taipeiToday()}" onchange="setPostSchedule('${wzSafeId(p.id)}', 'date', this.value)" style="width:auto;">
                 <select onchange="setPostSchedule('${wzSafeId(p.id)}', 'slot', this.value)" style="width:auto;">${slotOptions(p.scheduledTimeSlot)}</select>
               </div>
-              ${p.bufferError ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">❌ 上次送出失敗：${escapeHtml(p.bufferError)}</div>` : ''}
+              ${tooMany ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">⚠️ 圖卡 ${imgs.length} 張，超過 IG 上限 ${IG_MAX_IMAGES} 張</div>` : ''}
+              ${errHtml}
             </div>
             <div style="text-align:center;">${cardHtml}</div>
           </div>`;
@@ -4464,7 +4596,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           const d = new Date(Date.parse(p.scheduledAt) + 8 * 3600 * 1000);
           const pad = n => String(n).padStart(2, '0');
           const when = `${d.getUTCMonth() + 1}/${d.getUTCDate()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
-          return `<div style="font-size:0.85rem; color:#4A5568; padding:6px 0; border-bottom:1px dashed #E2E8F0;">✅ 已送進 Buffer，預定 ${when}｜${escapeHtml(p.title || '（無標題）')}｜${platformsOf(p).map(pl => (pl === 'threads' ? 'Threads' : 'Instagram')).join('、')}</div>`;
+          return `<div style="font-size:0.85rem; color:#4A5568; padding:6px 0; border-bottom:1px dashed #E2E8F0;">✅ 已送進 Buffer，預定 ${when}｜${escapeHtml(p.title || '（無標題）')}｜${platformsOf(p).map(pl => (pl === 'threads' ? 'Threads' : ((p.bufferPostIds || {}).coverOnly ? 'IG（只有封面）' : 'IG'))).join('、')}</div>`;
         }).join('')
         : '<div style="font-size:0.84rem; color:#A0AEC0;">還沒有送進 Buffer 的貼文。</div>';
 
@@ -4514,6 +4646,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         });
         const url = await window.WangzhouCloud.uploadSocialCard(blob, p.id);
         p.imageUrl = `${url}?v=${Date.now()}`;
+        p.imageUrls = [p.imageUrl];
         saveDataToLocalStorage();
         await window.WangzhouCloud.upsertSocialPost(p);
         showToast('🎨 圖卡已產生並上傳');
@@ -4522,6 +4655,57 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         showToast('⚠️ 圖卡產生失敗：' + err.message);
       }
       renderScheduleStep();
+    }
+
+    // bufferError 是「平台：原因；平台：原因」的一行字；取出 IG 那段的原因（沒有 IG 失敗就回傳 null）。
+    function splitBufferError(p) {
+      const parts = String(p.bufferError || '').split('；').filter(Boolean);
+      const isIg = x => /^(IG|Instagram)：/.test(x);
+      const ig = parts.find(isIg);
+      return { ig: ig ? ig.replace(/^(IG|Instagram)：/, '') : null, others: parts.filter(x => !isIg(x)) };
+    }
+
+    // 轉送站轉述 Buffer 的英文原文時（開頭是「Buffer：」），寫成中文說明加「（Buffer 回覆：…）」
+    function igErrorReason(p) {
+      const reason = splitBufferError(p).ig;
+      if (reason === null) return null;
+      return reason.startsWith('Buffer：') ? `Buffer 沒有接受這則貼文。（Buffer 回覆：${reason.slice('Buffer：'.length)}）` : reason;
+    }
+
+    // 輪播被 Buffer 退回後，由主理人手動選擇只送封面 1 張（不會自動降級）
+    async function sendCoverOnly(id) {
+      const p = deskFind('social', id);
+      if (!p) return;
+      const imgs = postImagesOf(p);
+      if (!imgs.length) return;
+      if (!confirm('IG 會只送封面 1 張，不是輪播，其餘圖卡不會送出。確定嗎？')) return;
+      p.bufferPostIds = { ...(p.bufferPostIds || {}) };
+      const prev = splitBufferError(p);
+      try {
+        const result = await window.WangzhouCloud.bufferRelay({
+          action: 'create',
+          platform: 'instagram',
+          text: postTextFor(p, 'instagram'),
+          dueAt: postDueIso(p),
+          imageUrls: [imgs[0]]
+        });
+        p.bufferPostIds.instagram = result.postId;
+        p.bufferPostIds.coverOnly = true;
+        p.bufferError = prev.others.join('；');
+        p.scheduledAt = new Date(Date.parse(postDueIso(p))).toISOString();
+        if (isFullySent(p)) p.status = 'scheduled';
+        showToast('IG 已送進 Buffer（只有封面）');
+      } catch (err) {
+        p.bufferError = [...prev.others, `IG：${err.message}`].join('；');
+        showToast('⚠️ IG 沒有送成：' + err.message);
+      }
+      try {
+        await window.WangzhouCloud.upsertSocialPost(p);
+      } catch (err) {
+        showToast('⚠️ 送出紀錄未能存到雲端：' + err.message);
+      }
+      saveDataToLocalStorage();
+      refreshAdminView();
     }
 
     async function sendScheduledToBuffer() {
@@ -4538,7 +4722,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           const text = postTextFor(p, pl);
           if (!text) problems.push(`「${title}」沒有 ${pl} 文案`);
           else if (text.length > PLATFORM_TEXT_LIMITS[pl]) problems.push(`「${title}」的 ${pl} 文案超過 ${PLATFORM_TEXT_LIMITS[pl]} 字`);
-          if (pl === 'instagram' && !p.imageUrl) problems.push(`「${title}」還沒有 IG 圖卡`);
+          if (pl === 'instagram') {
+            const n = postImagesOf(p).length;
+            if (n === 0) problems.push(`「${title}」還沒有 IG 圖卡`);
+            else if (n > IG_MAX_IMAGES) problems.push(`「${title}」有 ${n} 張圖卡，IG 輪播最多 ${IG_MAX_IMAGES} 張，請刪掉 ${n - IG_MAX_IMAGES} 張再送`);
+          }
         });
       });
       if (problems.length) {
@@ -4565,11 +4753,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
               platform: pl,
               text: postTextFor(p, pl),
               dueAt: postDueIso(p),
-              imageUrl: pl === 'instagram' ? p.imageUrl : undefined
+              imageUrls: pl === 'instagram' ? postImagesOf(p) : undefined
             });
             p.bufferPostIds[pl] = result.postId;
           } catch (err) {
-            errors.push(`${pl === 'threads' ? 'Threads' : 'Instagram'}：${err.message}`);
+            errors.push(`${pl === 'threads' ? 'Threads' : 'IG'}：${err.message}`);
           }
         }
         p.bufferError = errors.join('；');

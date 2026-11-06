@@ -4324,7 +4324,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
             <label>修改意見（選「✏️ 要修改」時必填，會一併複製給 AI）：</label>
             <div style="margin-bottom:6px;">${tagChips(REVISE_TAGS)}</div>
             <div style="margin-bottom:6px;">${tagChips(REJECT_TAGS)}</div>
-            <textarea id="${noteId}" rows="2" placeholder="點上面的快速標籤，或自己寫下想法。">${escapeHtml(note)}</textarea>
+            <textarea id="${noteId}" rows="2" placeholder="點上面的快速標籤，或自己寫下想法。" oninput="onReviewNoteInput('${line}')" onblur="flushReviewNote('${line}')">${escapeHtml(note)}</textarea>
           </div>
 
           <div class="review-decision-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px;">
@@ -4342,7 +4342,50 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         </div>`;
     }
 
+    // 修改意見自動保存：打字時先存本機，失焦／換卡／複製時再存雲端（只更新意見，不改審稿狀態）
+    const reviewNoteTimers = {};
+    const reviewNoteDirty = {};
+
+    // 把意見框目前的字寫進該項目（同步、只動本機）
+    function applyReviewNoteLocal(line) {
+      const d = reviewNoteDirty[line];
+      const box = document.getElementById('reviewNoteInput-' + line);
+      if (!d || !box) return;
+      d.item.reviewNote = box.value.trim();
+      saveDataToLocalStorage();
+    }
+
+    function onReviewNoteInput(line) {
+      const pool = getReviewPool(line);
+      const unit = pool[reviewCursor[line]];
+      if (!unit) return;
+      const d = reviewNoteDirty[line];
+      if (!d || d.item !== unit.item) {
+        if (d) flushReviewNote(line);
+        reviewNoteDirty[line] = { kind: unit.kind, item: unit.item, base: unit.item.reviewNote || '' };
+      }
+      clearTimeout(reviewNoteTimers[line]);
+      reviewNoteTimers[line] = setTimeout(() => applyReviewNoteLocal(line), 600);
+    }
+
+    async function flushReviewNote(line) {
+      clearTimeout(reviewNoteTimers[line]);
+      const d = reviewNoteDirty[line];
+      if (!d) return;
+      applyReviewNoteLocal(line);
+      delete reviewNoteDirty[line];
+      if (d.item.reviewNote === d.base || !window.WangzhouCloud) return;
+      const fn = d.kind === 'social' ? 'upsertSocialPost' : d.kind === 'article' ? 'upsertArticle' : 'upsertCourse';
+      try {
+        await window.WangzhouCloud[fn](d.item);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 修改意見雲端儲存失敗：' + err.message);
+      }
+    }
+
     function gotoReview(line, i) {
+      flushReviewNote(line);
       reviewUrlEditKey = ''; reviewUrlDraft = '';
       reviewNotice[line] = '';
       reviewCursor[line] = i;
@@ -4396,6 +4439,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const pool = getReviewPool(line);
       const unit = pool[reviewCursor[line]];
       if (!unit) return;
+      clearTimeout(reviewNoteTimers[line]);
+      delete reviewNoteDirty[line];
       const noteBox = document.getElementById('reviewNoteInput-' + line);
       const note = noteBox.value.trim();
       if (decision === 'revise' && !note) {
@@ -4433,6 +4478,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     // 「提早審稿一鍵複製結果給 AI」：兩條線各自整理成純文字，直接貼進對話
     async function copyResults(line) {
+      // 意見框裡還沒存的字，先同步存進本機（雲端在背景存），再整理複製內容
+      flushReviewNote(line);
       const pool = getReviewPool(line);
       const courses = SITE_DATA.courses || [];
       const isSite = line === 'site';
@@ -4451,10 +4498,22 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const noteOf = u => u.item.reviewNote || '';
       const today = new Date().toLocaleDateString('zh-TW');
       const lines = [`望舟小棧${isSite ? '網站內容' : '社群貼文'}審稿結果（${today}）`];
-      if (groups.approved.length) lines.push('', '✅ 可以發：', ...groups.approved.map(u => `・${label(u)}`));
-      if (groups.revise.length) lines.push('', '✏️ 要修改：', ...groups.revise.map(u => `・${label(u)}\n  修改意見：${noteOf(u) || '（未填）'}`));
-      if (groups.rejected.length) lines.push('', '❌ 不要發：', ...groups.rejected.map(u => `・${label(u)}${noteOf(u) ? `（${noteOf(u)}）` : ''}`));
-      if (groups.pending.length) lines.push('', '⏳ 尚未審：', ...groups.pending.map(u => `・${label(u)}`));
+      // 社群線：附上目前完整文案（含主理人直接改過的），AI 才能和原稿比對
+      const bodyOf = u => {
+        if (isSite || u.kind !== 'social') return '';
+        const p = u.item;
+        const plats = p.targetPlatforms || (p.platform ? [p.platform] : ['threads']);
+        const names = { threads: 'Threads', ig: 'IG' };
+        return plats.map(pl => {
+          const text = ((p.versions && p.versions[pl]) || p.content || '').trim();
+          return `\n  ${names[pl] || pl} 目前內文：\n${text.split('\n').map(s => '  ' + s).join('\n')}`;
+        }).join('');
+      };
+      const noteLine = u => noteOf(u) ? `\n  修改意見：${noteOf(u)}` : '';
+      if (groups.approved.length) lines.push('', '✅ 可以發：', ...groups.approved.map(u => `・${label(u)}${noteLine(u)}${bodyOf(u)}`));
+      if (groups.revise.length) lines.push('', '✏️ 要修改：', ...groups.revise.map(u => `・${label(u)}\n  修改意見：${noteOf(u) || '（未填）'}${bodyOf(u)}`));
+      if (groups.rejected.length) lines.push('', '❌ 不要發：', ...groups.rejected.map(u => `・${label(u)}${noteOf(u) ? `（${noteOf(u)}）` : ''}${bodyOf(u)}`));
+      if (groups.pending.length) lines.push('', '⏳ 尚未審：', ...groups.pending.map(u => `・${label(u)}${noteLine(u)}${bodyOf(u)}`));
       if (redo.length) {
         lines.push('', '🔄 請 AI 重做（網站上的舊版維持顯示）：');
         redo.forEach(c => lines.push(`・[課程] ${c.title || '（無標題）'}（課程 id：${c.id}）`, `  官方連結：${c.url || '（未填）'}`, `  修改意見：${c.revisionNote || '（未填）'}`));

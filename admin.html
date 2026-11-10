@@ -565,6 +565,41 @@
     .row-more summary::-webkit-details-marker { display:none; }
     .row-more[open] { flex-basis:100%; }
     .row-more-menu { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+    /* 課程管理：篩選列 */
+    .cf-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 6px; }
+    .cf-search { flex:1 1 200px; max-width:420px; min-width:0; min-height:40px; padding:8px 12px; border:1px solid var(--admin-border); border-radius:8px; font-size:0.92rem; background:#FFF; }
+    .cf-toggle { display:none; min-height:40px; }
+    .cf-selects { display:flex; gap:8px; flex-wrap:wrap; }
+    .cf-selects select { min-height:40px; padding:6px 6px; border:1px solid var(--admin-border); border-radius:8px; background:#FFF; font-size:0.88rem; max-width:100%; }
+    .cf-result { display:flex; gap:12px; align-items:center; font-size:0.8rem; color:#718096; min-height:28px; margin-bottom:4px; }
+    .cf-clear { background:none; border:0; color:#2B6CB0; cursor:pointer; font-size:0.8rem; padding:6px 4px; min-height:32px; text-decoration:underline; }
+    .row-handed { background:#EDF2F7; color:#4A5568; border:1px solid #CBD5E0; }
+    .row-ai-edited { background:#F0FFF4; color:#22543D; border:1px solid #C6F6D5; }
+    .row-meta-m { display:none; }
+    .cell-actions-more { margin-left:auto; }
+    /* 審稿台：交給 AI 修改中（收合區） */
+    .handed-box { margin-top:18px; border:1px solid #E2E8F0; border-radius:10px; background:#F7FAFC; }
+    .handed-box > summary { cursor:pointer; padding:12px 14px; font-size:0.9rem; font-weight:600; color:#4A5568; list-style:none; min-height:44px; box-sizing:border-box; }
+    .handed-box > summary::-webkit-details-marker { display:none; }
+    .handed-box > summary::before { content:'▸ '; }
+    .handed-box[open] > summary::before { content:'▾ '; }
+    .handed-row { display:flex; gap:10px; align-items:center; padding:8px 14px; border-top:1px solid #E2E8F0; font-size:0.86rem; flex-wrap:wrap; }
+    .handed-row .handed-title { flex:1 1 200px; min-width:0; overflow-wrap:anywhere; }
+    .handed-row .handed-when { color:#718096; font-size:0.78rem; white-space:nowrap; }
+    @media (max-width:768px) {
+      .cf-toggle { display:inline-flex; }
+      .cf-selects { display:none; width:100%; display:none; }
+      .cf-selects.open { display:grid; grid-template-columns:1fr 1fr; }
+      .cf-selects select { width:100%; }
+      .cf-search { flex:1 1 100%; max-width:none; }
+      .stack-table td.region, .stack-table td.cost { display:none; }
+      .stack-table .row-meta-m { display:block; font-size:0.8rem; color:#4A5568; margin-top:2px; }
+      .stack-table .row-provider, .stack-table .row-hide-m { display:none; }
+      .stack-table td.actions .table-actions { flex-wrap:wrap; }
+      .stack-table td.actions .row-more { margin-left:auto; }
+      .stack-table td.actions .row-more[open] { margin-left:0; }
+      .handed-row .handed-when { flex:1 1 auto; }
+    }
     /* 課程新版審稿卡：舊新並排 */
     .rev-card { background:#FAF8F5; border:1px solid #E2E8F0; border-radius:12px; padding:18px; margin-bottom:16px; }
     .rev-diff { border:1px solid #E2E8F0; border-radius:8px; background:#FFF; overflow:hidden; font-size:0.86rem; line-height:1.7; }
@@ -897,21 +932,23 @@
       </div>
       <div id="deskTab-site">
         <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-          <button type="button" class="btn-table-sm" onclick="copySiteResults()" title="把網站內容的審稿結果複製起來，貼給 AI 修改">📋 複製網站內容審稿結果</button>
+          <button type="button" class="btn-table-sm" id="deskCopyBtn-site" onclick="copySiteResults()" title="把網站內容的審稿結果複製起來，貼給 AI 修改">📋 複製審稿結果給 AI</button>
         </div>
         <div id="autoBar-site" class="auto-bar"></div>
-        <div id="reviewProgress-site" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
         <div id="autoSpot-site"></div>
+        <div id="reviewRevisions" style="margin-bottom:18px;"></div>
+        <div id="reviewProgress-site" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
         <div id="reviewCard-site"></div>
-        <div id="reviewRevisions" style="margin-top:18px;"></div>
+        <div id="handedBox-site"></div>
       </div>
       <div id="deskTab-social" style="display:none;">
         <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-          <button type="button" class="btn-table-sm" onclick="copySocialResults()" title="把社群貼文的審稿結果複製起來，貼給 AI 修改">📋 複製社群貼文審稿結果</button>
+          <button type="button" class="btn-table-sm" id="deskCopyBtn-social" onclick="copySocialResults()" title="把社群貼文的審稿結果複製起來，貼給 AI 修改">📋 複製審稿結果給 AI</button>
         </div>
         <div id="socialStages" class="social-stages"></div>
         <div id="reviewProgress-social" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
         <div id="reviewCard-social"></div>
+        <div id="handedBox-social"></div>
         <div id="socialScheduleSection" style="margin-top:22px;">
           <h3 class="desk-section-title">🕒 選發文時間</h3>
           <div id="scheduleBoard"></div>
@@ -1048,22 +1085,30 @@
 
     <!-- 主面板 5: 課程活動管理（兼具審稿與過期過濾） -->
     <main id="panel-courses" class="admin-panel">
-      <div class="panel-header" style="flex-wrap:wrap; gap:12px;">
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <h2 class="panel-title">📋 課程活動管理</h2>
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button class="btn-table-sm active" id="courseFilter-all" onclick="filterCourses('all')">全部 (<span id="cnt-course-all">0</span>)</button>
-            <button class="btn-table-sm" id="courseFilter-published" onclick="filterCourses('published')">🟢 已上架 (<span id="cnt-course-pub">0</span>)</button>
-            <button class="btn-table-sm" id="courseFilter-draft" onclick="filterCourses('draft')">🟡 待審草稿 (<span id="cnt-course-draft">0</span>)</button>
-            <button class="btn-table-sm" id="courseFilter-expired" onclick="filterCourses('expired')">⚠️ 已截止 (<span id="cnt-course-expired">0</span>)</button>
-            <button class="btn-table-sm" id="courseFilter-attention" onclick="filterCourses('attention')" title="新版待審，以及已開放報名、待複查的課程">🔔 待處理 ( <span id="cnt-course-attention">0</span> )</button>
-          </div>
-        </div>
+      <div class="panel-header" style="flex-wrap:wrap; gap:12px; margin-bottom:12px; padding-bottom:12px;">
+        <h2 class="panel-title">📋 課程活動管理</h2>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <button type="button" class="btn-table-sm" id="courseCopyBtn" style="display:none;" onclick="copySiteResults()" title="把重做意見與待複查的課程複製起來，貼給 AI">📋 複製給 AI（<span id="courseCopyCnt">0</span>）</button>
           <button class="btn-create-item" onclick="openCourseEditModal()">➕ 新增課程活動</button>
         </div>
       </div>
+      <div class="cf-bar">
+        <input type="search" id="courseSearch" class="cf-search" placeholder="🔍 搜尋課名、主辦單位、地點" aria-label="搜尋課程" oninput="onCourseFilterChange()" autocomplete="off">
+        <button type="button" class="btn-table-sm cf-toggle" id="courseFilterToggle" aria-expanded="false" onclick="toggleCourseFilterRows()">篩選（<span id="courseFilterCnt">0</span>）</button>
+        <div class="cf-selects" id="courseFilterRows">
+          <select id="courseFStatus" aria-label="狀態" onchange="onCourseFilterChange()"></select>
+          <select id="courseFRegion" aria-label="地區" onchange="onCourseFilterChange()">
+            <option value="all">地區：全部</option><option value="北">地區：北</option><option value="中">地區：中</option><option value="南">地區：南</option><option value="東">地區：東</option><option value="other">地區：其他</option>
+          </select>
+          <select id="courseFDeadline" aria-label="截止" onchange="onCourseFilterChange()">
+            <option value="all">截止：全部</option><option value="week">截止：7 天內</option><option value="month">截止：本月</option><option value="expired">截止：已截止</option>
+          </select>
+          <select id="courseFType" aria-label="類型" onchange="onCourseFilterChange()">
+            <option value="all">類型：全部</option><option value="deep">類型：深度培訓</option><option value="upskill">類型：技能增強</option><option value="events">類型：講座工作坊</option>
+          </select>
+        </div>
+      </div>
+      <div class="cf-result"><span id="courseFilterResult"></span><button type="button" class="cf-clear" id="courseFilterClear" style="display:none;" onclick="clearCourseFilters()">清除篩選</button></div>
       <div class="admin-table-container">
         <table class="admin-table stack-table">
           <thead>
@@ -1750,7 +1795,33 @@
     }
 
     let currentSubFilter = 'all';
-    let currentCourseFilter = 'all';
+    // 課程管理篩選條件（存在這個瀏覽器，讀不到就用預設值）
+    const COURSE_FILTER_KEY = 'WZ_COURSE_FILTERS_V1';
+    const COURSE_FILTER_DEFAULT = { q: '', status: 'all', region: 'all', deadline: 'all', type: 'all' };
+    const COURSE_STATUS_OPTIONS = [['all', '全部'], ['needs', '需我處理'], ['published', '上架中'], ['pending', '待審'], ['revise', '要修改'], ['spot', '自動上架待抽查'], ['bell', '待複查'], ['reported', '有讀者回報'], ['handed', '交給 AI 修改中'], ['down', '已下架']];
+    const COURSE_FILTER_ALLOWED = {
+      status: COURSE_STATUS_OPTIONS.map(o => o[0]),
+      region: ['all', '北', '中', '南', '東', 'other'],
+      deadline: ['all', 'week', 'month', 'expired'],
+      type: ['all', 'deep', 'upskill', 'events']
+    };
+    let courseFilters = (function () {
+      const f = Object.assign({}, COURSE_FILTER_DEFAULT);
+      try {
+        const saved = JSON.parse(localStorage.getItem(COURSE_FILTER_KEY) || 'null');
+        if (saved && typeof saved === 'object') {
+          if (typeof saved.q === 'string') f.q = saved.q.slice(0, 100);
+          Object.keys(COURSE_FILTER_ALLOWED).forEach(k => { if (COURSE_FILTER_ALLOWED[k].includes(saved[k])) f[k] = saved[k]; });
+        }
+      } catch (e) { /* 讀不到就用預設值 */ }
+      return f;
+    })();
+    // 已按「複製給 AI」的要修改稿件：{ "course:id" | "article:id" | "social:id" | "revision:課程id": 交付時間 }，存雲端 site_configs 的 handed_to_ai
+    const HANDED_LOCAL_KEY = 'WZ_HANDED_TO_AI';
+    let handedMap = (function () {
+      try { const v = JSON.parse(localStorage.getItem(HANDED_LOCAL_KEY) || 'null'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; }
+    })();
+    const handedOpen = { site: false, social: false };
     let currentArticleFilter = 'all';
     let currentSocialFilter = 'all';
     let currentSocialPlatform = 'all';
@@ -1882,15 +1953,6 @@
       // 3. 課程數據統計、待審草稿與過期計算
       const courseAll = SITE_DATA.courses || [];
       const courseDrafts = courseAll.filter(c => c.isDraft);
-      const courseExpired = courseAll.filter(c => {
-        const t = new Date(`${c.deadline}T23:59:59+08:00`).getTime();
-        return !isNaN(t) && t < Date.now();
-      });
-      const coursePubs = courseAll.filter(c => !c.isDraft && !(new Date(`${c.deadline}T23:59:59+08:00`).getTime() < Date.now()));
-      setCnt('cnt-course-all', courseAll.length);
-      setCnt('cnt-course-pub', coursePubs.length);
-      setCnt('cnt-course-draft', courseDrafts.length);
-      setCnt('cnt-course-expired', courseExpired.length);
       const badgeCourseDraft = document.getElementById('badgeCourseDraft');
       if (badgeCourseDraft) {
         badgeCourseDraft.innerText = courseDrafts.length;
@@ -1911,7 +1973,7 @@
       }
 
       // 渲染課程與手札表格
-      renderCoursesTable(currentCourseFilter);
+      renderCoursesTable();
       renderArticlesTable(currentArticleFilter);
 
       // 5. 渲染木棧板表格
@@ -2450,16 +2512,6 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       alert(`✅ 已完成發布！最新更新時間已烙印為【${SITE_DATA.siteInfo.lastUpdated}】。\n已為您下載最新「data.js」檔案，將它放入資料夾取代舊檔即可永久生效！`);
     }
 
-    // 課程活動審核與篩選（支援已上架、草稿、已過期與待處理過濾）
-    function filterCourses(filter) {
-      currentCourseFilter = filter;
-      ['all', 'published', 'draft', 'expired', 'attention'].forEach(f => {
-        const btn = document.getElementById('courseFilter-' + f);
-        if (btn) btn.classList.toggle('active', f === filter);
-      });
-      renderCoursesTable(currentCourseFilter);
-    }
-
     // 已上架、未截止的課程（「重做」「開放報名」相關狀態只在這些課程上出現）
     function courseIsExpired(c) {
       const t = new Date(`${c.deadline}T23:59:59+08:00`).getTime();
@@ -2478,37 +2530,147 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
     const REG_BELL_PRESET = '🔍 資訊需再查證；報名已開放，請複查報名方式、名額與截止日';
 
-    function renderCoursesTable(filter = 'all') {
+    // ---- 已交給 AI 修改中：狀態判斷 ----
+    // stateNow：目前稿件狀態（revise／requested 代表還在等 AI；pending／submitted 代表 AI 已重送）
+    function handedStateOf(key, stateNow) {
+      if (!handedMap[key]) return '';
+      if (stateNow === 'revise' || stateNow === 'requested') return 'handed';
+      if (stateNow === 'pending' || stateNow === 'submitted') return 'aiEdited';
+      return '';
+    }
+    function courseHandedState(c) {
+      if (c.isDraft) return handedStateOf('course:' + c.id, c.reviewStatus === 'revise' ? 'revise' : 'pending');
+      return handedStateOf('revision:' + c.id, c.revisionState || '');
+    }
+    function unitHandedState(unit) {
+      return handedStateOf(unit.key, unit.state);
+    }
+
+    // ---- 課程篩選 ----
+    function courseFlags(c) {
+      const expired = courseIsExpired(c);
+      const live = courseIsLive(c);
+      const hs = courseHandedState(c);
+      const f = {
+        expired, live,
+        down: !c.isDraft && c.active === false && !expired,
+        handed: hs === 'handed', aiEdited: hs === 'aiEdited',
+        draftPending: !!c.isDraft && c.reviewStatus !== 'revise',
+        draftRevise: !!c.isDraft && c.reviewStatus === 'revise',
+        revSubmitted: live && c.revisionState === 'submitted',
+        revRequested: live && c.revisionState === 'requested',
+        bell: courseNeedsRegCheck(c),
+        reported: reportsOf(c.id).length > 0,
+        spot: live && c.autoPublished === true
+      };
+      f.pending = f.draftPending || f.revSubmitted;
+      f.revise = (f.draftRevise || f.revRequested) && !f.handed;
+      f.needs = f.pending || f.revise || f.bell || f.reported || f.spot;
+      return f;
+    }
+    function courseStatusMatch(status, f) {
+      switch (status) {
+        case 'all': return !f.down;
+        case 'needs': return f.needs;
+        case 'published': return f.live;
+        case 'pending': return f.pending;
+        case 'revise': return f.revise;
+        case 'spot': return f.spot;
+        case 'bell': return f.bell;
+        case 'reported': return f.reported;
+        case 'handed': return f.handed;
+        case 'down': return f.down;
+      }
+      return true;
+    }
+    function courseMatchesFilters(c, f, F) {
+      if (!courseStatusMatch(F.status, f)) return false;
+      if (F.region !== 'all') {
+        const r = String(c.region || '');
+        const inMain = ['北', '中', '南', '東'].some(x => r.startsWith(x));
+        if (F.region === 'other' ? inMain : !r.startsWith(F.region)) return false;
+      }
+      if (F.type !== 'all' && !(c.types || []).includes(F.type)) return false;
+      if (F.deadline !== 'all') {
+        const dl = String(c.deadline || '');
+        const today = taipeiToday();
+        if (F.deadline === 'expired') { if (!f.expired) return false; }
+        else if (f.expired || !/^\d{4}-\d{2}-\d{2}$/.test(dl)) return false;
+        else if (F.deadline === 'week' && !(dl >= today && dl <= addDays(today, 7))) return false;
+        else if (F.deadline === 'month' && dl.slice(0, 7) !== today.slice(0, 7)) return false;
+      }
+      const q = F.q.trim().toLowerCase();
+      if (q) {
+        const hay = [c.title, c.provider, c.locationLabel, c.address].map(x => String(x || '').toLowerCase()).join('\n');
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }
+    function saveCourseFilters() {
+      try { localStorage.setItem(COURSE_FILTER_KEY, JSON.stringify(courseFilters)); } catch (e) { /* 存不了也能正常使用 */ }
+    }
+    function onCourseFilterChange() {
+      courseFilters = {
+        q: document.getElementById('courseSearch').value.slice(0, 100),
+        status: document.getElementById('courseFStatus').value,
+        region: document.getElementById('courseFRegion').value,
+        deadline: document.getElementById('courseFDeadline').value,
+        type: document.getElementById('courseFType').value
+      };
+      Object.keys(COURSE_FILTER_ALLOWED).forEach(k => { if (!COURSE_FILTER_ALLOWED[k].includes(courseFilters[k])) courseFilters[k] = 'all'; });
+      saveCourseFilters();
+      renderCoursesTable();
+    }
+    function clearCourseFilters() {
+      courseFilters = Object.assign({}, COURSE_FILTER_DEFAULT);
+      saveCourseFilters();
+      renderCoursesTable();
+    }
+    function toggleCourseFilterRows() {
+      const rows = document.getElementById('courseFilterRows');
+      const open = rows.classList.toggle('open');
+      document.getElementById('courseFilterToggle').setAttribute('aria-expanded', String(open));
+    }
+
+    function renderCoursesTable() {
       const courseTbody = document.getElementById('courseTableBody');
       if (!courseTbody) return;
       courseTbody.innerHTML = '';
       const list = SITE_DATA.courses || [];
-      let count = 0;
-      let attentionCount = 0;
-      let copyCount = 0;
-      list.forEach(c => {
-        if (courseIsLive(c) && (c.revisionState === 'submitted' || courseNeedsRegCheck(c))) attentionCount++;
-        if (courseIsLive(c) && (c.revisionState === 'requested' || (courseNeedsRegCheck(c) && !c.revisionState))) copyCount++;
-      });
-      copyCount += draftReviseCourses().length;
-      const attBtnCnt = document.getElementById('cnt-course-attention');
-      if (attBtnCnt) attBtnCnt.innerText = attentionCount;
+      const F = courseFilters;
+      const flagsList = list.map(courseFlags);
+
+      // 狀態下拉：選項後附數量（需我處理＝不重複計算的課程數）
+      const statusSel = document.getElementById('courseFStatus');
+      if (statusSel) {
+        statusSel.innerHTML = COURSE_STATUS_OPTIONS.map(([v, label]) => {
+          const n = v === 'all' ? 0 : flagsList.filter(f => courseStatusMatch(v, f)).length;
+          return `<option value="${v}">狀態：${label}${v === 'all' ? '' : `（${n}）`}</option>`;
+        }).join('');
+        statusSel.value = F.status;
+      }
+      const setVal = (id, v) => { const el = document.getElementById(id); if (el && el.value !== v) el.value = v; };
+      setVal('courseSearch', F.q); setVal('courseFRegion', F.region); setVal('courseFDeadline', F.deadline); setVal('courseFType', F.type);
+      const dropdownCount = ['status', 'region', 'deadline', 'type'].filter(k => F[k] !== 'all').length;
+      const anyCond = dropdownCount > 0 || F.q.trim() !== '';
+      const cntEl = document.getElementById('courseFilterCnt');
+      if (cntEl) cntEl.innerText = dropdownCount;
+
+      const copyN = copyPlan('site').total;
       const copyBtn = document.getElementById('courseCopyBtn');
       if (copyBtn) {
-        copyBtn.style.display = copyCount > 0 ? 'inline-flex' : 'none';
-        document.getElementById('courseCopyCnt').innerText = copyCount;
+        copyBtn.style.display = copyN > 0 ? 'inline-flex' : 'none';
+        document.getElementById('courseCopyCnt').innerText = copyN;
       }
 
+      let count = 0;
       list.forEach((c, idx) => {
-        const isExpired = courseIsExpired(c);
-        const isRejected = !c.isDraft && c.active === false && !isExpired;
-        const live = courseIsLive(c);
-
-        if (filter === 'published' && (c.isDraft || isExpired || isRejected)) return;
-        if (filter === 'draft' && !c.isDraft) return;
-        if (filter === 'expired' && !isExpired) return;
-        if (filter === 'attention' && !(live && (c.revisionState === 'submitted' || courseNeedsRegCheck(c)))) return;
+        const f = flagsList[idx];
+        if (!courseMatchesFilters(c, f, F)) return;
         count++;
+        const isExpired = f.expired;
+        const isRejected = f.down;
+        const live = f.live;
 
         const tr = document.createElement('tr');
         let statusBadge = '';
@@ -2523,12 +2685,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         }
 
         const deadlineDisplay = isExpired
-          ? `<span style="color:#E53E3E; font-weight:600;">${escapeHtml(c.deadline)}</span><br><span style="font-size:0.72rem; color:#E53E3E; white-space:nowrap;">（前台已自動隱藏）</span>`
+          ? `<span style="color:#E53E3E; font-weight:600;">${escapeHtml(c.deadline)}</span><br><span class="row-hide-m" style="font-size:0.72rem; color:#E53E3E; white-space:nowrap;">（前台已自動隱藏）</span>`
           : `<span>${escapeHtml(c.deadline)}</span>${c.deadlineTime ? `<br><span style="font-size:0.72rem; color:#718096; white-space:nowrap;">${escapeHtml(c.deadlineTime)} 截止</span>` : ''}`;
 
-        // 名稱欄下方的補充狀態：🆕 新版待審 → 🔔 待複查 → 🔄 重做中 → 📅 尚未開放
+        // 名稱欄下方的補充狀態：已交給 AI／AI 已修改 → 🆕 新版待審 → 🔔 待複查 → 🔄 重做中 → 📅 尚未開放
         const sid = wzSafeId(c.id);
         const subs = [];
+        if (f.handed) subs.push(`<div class="row-sub"><span class="row-tag row-handed">已交給 AI</span></div>`);
+        if (f.aiEdited) subs.push(`<div class="row-sub"><span class="row-tag row-ai-edited">AI 已修改</span></div>`);
         if (live && c.revisionState === 'submitted') {
           subs.push(`<div class="row-sub"><span class="row-tag tag-new">🆕 新版待審</span></div>`);
         }
@@ -2543,35 +2707,37 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           subs.push(`<div class="row-sub"><span class="row-tag tag-wait">📅 尚未開放報名（預計 ${escapeHtml(wzFormatRegOpen(c.regOpenDate))} 開放）</span></div>`);
         }
 
-        // 操作欄：常用的放外面，轉草稿與刪除收進「更多」
+        // 操作欄：「編輯」＋一顆最相關的主要動作，其餘（含擬定社群貼文）收進「更多」
         const btn = (cls, onclick, text, title) => `<button class="btn-table-sm ${cls || ''}" ${title ? `title="${title}"` : ''} onclick="${onclick}">${text}</button>`;
         const socialBtn = `<button class="btn-table-sm" style="background:#FAF5FF; color:#6B46C1; border-color:#E9D8FD;" onclick="createSocialFromCourse(${idx})" title="以此課程為來源，起草社群宣傳貼文">📱 擬定社群貼文</button>`;
         const more = items => `<details class="row-more"><summary class="btn-table-sm">更多</summary><div class="row-more-menu">${items.join('')}</div></details>`;
         const delBtn = btn('btn-table-delete', `deleteCourse(${idx})`, '刪除');
+        const editBtn = btn('', `editCourse(${idx})`, '編輯');
         let actions;
         if (c.isDraft) {
-          actions = [
-            `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleCoursePublish(${idx})">✓ 通過上架</button>`,
-            btn('', `editCourse(${idx})`, '編輯'),
-            c.reviewStatus === 'revise' ? btn('', `openReviseModal('${sid}')`, '✏️ 改重做意見') : btn('', `openReviseModal('${sid}')`, '🔄 請 AI 重做'),
-            socialBtn, more([delBtn])
-          ];
+          const approve = `<button class="btn-table-sm" style="background:#EBF8FF; color:#2B6CB0; border-color:#BEE3F8; font-weight:600;" onclick="toggleCoursePublish(${idx})">✓ 通過上架</button>`;
+          const redo = c.reviewStatus === 'revise' ? btn('', `openReviseModal('${sid}')`, '✏️ 改重做意見') : btn('', `openReviseModal('${sid}')`, '🔄 請 AI 重做');
+          actions = [editBtn, approve, more([redo, socialBtn, delBtn])];
         } else if (isExpired) {
-          actions = [btn('', `editCourse(${idx})`, '修改截止日'), btn('', `editCourse(${idx})`, '編輯'), more([delBtn])];
+          actions = [editBtn, btn('', `editCourse(${idx})`, '修改截止日'), more([delBtn])];
+        } else if (!live) {
+          actions = [editBtn, more([socialBtn, btn('', `toggleCoursePublish(${idx})`, '轉草稿'), delBtn])];
         } else {
-          const reviseBtn = !live ? '' : c.revisionState === 'submitted'
+          const primary = c.revisionState === 'submitted'
             ? btn('', `goReviewRevision('${sid}')`, '🆕 去審新版')
             : c.revisionState === 'requested'
               ? btn('', `openReviseModal('${sid}')`, '✏️ 改重做意見')
               : btn('', `openReviseModal('${sid}', ${courseNeedsRegCheck(c)})`, '🔄 請 AI 重做');
-          actions = [btn('', `editCourse(${idx})`, '編輯'), reviseBtn, socialBtn, more([btn('', `toggleCoursePublish(${idx})`, '轉草稿'), delBtn])];
+          actions = [editBtn, primary, more([socialBtn, btn('', `toggleCoursePublish(${idx})`, '轉草稿'), delBtn])];
         }
 
+        const metaM = [c.provider, c.locationLabel, c.cost].filter(x => x && String(x).trim()).map(escapeHtml).join(' · ');
         tr.innerHTML = `
           <td class="status">${statusBadge}</td>
           <td class="name">
-            <strong>${escapeHtml(c.title)}</strong>${reportsBlockHtml(c.id)}<br>
-            <span style="font-size:0.78rem; color:#718096;">🏛️ ${escapeHtml(c.provider)}</span>
+            <strong>${escapeHtml(c.title)}</strong>${reportsBlockHtml(c.id)}
+            <div class="row-provider" style="font-size:0.78rem; color:#718096;">🏛️ ${escapeHtml(c.provider)}</div>
+            ${metaM ? `<span class="row-meta-m">${metaM}</span>` : ''}
             ${subs.join('')}
           </td>
           <td class="region">${escapeHtml(c.locationLabel)}</td>
@@ -2583,8 +2749,17 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         `;
         courseTbody.appendChild(tr);
       });
+
+      // 結果數：沒有條件時只寫總數；已下架預設不列出，選「已下架」時以已下架的數量為準
+      const downTotal = flagsList.filter(f => f.down).length;
+      const scopeTotal = F.status === 'down' ? downTotal : list.length - downTotal;
+      const resultEl = document.getElementById('courseFilterResult');
+      if (resultEl) resultEl.innerText = anyCond ? `顯示 ${count} 門／共 ${scopeTotal} 門` : `共 ${scopeTotal} 門`;
+      const clearEl = document.getElementById('courseFilterClear');
+      if (clearEl) clearEl.style.display = anyCond ? 'inline-block' : 'none';
+
       if (count === 0) {
-        courseTbody.innerHTML = `<tr><td colspan="6" class="stack-empty" style="text-align:center; padding:24px; color:#A0AEC0;">暫無符合條件之課程活動</td></tr>`;
+        courseTbody.innerHTML = `<tr><td colspan="6" class="stack-empty" style="text-align:center; padding:24px; color:#A0AEC0;">沒有符合的課程。${anyCond ? '<br><button type="button" class="cf-clear" onclick="clearCourseFilters()">清除篩選</button>' : ''}</td></tr>`;
       }
     }
 
@@ -2662,6 +2837,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       try {
         const row = await window.WangzhouCloud.requestCourseRevision(c.id, note, { state: c.revisionState, submittedAt: c.revisionSubmittedAt });
         Object.assign(c, wzCourseFromRow(row));
+        if (handedMap['revision:' + c.id]) { delete handedMap['revision:' + c.id]; saveHanded(); }
         saveDataToLocalStorage();
         closeModal('reviseModal');
         refreshAdminView();
@@ -2757,34 +2933,40 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
             <span class="sub-badge" style="background:#EBF8FF; color:#2B6CB0;">🔄 課程新版</span>
             ${revSt.html}
+            ${handedStateOf('revision:' + c.id, c.revisionState) === 'aiEdited' ? '<span class="row-tag row-ai-edited">AI 已修改</span>' : ''}
           </div>
           <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 ${revRep ? '8' : '12'}px;">${escapeHtml(c.title || '（無標題）')}</h3>
           ${revRep ? `<div style="margin:0 0 12px;">${revRep}</div>` : ''}
           <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px; margin-bottom:10px; font-size:0.84rem; line-height:1.7;"><strong>🛡️ 預先稽核與風險提示（新版附的）</strong>${audit}</div>
-          <div style="font-size:0.86rem; margin-bottom:10px;"><strong>你的意見：</strong>${escapeHtml(c.revisionNote) || '<span class="rev-empty">（沒有填）</span>'}</div>
+          ${c.revisionNote ? `<div style="font-size:0.86rem; margin-bottom:10px;"><strong>你的意見：</strong>${escapeHtml(c.revisionNote)}</div>` : ''}
           ${urlHtml}
           <div style="font-size:0.86rem; margin:0 0 6px; color:#2D3748;">${escapeHtml(regOpenLineText(p.reg_open_date))}（新版）</div>
           <div style="font-weight:600; font-size:0.9rem; margin:10px 0 6px;">新版改了這些地方（${changed.length} 項）</div>
           ${diffHtml}
           ${sameHtml}
           <div class="form-group" style="margin:14px 0 8px;">
-            <label>修改意見（選「✏️ 再重做一次」時必填，會一併複製給 AI）：</label>
+            <label>修改意見（選「再交給 AI 修改」時必填，會一併複製給 AI）：</label>
             <div style="margin-bottom:6px;">${tagChips}</div>
             <textarea id="revNote-${sid}" rows="2" maxlength="2000" placeholder="點上面的標籤，或自己寫下想法。"></textarea>
           </div>
           <div class="review-decision-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:10px;">
             <button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideRevision('${sid}', 'approve')">✅ 換成新版</button>
-            <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideRevision('${sid}', 'again')">✏️ 再重做一次</button>
+            <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideRevision('${sid}', 'again')">✏️ 再交給 AI 修改</button>
             <button type="button" class="btn-submit-action" style="margin:0; background:#718096;" onclick="decideRevision('${sid}', 'discard')">❌ 不採用新版</button>
           </div>
-          <div style="font-size:0.78rem; color:#718096;">✅ 換成新版：網站上的課程會換成新版。✏️ 再重做一次：舊版繼續顯示，意見會再送給 AI。❌ 不採用新版：保留舊版，結束這次重做。</div>
+          <div style="font-size:0.78rem; color:#718096;">換成新版：網站上的課程換成新版。再交給 AI 修改：舊版繼續顯示，意見會送給 AI。不採用新版：舊版繼續顯示，這份新版不保留。</div>
         </div>`;
+    }
+
+    // 待審的課程新版：網站上的課程只要還在上架狀態就列出（即使舊版剛好截止，也要讓主理人看得到）
+    function pendingRevisionCourses() {
+      return (SITE_DATA.courses || []).filter(c => c.active !== false && !c.isDraft && c.revisionState === 'submitted' && c.revisionPayload);
     }
 
     function renderRevisionCards() {
       const box = document.getElementById('reviewRevisions');
       if (!box) return;
-      const subs = (SITE_DATA.courses || []).filter(c => courseIsLive(c) && c.revisionState === 'submitted' && c.revisionPayload);
+      const subs = pendingRevisionCourses();
       box.innerHTML = subs.length
         ? `<div style="font-weight:600; font-size:0.9rem; color:#2B6CB0; margin-bottom:8px;">🆕 課程修訂（新版待審 ${subs.length}）</div>${subs.map(revisionCardHtml).join('')}`
         : '';
@@ -2801,21 +2983,22 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           row = await window.WangzhouCloud.approveCourseRevision(c.id, c.revisionSubmittedAt, c.revisionPayload);
         } else if (action === 'again') {
           if (!note) {
-            alert('請寫下要修改的地方（可以點快速標籤），AI 才知道怎麼重做。');
+            alert('請寫下要修改的地方（可以點快速標籤），AI 才知道怎麼修改。');
             if (noteBox) noteBox.focus();
             return;
           }
           row = await window.WangzhouCloud.requestCourseRevision(c.id, note, { state: 'submitted', submittedAt: c.revisionSubmittedAt });
         } else {
-          if (!confirm('確定不採用新版？這次 AI 送來的新版不會保留，網站維持目前內容。')) return;
+          if (!confirm('確定不採用這份新版？網站維持目前內容。')) return;
           row = await window.WangzhouCloud.discardCourseRevision(c.id, c.revisionSubmittedAt);
         }
         Object.assign(c, wzCourseFromRow(row));
+        if (handedMap['revision:' + c.id]) { delete handedMap['revision:' + c.id]; saveHanded(); }
         saveDataToLocalStorage();
         refreshAdminView();
         showToast(action === 'approve' ? '✅ 已換成新版。'
-          : action === 'again' ? '已記下。按「複製給 AI」貼給 AI，就會再重做一次。舊版仍在網站上。'
-          : '已保留舊版，這次重做結束。', 5000);
+          : action === 'again' ? '已記下。按「複製給 AI」貼給 AI，請它再修改。舊版仍在網站上。'
+          : '已不採用這份新版，網站維持原內容。', 5000);
       } catch (err) {
         console.error(err);
         showToast('⚠️ 雲端儲存失敗：' + err.message, 6000);
@@ -2962,6 +3145,18 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
       // 保留審稿紀錄；被標「要修改」的課程改完後重新回到待審
       const existing = editIdx !== '' ? SITE_DATA.courses[editIdx] : {};
+      // 這門課有 AI 送來的新版在等審：直接手動修改的內容才是最新的，舊的新版不能之後又蓋回去，所以存檔前先確認並清掉它
+      if (editIdx !== '' && existing.revisionState === 'submitted' && !existing.isDraft) {
+        if (!confirm('這門課有一份 AI 送來的新版還沒審。現在直接修改的話，那份新版不會保留，網站以你這次修改的為準；之後想要新版，可以再交給 AI。要繼續嗎？')) return;
+        try {
+          const cleared = await window.WangzhouCloud.discardCourseRevision(existing.id, existing.revisionSubmittedAt);
+          Object.assign(existing, wzCourseFromRow(cleared));
+        } catch (err) {
+          console.error(err);
+          showToast('⚠️ 這次沒有儲存：待審的新版可能剛剛有更新。重新整理後再試一次就可以（原因：' + err.message + '）', 6000);
+          return;
+        }
+      }
       const guardBefore = editIdx !== '' ? { status: cloudStatusOf('course', existing), reviewStatus: existing.reviewStatus || '' } : null;
       const courseObj = {
         ...existing,
@@ -4048,7 +4243,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     // 審稿池：順序固定。網站線不設上限，所有待審都在池中；社群線不足 4 則時由最早的待審補上
     function getReviewPool(line) {
-      reviewPoolKeys[line] = reviewPoolKeys[line].filter(k => buildReviewUnit(k));
+      reviewPoolKeys[line] = reviewPoolKeys[line].filter(k => { const u = buildReviewUnit(k); return u && unitHandedState(u) !== 'handed'; });
       if (line === 'site') reviewPoolKeys.site.push(...pendingReviewKeys('site'));
       else if (reviewPoolKeys.social.length < SOCIAL_WEEKLY_QUOTA) {
         reviewPoolKeys.social.push(...pendingReviewKeys('social').slice(0, SOCIAL_WEEKLY_QUOTA - reviewPoolKeys.social.length));
@@ -4076,6 +4271,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       renderRevisionCards();
       renderReviewStep('site');
       renderReviewStep('social');
+      renderHandedBox('site');
+      renderHandedBox('social');
+      updateDeskCopyButtons();
       renderScheduleStep();
     }
 
@@ -4562,13 +4760,17 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const pool = getReviewPool(line);
       const pendingCount = pool.filter(u => u.state === 'pending').length;
       const waiting = line === 'social' ? pendingReviewKeys('social').length : 0;
+      // 課程新版待審也算待審（徽章、空狀態都要算進去）
+      const revCount = line === 'site' ? pendingRevisionCourses().length : 0;
+      const chipN = copyPlan(line).draftRevise.length;
+      const chipHtml = chipN > 0 ? `<button type="button" class="btn-table-sm" style="border-color:#B87D4B;" onclick="openReviseDrafts('${line}')">✏️ 要修改 ${chipN}・待複製</button>` : '';
 
       const badge = document.getElementById(line === 'site' ? 'badgeSitePending' : 'badgeSocialPending');
       if (badge) {
-        badge.innerText = pendingCount;
-        badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+        badge.innerText = pendingCount + revCount;
+        badge.style.display = pendingCount + revCount > 0 ? 'inline-block' : 'none';
       }
-      deskPendingCount[line] = pendingCount;
+      deskPendingCount[line] = pendingCount + revCount;
       const navBadge = document.getElementById('badgeReviewPending');
       if (navBadge) {
         const total = deskPendingCount.site + deskPendingCount.social;
@@ -4578,8 +4780,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (line === 'social') renderSocialProgress(pool, pendingCount);
 
       if (pool.length === 0) {
-        progress.innerHTML = '';
-        card.innerHTML = `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:40px 20px; text-align:center; color:#718096;">${T.empty}</div>`;
+        progress.innerHTML = chipHtml;
+        card.innerHTML = revCount > 0 ? '' : `<div style="background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:40px 20px; text-align:center; color:#718096;">${T.empty}</div>`;
         return;
       }
 
@@ -4594,7 +4796,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           const style = i === cursor ? 'background:#2B4C65; color:#FFF; border-color:#2B4C65;' : hold ? 'border-color:#B87D4B;' : '';
           return `<button type="button" class="btn-table-sm" style="${style}" onclick="gotoReview('${line}', ${i})">${i + 1}. ${reviewButtonLabel(u)}</button>`;
         }).join('') +
-        (waiting > 0 ? `<span style="font-size:0.78rem; color:#A0AEC0; margin-left:6px;">另有 ${waiting} 則排在下週</span>` : '');
+        (waiting > 0 ? `<span style="font-size:0.78rem; color:#A0AEC0; margin-left:6px;">另有 ${waiting} 則排在下週</span>` : '') + chipHtml;
 
       const unit = pool[cursor];
       const { kind, item } = unit;
@@ -4640,6 +4842,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
             <span class="sub-badge" style="background:#EDF2F7; color:#2D3748;">${REVIEW_KIND_LABELS[kind]}</span>
             ${st.html}
+            ${unitHandedState(unit) === 'aiEdited' ? '<span class="row-tag row-ai-edited">AI 已修改</span>' : ''}
           </div>
           <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 ${nearNote || repBlock ? '8' : '14'}px;">${escapeHtml(item.title || '（無標題）')}</h3>
           ${nearNote}
@@ -4747,6 +4950,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     function applyItemDecision(unit, decision, note) {
       const { kind, item, key } = unit;
       const tasks = [];
+      // 主理人重新做了決定，舊的「已交給 AI」標記就不再適用
+      if (handedMap[key]) { delete handedMap[key]; saveHanded(); }
       const itemOpen = ['pending', 'revise'].includes(itemReviewState(kind, item)) || deskDecidedKeys.has(key);
       if (kind === 'social') {
         item.reviewStatus = decision;
@@ -4812,22 +5017,139 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
     }
 
+    // =====================================================================
+    // 交給 AI 修改中：按「複製給 AI」後，被複製的「要修改」稿件收進摺起來的區塊（狀態存雲端 site_configs 的 handed_to_ai）
+    // 稿件被 AI 重送（回到待審／新版待審）就自動離開收合區，並標「AI 已修改」；主理人可隨時「拉回來」
+    // =====================================================================
+    function handedKeyExists(key) {
+      const i = key.indexOf(':');
+      const kind = key.slice(0, i), id = key.slice(i + 1);
+      if (kind === 'revision') {
+        const list = SITE_DATA.courses || [];
+        return list.length === 0 || list.some(c => c.id === id);
+      }
+      if (kind !== 'course' && kind !== 'article' && kind !== 'social') return false;
+      const list = deskList(kind);
+      return list.length === 0 || list.some(x => x.id === id);
+    }
+
+    async function saveHanded() {
+      const keep = {};
+      Object.keys(handedMap).forEach(k => { if (handedKeyExists(k)) keep[k] = handedMap[k]; });
+      handedMap = keep;
+      try { localStorage.setItem(HANDED_LOCAL_KEY, JSON.stringify(handedMap)); } catch (e) { /* 本機存不了就只靠雲端 */ }
+      if (!window.WangzhouCloud) return;
+      try {
+        await window.WangzhouCloud.upsertSiteConfig('handed_to_ai', handedMap);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️「交給 AI 修改中」只存在這台電腦，換電腦時可能看不到（原因：' + err.message + '）', 6000);
+      }
+    }
+
+    async function loadHandedCloud() {
+      if (!window.WangzhouCloud) return;
+      try {
+        const v = await window.WangzhouCloud.getSiteConfig('handed_to_ai');
+        if (v && typeof v === 'object' && !Array.isArray(v)) {
+          handedMap = v;
+          try { localStorage.setItem(HANDED_LOCAL_KEY, JSON.stringify(handedMap)); } catch (e) { /* ignore */ }
+        }
+      } catch (err) {
+        console.warn('「交給 AI 修改中」讀取失敗，先用這個瀏覽器的暫存：', err);
+      }
+    }
+
+    // 某條線目前在收合區的項目（仍在等 AI 的）
+    function handedUnits(line) {
+      const out = [];
+      Object.keys(handedMap).forEach(key => {
+        const i = key.indexOf(':');
+        const kind = key.slice(0, i), id = key.slice(i + 1);
+        if (kind === 'revision') {
+          if (line !== 'site') return;
+          const c = (SITE_DATA.courses || []).find(x => x.id === id);
+          if (c && courseIsLive(c) && c.revisionState === 'requested') out.push({ key, kind: 'course', title: c.title, at: handedMap[key] });
+          return;
+        }
+        if (line === 'site' ? (kind !== 'course' && kind !== 'article') : kind !== 'social') return;
+        const item = deskFind(kind, id);
+        if (!item || itemReviewState(kind, item) !== 'revise') return;
+        out.push({ key, kind, title: item.title, at: handedMap[key] });
+      });
+      return out.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    }
+
+    function handedDateText(iso) {
+      const t = wzTaipeiParts(iso);
+      return t ? `${t.month}/${t.day} 交給` : '';
+    }
+
+    function renderHandedBox(line) {
+      const box = document.getElementById('handedBox-' + line);
+      if (!box) return;
+      const units = handedUnits(line);
+      if (!units.length) { box.innerHTML = ''; return; }
+      const rows = units.map(u => `
+        <div class="handed-row">
+          <span class="sub-badge" style="background:#EDF2F7; color:#2D3748;">${REVIEW_KIND_LABELS[u.kind].replace(/^\S+\s/, '')}</span>
+          <span class="handed-title">${escapeHtml(u.title || '（無標題）')}</span>
+          <span class="handed-when">${handedDateText(u.at)}</span>
+          <button type="button" class="btn-table-sm" style="min-height:40px;" data-key="${escapeHtml(u.key)}" onclick="pullBackHanded(this.dataset.key)">拉回來</button>
+        </div>`).join('');
+      box.innerHTML = `<details class="handed-box"${handedOpen[line] ? ' open' : ''} ontoggle="handedOpen['${line}'] = this.open"><summary>交給 AI 修改中（${units.length}）</summary>${rows}</details>`;
+    }
+
+    async function pullBackHanded(key) {
+      if (!handedMap[key]) return;
+      delete handedMap[key];
+      const i = key.indexOf(':');
+      const kind = key.slice(0, i);
+      if (kind === 'course' || kind === 'article' || kind === 'social') {
+        const line = kind === 'social' ? 'social' : 'site';
+        if (!reviewPoolKeys[line].includes(key)) reviewPoolKeys[line].push(key);
+        reviewCursor[line] = reviewPoolKeys[line].indexOf(key);
+      }
+      refreshAdminView();
+      showToast('已拉回審稿台。');
+      await saveHanded();
+    }
+
+    // 步驟條上「要修改 N・待複製」：把還沒複製、也不在池裡的「要修改」稿件放進池，並跳到第一筆
+    function openReviseDrafts(line) {
+      const plan = copyPlan(line);
+      plan.draftRevise.forEach(u => { if (!reviewPoolKeys[line].includes(u.key)) reviewPoolKeys[line].push(u.key); });
+      if (plan.draftRevise.length) reviewCursor[line] = reviewPoolKeys[line].indexOf(plan.draftRevise[0].key);
+      renderReviewStep(line);
+    }
+
+    // 審稿台複製按鈕：帶上這次會複製的筆數；0 筆時呈現禁用樣式
+    function updateDeskCopyButtons() {
+      ['site', 'social'].forEach(line => {
+        const btn = document.getElementById('deskCopyBtn-' + line);
+        if (!btn) return;
+        const n = copyPlan(line).total;
+        btn.innerText = n > 0 ? `📋 複製審稿結果給 AI（${n}）` : '📋 複製審稿結果給 AI';
+        btn.style.opacity = n > 0 ? '' : '0.5';
+      });
+    }
+
     // 「提早審稿一鍵複製結果給 AI」：兩條線各自整理成純文字，直接貼進對話
-    async function copyResults(line) {
-      // 意見框裡還沒存的字，先同步存進本機（雲端在背景存），再整理複製內容
-      flushReviewNote(line);
+    // 這次複製會包含哪些東西（複製按鈕的數字與實際複製內容共用同一份清單）
+    // 已經交給 AI 的（handedMap 裡、還在等 AI 的）不重複列入
+    function copyPlan(line) {
       const pool = getReviewPool(line);
       const courses = SITE_DATA.courses || [];
       const isSite = line === 'site';
       // 網站線才處理課程：重做中、已開放待複查、草稿要修改；已在重做的不重複列進 🔔，新版待審與尚未開放不複製
-      const redo = isSite ? courses.filter(c => courseIsLive(c) && c.revisionState === 'requested') : [];
+      const redo = isSite ? courses.filter(c => courseIsLive(c) && c.revisionState === 'requested' && !handedMap['revision:' + c.id]) : [];
       const bells = isSite ? courses.filter(c => courseNeedsRegCheck(c) && !c.revisionState) : [];
       // 以資料本身存的狀態為準：不管這次頁面有沒有開過那張卡，所有「要修改」都列入
       const poolKeys = new Set(pool.map(u => u.key));
       const draftRevise = [];
       (isSite ? ['course', 'article'] : ['social']).forEach(kind => deskList(kind).forEach(item => {
         const key = `${kind}:${item.id}`;
-        if (poolKeys.has(key) || itemReviewState(kind, item) !== 'revise') return;
+        if (poolKeys.has(key) || itemReviewState(kind, item) !== 'revise' || handedMap[key]) return;
         if (kind === 'social' && !isReviewable(item)) return;
         draftRevise.push({ key, kind, item, state: 'revise' });
       }));
@@ -4835,7 +5157,22 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const reportGroups = {};
       if (isSite) (SITE_DATA.submissions || []).filter(r => r.courseId && r.status === 'unread').forEach(r => { (reportGroups[r.courseId] = reportGroups[r.courseId] || []).push(r); });
       const reportIds = Object.keys(reportGroups);
-      if (pool.length === 0 && redo.length === 0 && bells.length === 0 && draftRevise.length === 0 && reportIds.length === 0) {
+      // 複製後要收進「交給 AI 修改中」的：所有「要修改」與「請 AI 重做」
+      const moveKeys = [
+        ...pool.filter(u => u.state === 'revise').map(u => u.key),
+        ...draftRevise.map(u => u.key),
+        ...redo.map(c => 'revision:' + c.id)
+      ];
+      const total = pool.length + redo.length + bells.length + draftRevise.length + reportIds.length;
+      return { pool, redo, bells, draftRevise, reportGroups, reportIds, moveKeys, total };
+    }
+
+    async function copyResults(line) {
+      // 意見框裡還沒存的字，先同步存進本機（雲端在背景存），再整理複製內容
+      flushReviewNote(line);
+      const isSite = line === 'site';
+      const { pool, redo, bells, draftRevise, reportGroups, reportIds, moveKeys, total } = copyPlan(line);
+      if (total === 0) {
         alert('沒有資料可以複製。');
         return;
       }
@@ -4887,10 +5224,19 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       try {
         await navigator.clipboard.writeText(text);
         const all = [...groups.approved, ...groups.revise, ...groups.rejected, ...groups.pending];
-        const total = all.length + redo.length + bells.length;
         const withNote = all.filter(u => noteOf(u)).length + redo.filter(c => c.revisionNote).length;
         const missing = groups.revise.filter(u => !noteOf(u)).length + redo.filter(c => !c.revisionNote).length;
-        showToast(`📋 已複製 ${total} 筆，其中 ${withNote} 筆有備註` + (missing ? `；另有 ${missing} 筆標了要修改，還沒寫意見` : ''));
+        // 複製成功才把「要修改」收進「交給 AI 修改中」（複製失敗、只顯示文字時不收）
+        const moved = moveKeys.length;
+        if (moved) {
+          const nowIso = new Date().toISOString();
+          moveKeys.forEach(k => { handedMap[k] = nowIso; });
+          refreshAdminView();
+          saveHanded();
+        }
+        const head = moved && moved === total ? `已複製 ${total} 筆，並移到「交給 AI 修改中」。`
+          : `已複製 ${total} 筆${moved ? `，其中 ${moved} 筆已移到「交給 AI 修改中」` : ''}，附上備註 ${withNote} 筆。`;
+        showToast(`📋 ${head}` + (missing ? `另有 ${missing} 筆標了要修改，還沒寫意見。` : ''), 5000);
       } catch (e) {
         alert(text);
       }
@@ -5970,6 +6316,7 @@ ${sourceText}`;
     async function enterAdmin() {
       document.getElementById('authGate').hidden = true;
       const ok = await window.WangzhouCloud.syncToLocal({ includePrivate: true });
+      await loadHandedCloud();
       refreshAdminView();
       updateCloudStatusBadge(ok);
       loadAdminAnalytics();

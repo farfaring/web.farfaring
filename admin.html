@@ -1720,7 +1720,7 @@
   <script>window.WANGZHOU_ADMIN_MODE = true;</script>
 
   <!-- 引用共享核心數據 -->
-  <script src="./data.js?v=20261109"></script>
+  <script src="./data.js?v=20261110"></script>
 
   <script>
     // 切換面板
@@ -2339,12 +2339,22 @@
     }
 
     // 將真實維護日期標記為今日
-    function stampTodayDate() {
-      const d = new Date();
-      SITE_DATA.siteInfo.lastUpdated = `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`;
-      saveDataToLocalStorage();
-      refreshAdminView();
-      alert(`已將全站最後維護時間更新為：${SITE_DATA.siteInfo.lastUpdated}`);
+    async function stampTodayDate() {
+      // 日期的家在雲端（site_last_updated），前台頁尾從那裡讀；寫成功才算數
+      const cloud = window.WangzhouCloud;
+      if (!cloud) { alert('⚠️ 還連不上雲端，日期沒有更新。稍等一下再按一次。'); return; }
+      try {
+        const now = new Date();
+        await cloud.upsertSiteConfig('site_last_updated', { at: now.toISOString() });
+        const text = cloud.formatTaipeiDate(now.toISOString());
+        SITE_DATA.siteInfo.lastUpdated = text;
+        saveDataToLocalStorage();
+        refreshAdminView();
+        alert(`已將全站最後維護時間更新為：${text}`);
+      } catch (err) {
+        console.error(err);
+        alert('⚠️ 日期這次沒有更新成功，再按一次試試；仍不成功，請稍後再試或回報給 AI。');
+      }
     }
 
     // 儲存至本地快照（即時影響同一台電腦上的前台預覽）

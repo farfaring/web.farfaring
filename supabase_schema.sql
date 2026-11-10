@@ -1072,3 +1072,65 @@ CREATE POLICY "Public insert submissions" ON public.submissions
 
 NOTIFY pgrst, 'reload schema';
 -- ======================= 第 9 節結束 =======================
+
+-- =======================================================
+-- 10. 全站最後維護日期（雲端為家，由資料庫自動更新）
+--     前台頁尾與後台都讀 site_configs 的 site_last_updated（訪客本來就能讀，只有主理人能寫）。
+--     手札或課程「實際上線或內容變動」時，由資料庫 trigger 自動更新為當下時間，
+--     所以後台按「可以發」、自動上架、重做新版替換、還原、編修、下架、刪除都會涵蓋。
+--     不算變動（不更新）：審稿狀態、審稿意見、稽核欄、自動上架排程與標記、重做流程欄位、複查時間。
+--     每小時巡邏沒有任何稿件變動時，不會更新。
+-- =======================================================
+INSERT INTO public.site_configs (key, value)
+VALUES ('site_last_updated', jsonb_build_object('at', now()))
+ON CONFLICT (key) DO NOTHING;
+
+CREATE OR REPLACE FUNCTION public.touch_site_last_updated()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_hit boolean := false;
+  -- 這些欄位改變不算「讀者看得到的內容變動」
+  v_skip constant text[] := ARRAY[
+    'review_status', 'review_note', 'audit_note', 'hold_for_owner',
+    'auto_publish_at', 'auto_published', 'auto_published_at',
+    'revision_state', 'revision_note', 'revision_payload', 'revision_submitted_at', 'revision_prev_payload',
+    'reg_checked_at', 'created_at'
+  ];
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    v_hit := NEW.status = 'active';
+  ELSIF TG_OP = 'DELETE' THEN
+    v_hit := OLD.status = 'active';
+  ELSE
+    -- 上架或下架（狀態有變，且其中一邊是上架中），或上架中的內容欄位有變
+    v_hit := (NEW.status IS DISTINCT FROM OLD.status AND (NEW.status = 'active' OR OLD.status = 'active'))
+          OR (NEW.status = 'active' AND OLD.status = 'active'
+              AND (to_jsonb(NEW) - v_skip) IS DISTINCT FROM (to_jsonb(OLD) - v_skip));
+  END IF;
+
+  IF v_hit THEN
+    INSERT INTO public.site_configs (key, value, updated_at)
+    VALUES ('site_last_updated', jsonb_build_object('at', now()), now())
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
+  END IF;
+  RETURN NULL;  -- AFTER 觸發，回傳值不影響
+END;
+$$;
+REVOKE ALL ON FUNCTION public.touch_site_last_updated() FROM PUBLIC, anon, authenticated, service_role;
+
+DROP TRIGGER IF EXISTS trg_articles_touch_last_updated ON public.articles;
+CREATE TRIGGER trg_articles_touch_last_updated
+  AFTER INSERT OR UPDATE OR DELETE ON public.articles
+  FOR EACH ROW EXECUTE FUNCTION public.touch_site_last_updated();
+
+DROP TRIGGER IF EXISTS trg_courses_touch_last_updated ON public.courses;
+CREATE TRIGGER trg_courses_touch_last_updated
+  AFTER INSERT OR UPDATE OR DELETE ON public.courses
+  FOR EACH ROW EXECUTE FUNCTION public.touch_site_last_updated();
+
+NOTIFY pgrst, 'reload schema';
+-- ======================= 第 10 節結束 =======================

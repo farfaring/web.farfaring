@@ -25,7 +25,7 @@ const SITE_DATA = {
     enName: "farfaring",
     tagline: "生活裡處處都是機會，陪你挖掘，陪你發現",
     siteUrl: "https://webfarfaring.vercel.app/",
-    lastUpdated: "2026 年 10 月 21 日",
+    lastUpdated: "2026 年 11 月 10 日",
     adminTitle: "小棧長",
     contactEmail: "farfaring.space@gmail.com",
     instagram: "https://www.instagram.com/farfaring/",
@@ -693,6 +693,29 @@ const WangzhouCloud = {
     const data = await this.request(`site_configs?key=eq.${encodeURIComponent(key)}&select=value`);
     return (data && data[0]) ? data[0].value : null;
   },
+  // 全站最後維護日期：雲端 site_last_updated 的 { at: ISO 時間 }，格式化為台灣時間「2026 年 11 月 10 日」；讀不到回傳 null
+  formatTaipeiDate(iso) {
+    const t = Date.parse(iso);
+    if (!isFinite(t)) return null;
+    const d = new Date(t + 8 * 3600 * 1000); // 台灣沒有日光節約，固定 UTC+8
+    return `${d.getUTCFullYear()} 年 ${d.getUTCMonth() + 1} 月 ${d.getUTCDate()} 日`;
+  },
+  async getLastUpdatedText() {
+    try {
+      const v = await this.getSiteConfig('site_last_updated');
+      return (v && v.at) ? this.formatTaipeiDate(v.at) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+  // 前台頁尾：先放備用值，雲端讀到再換成雲端的日期
+  async showLastUpdated(elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.innerText = SITE_DATA.siteInfo.lastUpdated;
+    const text = await this.getLastUpdatedText();
+    if (text) { SITE_DATA.siteInfo.lastUpdated = text; el.innerText = text; }
+  },
   async upsertSiteConfig(key, value) {
     const payload = {
       key: key,
@@ -818,7 +841,7 @@ const WangzhouCloud = {
   async syncToLocal({ includePrivate = false } = {}) {
     try {
       const skip = Promise.resolve(null);
-      const [articles, courses, submissions, posts, planks, aboutConfig, autoEnabledCfg, autoCheckCfg] = await Promise.all([
+      const [articles, courses, submissions, posts, planks, aboutConfig, autoEnabledCfg, autoCheckCfg, lastUpdatedText] = await Promise.all([
         (includePrivate ? this.getArticles() : this.request(`articles?select=${WZ_PUBLIC_ARTICLE_COLUMNS}&status=eq.active&order=created_at.desc`))
           .catch(err => { console.warn('Articles sync failed:', err); return null; }),
         (includePrivate ? this.getCourses() : this.request(`courses?select=${WZ_PUBLIC_COURSE_COLUMNS}&status=eq.active&order=created_at.desc`))
@@ -828,8 +851,12 @@ const WangzhouCloud = {
         this.getPlanks().catch(err => { console.warn('Planks sync failed (using local fallback):', err); return null; }),
         this.getSiteConfig('about').catch(err => { console.warn('About config sync failed (using local fallback):', err); return null; }),
         includePrivate ? this.getSiteConfig('auto_publish_enabled').catch(() => null) : skip,
-        includePrivate ? this.getSiteConfig('auto_publish_last_check').catch(() => null) : skip
+        includePrivate ? this.getSiteConfig('auto_publish_last_check').catch(() => null) : skip,
+        includePrivate ? this.getLastUpdatedText() : skip
       ]);
+
+      // 後台：最後維護日期以雲端為準（讀不到就維持原值）
+      if (includePrivate && lastUpdatedText) SITE_DATA.siteInfo.lastUpdated = lastUpdatedText;
 
       // 後台：自動上架開關與上次檢查紀錄（沒讀到就維持 null，畫面不顯示警示）
       if (includePrivate) {

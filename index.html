@@ -414,11 +414,11 @@
   </div>
 
   <!-- 引用全站共享數據核心 -->
-  <script src="./data.js?v=20261109"></script>
+  <script src="./data.js?v=20261110"></script>
 
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
-    document.getElementById('autoMonthYear').innerText = SITE_DATA.siteInfo.lastUpdated;
+    WangzhouCloud.showLastUpdated('autoMonthYear');
 
     // 動態渲染漂浮棧板（支援後台隨時增減，採用「水流隨機輪替」機制：每次隨機浮現 3 塊最佳金句）
     function renderBoardwalkPlanks() {

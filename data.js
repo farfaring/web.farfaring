@@ -153,7 +153,7 @@ function wzIsHttpUrl(value) {
 // 網址尾端標點不納入。預設連結文字只顯示網域加 ↗；opts.path 時顯示「網域＋路徑」（去 https://，超過 40 字截斷）。完整網址放 href 與 title。
 function wzLinkify(text, opts) {
   const showPath = !!(opts && opts.path);
-  const parts = String(text === null || text === undefined ? '' : text).split(/(https?:\/\/[^\s<>"')）]+)/g);
+  const parts = String(text === null || text === undefined ? '' : text).split(/(https?:\/\/[^\s<>"')）」』》】〉　-〿＀-￯一-鿿]+)/g);
   return parts.map((seg, i) => {
     if (i % 2 === 0) return wzEscape(seg);
     const m = seg.match(/^(.*?)([。，、；：,;.!?！？]*)$/);

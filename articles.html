@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261109">
   <style>
     .editorial-layout {
       display: grid;
@@ -123,41 +123,7 @@
       line-height: 1.7;
     }
 
-    .vocus-bridge-box {
-      margin-top: 32px;
-      padding: 20px 24px;
-      background: #FAF8F5;
-      border: 1px dashed rgba(184, 125, 75, 0.4);
-      border-radius: var(--radius-md);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 14px;
-    }
-
-    .vocus-bridge-text {
-      font-size: 0.88rem;
-      color: var(--ink-body);
-    }
-
-    .btn-vocus {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--amber-pier);
-      color: #FFF;
-      text-decoration: none;
-      padding: 7px 16px;
-      border-radius: 99px;
-      font-size: 0.84rem;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-
-    .btn-vocus:hover {
-      background: var(--amber-dark);
-    }
+    .editorial-layout { padding-bottom: 48px; }
   </style>
 </head>
 <body>
@@ -223,17 +189,6 @@
       <article class="reading-canvas" id="readingCanvas">
         <!-- 動態渲染當前文章 -->
       </article>
-    </div>
-
-    <!-- 深度平台連動條（方格子 vocus 深入專欄） -->
-    <div class="vocus-bridge-box">
-      <div class="vocus-bridge-text">
-        📖 <strong>想要閱讀更具完整架構的系列專題？</strong><br>
-        除了日常的隨筆與微小觀察，若你想閱讀具備完整論述、案例拆解與系統性整理的深入專題，歡迎前往我們的<strong>方格子（vocus）專欄</strong>探索。
-      </div>
-      <a href="https://vocus.cc" target="_blank" rel="noopener" class="btn-vocus">
-        <span>前往方格子專欄閱讀 ↗</span>
-      </a>
     </div>
 
   </main>
@@ -312,7 +267,7 @@
   </div>
 
   <!-- 引用全站共享數據核心 -->
-  <script src="./data.js?v=20261105"></script>
+  <script src="./data.js?v=20261109"></script>
 
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）

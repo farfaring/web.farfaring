@@ -840,9 +840,38 @@ body {
   border-top: 1px solid var(--hairline);
   padding-top: 14px;
   display: flex;
-  justify-content: flex-end; /* 刪除編號後右對齊官方按鈕 */
+  justify-content: space-between; /* 左：回報這門課的問題；右：官方按鈕 */
   align-items: center;
+  gap: 4px 12px;
 }
+
+/* 低調的回報連結：淡灰小字、無外框，hover 才出現底線；靠 padding 撐出 40px 點擊區 */
+.res-report-link {
+  background: none;
+  border: 0;
+  padding: 10px 4px;
+  min-height: 40px;
+  font: inherit;
+  font-size: 0.78rem;
+  color: #8A8F98;
+  cursor: pointer;
+}
+.res-report-link:hover { text-decoration: underline; }
+.res-report-link:focus-visible { outline: 2px solid var(--indigo-water); outline-offset: 2px; border-radius: 4px; }
+
+/* 回報課程問題彈窗 */
+.report-fieldset { border: 0; padding: 0; margin: 0 0 16px; }
+.report-fieldset legend { font-size: 0.84rem; font-weight: 500; color: var(--ink-black); margin-bottom: 6px; padding: 0; }
+.report-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.report-opt { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--hairline); border-radius: 10px; padding: 8px 14px; min-height: 44px; font-size: 0.9rem; cursor: pointer; }
+.report-opt input { width: auto; margin: 0; }
+.report-opt:has(input:checked) { border-color: var(--indigo-water); background: #F3F7FA; }
+.report-course { font-size: 0.9rem; color: var(--ink-black); margin-bottom: 16px; }
+.btn-submit-action:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-submit-action:disabled:hover { background: var(--indigo-water); }
+.report-done { text-align: center; padding: 18px 0 6px; line-height: 1.9; color: var(--ink-black); }
+.report-done .btn-submit-action { margin-top: 18px; }
+.report-err { color: #8F5C30; font-size: 0.84rem; margin: 0 0 12px; }
 
 .btn-official-link {
   display: inline-flex;
@@ -1288,17 +1317,6 @@ body {
     font-size: 0.96rem;
     line-height: 1.95;
   }
-  .vocus-bridge-box {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-    padding: 18px 16px;
-  }
-  .btn-vocus {
-    width: 100%;
-    justify-content: center;
-  }
-
   /* 關於望舟卡片 */
   .about-paper,
   .about-card {
@@ -1317,6 +1335,14 @@ body {
     padding: 18px 16px;
     margin: 24px 0;
   }
+
+  .res-card-footer {
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 0;
+  }
+  .report-opt { width: 100%; }
+  .modal-overlay.is-report { padding: 16px; }
 
   /* 彈出視窗 Modal 寬度防溢出 */
   .modal-overlay {

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261109">
 </head>
 <body>
 
@@ -76,7 +76,7 @@
       </div>
       <div class="notice-strip-actions">
         <a href="javascript:void(0)" class="notice-action-link" onclick="openResourceModal('error')">
-          <span>⚠️ 回報資訊有誤</span>
+          <span>回報課程問題</span>
         </a>
         <span style="color:var(--hairline)">｜</span>
         <a href="javascript:void(0)" class="notice-action-link" onclick="openResourceModal('recommend')">
@@ -131,7 +131,44 @@
   <!-- 彈出式表單（勘誤 / 推薦好資源） -->
   <div id="resModal" class="modal-overlay" onclick="if(event.target===this)closeResourceModal()">
     <div class="modal-content">
-      <button class="modal-close-btn" onclick="closeResourceModal()">×</button>
+      <button class="modal-close-btn" onclick="closeResourceModal()" aria-label="關閉">×</button>
+
+      <!-- 回報這門課的問題（從課程卡底部連結開啟） -->
+      <div id="resReportBox" style="display:none;">
+        <div id="resReportFormWrap">
+          <h3 class="modal-title">回報這門課的問題</h3>
+          <form onsubmit="submitCourseReport(event)" oninput="reportFormChanged()" onchange="reportFormChanged()">
+            <input type="text" id="reportHp" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off">
+            <div class="report-course">課程：<strong id="reportCourseName"></strong></div>
+            <fieldset class="report-fieldset">
+              <legend>哪裡不太對？</legend>
+              <div class="report-opts">
+                <label class="report-opt"><input type="radio" name="reportIssue" value="deadline_wrong"> 截止日不對</label>
+                <label class="report-opt"><input type="radio" name="reportIssue" value="link_broken"> 連結打不開</label>
+                <label class="report-opt"><input type="radio" name="reportIssue" value="fee_or_eligibility"> 費用或資格不對</label>
+                <label class="report-opt"><input type="radio" name="reportIssue" value="full_or_cancelled"> 已額滿或停辦</label>
+                <label class="report-opt"><input type="radio" name="reportIssue" value="other"> 其他</label>
+              </div>
+            </fieldset>
+            <div class="form-group">
+              <label for="reportNote" id="reportNoteLabel">補一句（選填）</label>
+              <input type="text" id="reportNote" maxlength="100" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="reportEmail">信箱（選填，方便回覆修正結果）</label>
+              <input type="email" id="reportEmail" placeholder="yourname@gmail.com" autocomplete="email">
+            </div>
+            <p class="report-err" id="reportErr" role="alert" style="display:none;"></p>
+            <button type="submit" id="reportSubmitBtn" class="btn-submit-action" disabled>送出</button>
+          </form>
+        </div>
+        <div id="resReportDone" class="report-done" style="display:none;">
+          <p id="resReportDoneText"></p>
+          <button type="button" class="btn-submit-action" onclick="closeResourceModal()">關閉</button>
+        </div>
+      </div>
+
+      <div id="resGeneralBox">
       <h3 id="resModalTitle" class="modal-title">推薦好資源 📮</h3>
       <p id="resModalDesc" class="modal-desc" style="line-height:1.75; margin-bottom:18px;">
         若你發現了優質的公開課程、實務工作坊或交流活動，<br>
@@ -164,11 +201,12 @@
         </div>
         <button type="submit" id="resSubmitBtn" class="btn-submit-action">送出推薦給小棧長 📮</button>
       </form>
+      </div>
     </div>
   </div>
 
   <!-- 引用全站共享數據核心 -->
-  <script src="./data.js?v=20261105"></script>
+  <script src="./data.js?v=20261109"></script>
 
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
@@ -314,6 +352,7 @@
 
           <!-- 底部直通官方按鈕（徹底移除編號字眼） -->
           <div class="res-card-footer">
+            <button type="button" class="res-report-link" data-cid="${wzEscape(item.id)}" onclick="openReportModal(this.dataset.cid)">回報這門課的問題</button>
             <a href="${wzEscape(wzSafeUrl(item.url))}" target="_blank" rel="noopener" class="btn-official-link">
               <span>前往官方頁面</span>
               <span>↗</span>
@@ -339,8 +378,8 @@
       const submitBtn = document.getElementById('resSubmitBtn');
 
       if (type === 'error') {
-        title.innerText = '回報資訊有誤 ⚠️';
-        desc.innerHTML = '發現哪一門課程活動資訊已提早額滿或連結失效？<br>請告訴小棧長，我們會前往核實並修正。';
+        title.innerText = '回報課程問題';
+        desc.innerHTML = '發現哪一門課程活動資訊已提早額滿或連結失效？<br>請告訴小棧長，會前往核實並修正。';
         targetLabel.innerText = '有誤的課程或活動名稱：';
         urlLabel.innerText = '頁面連結或失效網址（選填）：';
         urlInput.required = false;
@@ -349,7 +388,7 @@
         detailInput.placeholder = '請簡短說明需要勘誤或修正的地方...';
         noteGroup.style.display = 'none'; // 勘誤模式下隱藏課程特色與提醒
         emailLabel.innerText = '聯絡信箱（選填，方便向您回報修正結果）：';
-        submitBtn.innerText = '送出勘誤回報 ⚠️';
+        submitBtn.innerText = '送出';
       } else {
         title.innerText = '推薦好資源 📮';
         desc.innerHTML = '若你發現了優質的公開課程、實務工作坊或交流活動，<br>歡迎告訴小棧長，審核後會協助收錄分享。';
@@ -365,8 +404,95 @@
         submitBtn.innerText = '送出推薦給小棧長 📮';
       }
 
+      document.getElementById('resReportBox').style.display = 'none';
+      document.getElementById('resGeneralBox').style.display = 'block';
+      modal.classList.remove('is-report');
       modal.setAttribute('data-submit-type', type);
       modal.classList.add('open');
+    }
+
+    // ---- 回報這門課的問題 ----
+    const REPORT_LABELS = { deadline_wrong: '截止日不對', link_broken: '連結打不開', fee_or_eligibility: '費用或資格不對', full_or_cancelled: '已額滿或停辦', other: '其他' };
+    let reportCourse = null;
+
+    function openReportModal(cid) {
+      const c = resources.find(x => String(x.id) === String(cid));
+      if (!c) return;
+      reportCourse = c;
+      document.getElementById('reportCourseName').textContent = c.title || '';
+      document.querySelectorAll('input[name="reportIssue"]').forEach(r => { r.checked = false; });
+      document.getElementById('reportNote').value = '';
+      document.getElementById('reportEmail').value = '';
+      document.getElementById('reportHp').value = '';
+      const err = document.getElementById('reportErr');
+      err.style.display = 'none';
+      document.getElementById('resReportFormWrap').style.display = 'block';
+      document.getElementById('resReportDone').style.display = 'none';
+      document.getElementById('resGeneralBox').style.display = 'none';
+      document.getElementById('resReportBox').style.display = 'block';
+      reportFormChanged();
+      const modal = document.getElementById('resModal');
+      modal.classList.add('is-report');
+      modal.setAttribute('data-submit-type', 'report');
+      modal.classList.add('open');
+    }
+
+    // 沒選問題不能送出；選「其他」時一定要補一句
+    function reportFormChanged() {
+      const sel = document.querySelector('input[name="reportIssue"]:checked');
+      const note = document.getElementById('reportNote').value.trim();
+      const needNote = !!sel && sel.value === 'other';
+      document.getElementById('reportNoteLabel').textContent = needNote ? '補一句（必填）' : '補一句（選填）';
+      document.getElementById('reportSubmitBtn').disabled = !sel || (needNote && !note);
+    }
+
+    function showReportResult(text) {
+      document.getElementById('resReportFormWrap').style.display = 'none';
+      document.getElementById('resReportDoneText').textContent = text;
+      document.getElementById('resReportDone').style.display = 'block';
+    }
+
+    async function submitCourseReport(e) {
+      e.preventDefault();
+      if (!reportCourse) return;
+      if (document.getElementById('reportHp').value) { closeResourceModal(); return; }
+      const sel = document.querySelector('input[name="reportIssue"]:checked');
+      const note = document.getElementById('reportNote').value.trim().slice(0, 100);
+      const email = document.getElementById('reportEmail').value.trim();
+      if (!sel || (sel.value === 'other' && !note)) return;
+
+      // 30 秒內不重複送（與其他表單共用同一個計時）
+      const lastSubmit = parseInt(localStorage.getItem('WANGZHOU_LAST_RES_SUBMIT') || '0', 10);
+      const nowMs = Date.now();
+      if (nowMs - lastSubmit < 30000) {
+        showReportResult('剛剛已經收到囉，不用重複送出。');
+        return;
+      }
+
+      const btn = document.getElementById('reportSubmitBtn');
+      btn.disabled = true;
+      const err = document.getElementById('reportErr');
+      err.style.display = 'none';
+      try {
+        if (!window.WangzhouCloud) throw new Error('offline');
+        await window.WangzhouCloud.submitGuestFeedback({
+          type: 'error',
+          typeName: '課程問題回報',
+          title: reportCourse.title,
+          author: '熱心訪客',
+          contact: email || '未留信箱',
+          content: note || REPORT_LABELS[sel.value],
+          courseId: reportCourse.id,
+          issueType: sel.value
+        });
+        try { localStorage.setItem('WANGZHOU_LAST_RES_SUBMIT', String(nowMs)); } catch (e2) {}
+        showReportResult('收到了，謝謝你。小棧長會再核對這門課。');
+      } catch (ex) {
+        console.warn(ex);
+        err.textContent = '這次沒有送出成功，請稍後再試。';
+        err.style.display = 'block';
+        reportFormChanged();
+      }
     }
 
     function closeResourceModal() {
@@ -440,7 +566,7 @@
       }
 
       if (submitType === 'error') {
-        alert(`非常感謝你的熱心回報！小棧長已收到關於「${target}」的勘誤資訊，我們會前往核實修正。`);
+        alert(`謝謝你的回報，小棧長會前往核對「${target}」。`);
       } else {
         alert(`非常感謝你的熱心推薦！小棧長已收到關於「${target}」的課程推薦，資料已妥善送達後台審核箱。`);
       }

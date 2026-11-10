@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261109">
   <style>
     :root {
       --admin-bg: #F4F6F8;
@@ -368,6 +368,36 @@
     .social-stages .stage-btn.is-on { color:#2B4C65; font-weight:700; }
     .social-stages .stage-line { color:#CBD5E0; letter-spacing:-2px; }
     @media (max-width: 600px) { .desk-tab-wrap { flex:1 1 100%; } .social-stages { gap:2px 6px; padding:8px 10px; } .social-stages .stage-count { margin-right:2px; } .social-stages .stage-btn { font-size:0.8rem; padding:6px 2px; } .social-stages .stage-line { display:none; } }
+    .desk-status { margin-left:auto; font-size:0.82rem; font-weight:600; color:#4A6580; }
+    .desk-status.is-soon { color:#B87D4B; }
+    .desk-status.is-paused { color:#718096; font-weight:500; }
+    .desk-status.is-hold { background:#FDF3E7; color:#8F5C30; border:1px solid #E8C9A0; border-radius:6px; padding:2px 8px; }
+    .desk-card-hold { border-left:3px solid #B87D4B !important; }
+    .desk-sub-note { font-size:0.75rem; color:#718096; margin:-6px 0 10px; }
+    .hold-dot { color:#B87D4B; }
+    .auto-bar { display:flex; align-items:center; gap:6px 14px; flex-wrap:wrap; background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:8px 14px; margin-bottom:10px; font-size:0.84rem; color:#718096; }
+    .auto-bar.is-off { background:#F7FAFC; color:#A0AEC0; }
+    .auto-bar.is-stale { background:#FDF3E7; border-color:#E8C9A0; color:#8F5C30; }
+    .auto-bar .auto-name { font-weight:600; color:#2D3748; }
+    .auto-bar.is-off .auto-name { color:#718096; }
+    .auto-toggle { border:1px solid #CBD5E0; background:#FFF; border-radius:999px; padding:3px 12px; font:inherit; font-size:0.82rem; cursor:pointer; min-height:32px; color:#466D56; }
+    .auto-toggle.is-off { color:#718096; }
+    .auto-saved { font-size:0.78rem; color:#466D56; }
+    .auto-note { flex:1 1 auto; min-width:0; }
+    @media (max-width:600px) { .desk-status { flex-basis:100%; margin-left:0; } .auto-note { flex-basis:100%; } }
+    .spot-box { background:#FFF; border:1px solid #E2E8F0; border-radius:10px; padding:8px 14px; margin-bottom:12px; }
+    .spot-box > summary { cursor:pointer; font-weight:600; font-size:0.88rem; color:#2D3748; min-height:32px; display:flex; align-items:center; }
+    .spot-row { display:flex; align-items:center; gap:6px 10px; flex-wrap:wrap; padding:8px 0; border-top:1px solid #EDF2F7; font-size:0.84rem; }
+    .spot-row.is-done { color:#A0AEC0; }
+    .spot-title { flex:1 1 220px; min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color:#2D3748; }
+    .spot-row.is-done .spot-title { color:#A0AEC0; }
+    .spot-time { color:#718096; white-space:nowrap; font-size:0.78rem; }
+    .spot-btns { display:flex; gap:6px; flex-wrap:wrap; }
+    .spot-note { color:#718096; font-size:0.8rem; }
+    @media (max-width:600px) { .spot-btns { flex-basis:100%; } .spot-btns .btn-table-sm { flex:1 1 calc(50% - 6px); min-height:44px; text-align:center; justify-content:center; } }
+    .rep-flag { border:1px solid #F0C9A0; background:#FDF3E7; color:#8F5C30; border-radius:999px; font:inherit; font-size:0.78rem; padding:1px 10px; cursor:pointer; margin-left:6px; min-height:24px; }
+    .rep-panel { background:#FFF; border:1px solid #EBD3B4; border-radius:8px; padding:8px 12px; margin:6px 0 10px; font-size:0.82rem; line-height:1.7; color:#2D3748; font-weight:normal; }
+    .rep-panel .rep-row { color:#4A5568; }
     .desk-row { display:grid; grid-template-columns:8em minmax(0,1fr); gap:0 4px; }
     @media (max-width: 600px) { .desk-row { grid-template-columns:minmax(0,1fr); margin-bottom:6px; } }
     .btn-table-sm {
@@ -839,10 +869,10 @@
           <strong>1. 🧭 啟動全網採集：</strong>隨時在 AI 對話室指示特派員搜尋（例如：「採集本週公部門免費職訓與 1 篇職場手札靈感」），AI 會自動聯網搜尋、<strong>自動比對去重</strong>。寫好的稿件經「草稿收件匣」送出後，會以待審狀態出現在「📝 審稿工作台」。
         </p>
         <p style="margin:4px 0; color:#4A5568;">
-          <strong>2. ✍️ 主理人逐一審稿：</strong>進入「📖 水岸手札」或「📋 課程活動」的【🟡 待審草稿】分頁，可直接於文字框快速微調；若需大幅度修正，只需在對話給予意見，AI 編輯團隊即時重新潤飾。
+          <strong>2. ✍️ 主理人逐一審稿：</strong>進入審稿工作台逐篇審閱；稿件需要修改時，標「要修改」並複製審稿結果給 AI，改好的新版會再回到審稿台。
         </p>
         <p style="margin:4px 0; color:#4A5568;">
-          <strong>3. 🚀 一鍵跨平台發布：</strong>審核通過後點擊「✓ 通過上架」，前台立刻展出；社群稿庫已自動備妥 Threads 短文與 IG 輪播排版，長篇手札亦符合 Vocus（方格子）專題規格！
+          <strong>3. 🚀 上架：</strong>按「可以發」，前台立刻展出。沒空審的稿件，72 小時後會自動上架。
         </p>
       </div>
     </main>
@@ -869,7 +899,9 @@
         <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
           <button type="button" class="btn-table-sm" onclick="copySiteResults()" title="把網站內容的審稿結果複製起來，貼給 AI 修改">📋 複製網站內容審稿結果</button>
         </div>
+        <div id="autoBar-site" class="auto-bar"></div>
         <div id="reviewProgress-site" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
+        <div id="autoSpot-site"></div>
         <div id="reviewCard-site"></div>
         <div id="reviewRevisions" style="margin-top:18px;"></div>
       </div>
@@ -1688,7 +1720,7 @@
   <script>window.WANGZHOU_ADMIN_MODE = true;</script>
 
   <!-- 引用共享核心數據 -->
-  <script src="./data.js?v=20261106"></script>
+  <script src="./data.js?v=20261109"></script>
 
   <script>
     // 切換面板
@@ -2100,6 +2132,7 @@
             <div style="font-weight:600; color:#2D3748; cursor:pointer;" onclick="viewSubmissionDetail('${wzSafeId(s.id)}')" title="點擊查看完整內容">
               ${escapeHtml(s.title || '無標題')}
             </div>
+            ${s.courseId ? `<div style="font-size:0.78rem; color:#8F5C30; margin-top:3px;">🚩 ${escapeHtml(ISSUE_LABELS[s.issueType] || '課程問題')}（課程 id：${escapeHtml(s.courseId)}）</div>` : ''}
             <div style="font-size:0.8rem; color:#718096; margin-top:3px; max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
               ${escapeHtml(s.content || '')}
             </div>
@@ -2527,7 +2560,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         tr.innerHTML = `
           <td class="status">${statusBadge}</td>
           <td class="name">
-            <strong>${escapeHtml(c.title)}</strong><br>
+            <strong>${escapeHtml(c.title)}</strong>${reportsBlockHtml(c.id)}<br>
             <span style="font-size:0.78rem; color:#718096;">🏛️ ${escapeHtml(c.provider)}</span>
             ${subs.join('')}
           </td>
@@ -2707,13 +2740,16 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         ? `<div class="wz-src-box"><div class="wz-src-title">報名網址</div><div class="wz-src-row"><a class="wz-src-main" href="${escapeHtml(wzSafeUrl(url))}" target="_blank" rel="noopener noreferrer">開啟報名頁查證 ↗</a><a class="wz-src-url" href="${escapeHtml(wzSafeUrl(url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(wzUrlShort(url, 50, 'middle'))}</a></div></div>`
         : `<div class="wz-src-box"><div class="wz-src-title">報名網址</div><span class="wz-src-muted">${url ? '這個網址打不開：' + escapeHtml(wzUrlShort(url, 40)) : '尚未填網址'}</span></div>`;
       const tagChips = REVISE_TAGS.map(t => `<button type="button" class="btn-table-sm" style="font-size:0.75rem;" onclick="addReviewTag(this.textContent, 'revNote-${sid}')">${t}</button>`).join(' ');
+      const revSt = autoStatusInfo({ kind: 'course', item: c, state: 'pending' });
+      const revRep = reportsBlockHtml(c.id);
       return `
-        <div class="rev-card" id="revCard-${sid}">
+        <div class="rev-card${revSt.hold ? ' desk-card-hold' : ''}" id="revCard-${sid}">
           <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
             <span class="sub-badge" style="background:#EBF8FF; color:#2B6CB0;">🔄 課程新版</span>
-            <span style="margin-left:auto; font-size:0.82rem; font-weight:600; color:#2B4C65;">${REVIEW_LABELS.pending}</span>
+            ${revSt.html}
           </div>
-          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 12px;">${escapeHtml(c.title || '（無標題）')}</h3>
+          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 ${revRep ? '8' : '12'}px;">${escapeHtml(c.title || '（無標題）')}</h3>
+          ${revRep ? `<div style="margin:0 0 12px;">${revRep}</div>` : ''}
           <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px; margin-bottom:10px; font-size:0.84rem; line-height:1.7;"><strong>🛡️ 預先稽核與風險提示（新版附的）</strong>${audit}</div>
           <div style="font-size:0.86rem; margin-bottom:10px;"><strong>你的意見：</strong>${escapeHtml(c.revisionNote) || '<span class="rev-empty">（沒有填）</span>'}</div>
           ${urlHtml}
@@ -2779,6 +2815,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     async function toggleCoursePublish(idx) {
       const c = SITE_DATA.courses[idx];
       if (!c) return;
+      const guardBefore = { status: cloudStatusOf('course', c), reviewStatus: c.reviewStatus || '' };
       c.isDraft = !c.isDraft;
       c.active = !c.isDraft;
       // 上架的課程一律記為「已核准」，之後才能走「請 AI 重做」
@@ -2787,7 +2824,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       refreshAdminView();
       try {
         if (window.WangzhouCloud) {
-          await window.WangzhouCloud.upsertCourse(c);
+          await window.WangzhouCloud.patchReviewItemGuarded('course', c.id, guardBefore,
+            { status: cloudStatusOf('course', c), ...(c.isDraft ? {} : { review_status: 'approved' }) });
           showToast(c.isDraft ? '🟡 已轉為草稿，前台已隱藏' : '🟢 已通過上架，前台讀者可見');
         }
       } catch (err) {
@@ -2914,6 +2952,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
       // 保留審稿紀錄；被標「要修改」的課程改完後重新回到待審
       const existing = editIdx !== '' ? SITE_DATA.courses[editIdx] : {};
+      const guardBefore = editIdx !== '' ? { status: cloudStatusOf('course', existing), reviewStatus: existing.reviewStatus || '' } : null;
       const courseObj = {
         ...existing,
         reviewStatus: existing.reviewStatus === 'revise' ? 'pending' : existing.reviewStatus,
@@ -2952,7 +2991,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
       try {
         if (window.WangzhouCloud) {
-          await window.WangzhouCloud.upsertCourse(courseObj);
+          // 編輯既有課程：只寫表單欄位並比對原狀態；新增才整列寫入
+          if (guardBefore) await window.WangzhouCloud.saveItemGuarded('course', courseObj, guardBefore);
+          else await window.WangzhouCloud.upsertCourse(courseObj);
           showToast('🎉 課程已即時同步至 Supabase 雲端資料庫！');
         }
       } catch (err) {
@@ -3018,13 +3059,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     async function toggleArticlePublish(idx) {
       const a = SITE_DATA.articles[idx];
       if (!a) return;
+      const guardBefore = { status: cloudStatusOf('article', a), reviewStatus: a.reviewStatus || '' };
       a.isDraft = !a.isDraft;
       a.status = a.isDraft ? 'draft' : 'active';
       saveDataToLocalStorage();
       refreshAdminView();
       try {
         if (window.WangzhouCloud) {
-          await window.WangzhouCloud.upsertArticle(a);
+          await window.WangzhouCloud.patchReviewItemGuarded('article', a.id, guardBefore, { status: a.status });
           showToast(a.isDraft ? '🟡 已轉為草稿，前台已隱藏' : '🟢 已通過上架，前台讀者可見');
         }
       } catch (err) {
@@ -3098,6 +3140,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
       // 保留審稿紀錄；被標「要修改」的手札改完後重新回到待審
       const existing = editIdx !== '' ? SITE_DATA.articles[editIdx] : {};
+      const guardBefore = editIdx !== '' ? { status: cloudStatusOf('article', existing), reviewStatus: existing.reviewStatus || '' } : null;
       const artObj = {
         ...existing,
         reviewStatus: existing.reviewStatus === 'revise' ? 'pending' : existing.reviewStatus,
@@ -3125,7 +3168,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
       try {
         if (window.WangzhouCloud) {
-          await window.WangzhouCloud.upsertArticle(artObj);
+          if (guardBefore) await window.WangzhouCloud.saveItemGuarded('article', artObj, guardBefore);
+          else await window.WangzhouCloud.upsertArticle(artObj);
           showToast('🎉 手札已即時同步至 Supabase 雲端資料庫！');
         }
       } catch (err) {
@@ -3942,6 +3986,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       return p.status !== 'published' && !sent;
     }
 
+    // 雲端目前記的上架狀態（與 data.js 讀取時的對應相反）；條件式寫入用
+    function cloudStatusOf(kind, item) {
+      if (kind === 'article') return item.status || '';
+      return item.active ? 'active' : item.isDraft ? 'draft' : 'expired';
+    }
+
     // 手札與課程的審稿狀態跟著網站上下架走：草稿＝待審（或要修改），上架＝可以發，未採用＝不要發
     function itemReviewState(kind, item) {
       if (kind === 'social') return reviewStatusOf(item);
@@ -3968,8 +4018,13 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (line === 'site') {
         ['course', 'article'].forEach(kind => deskList(kind).forEach(item => {
           const unit = buildReviewUnit(`${kind}:${item.id}`);
-          if (unit && unit.state === 'pending') found.push({ key: unit.key, at: item.createdAt || item.id });
+          if (unit && unit.state === 'pending') found.push({ key: unit.key, at: item.createdAt || item.id, unit });
         }));
+        // 順序：需你確認（hold）→ 有讀者回報的課程 → 其餘依「最快自動上架」由近到遠 → 建立時間
+        const rank = f => f.unit.item.holdForOwner ? 0 : (f.unit.kind === 'course' && reportsOf(f.unit.item.id).length ? 1 : 2);
+        const due = f => { const t = Date.parse(f.unit.item.autoPublishAt || ''); return isNaN(t) ? Infinity : t; };
+        found.sort((a, b) => rank(a) - rank(b) || (due(a) === due(b) ? 0 : due(a) < due(b) ? -1 : 1) || String(a.at).localeCompare(String(b.at)));
+        return found.filter(f => !reviewPoolKeys[line].includes(f.key)).map(f => f.key);
       } else {
         (SITE_DATA.socialPosts || []).forEach(p => {
           if (reviewStatusOf(p) === 'pending' && isReviewable(p)) found.push({ key: `social:${p.id}`, at: p.createdAt || p.id });
@@ -4006,6 +4061,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
 
     function renderReviewDesk() {
+      renderAutoBar();
+      renderAutoSpot();
       renderRevisionCards();
       renderReviewStep('site');
       renderReviewStep('social');
@@ -4193,8 +4250,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       };
       if (!window.WangzhouCloud) { notSaved(); return; }
       try {
-        if (kind === 'course') await window.WangzhouCloud.upsertCourse(item);
-        else if (kind === 'article') await window.WangzhouCloud.upsertArticle(item);
+        // 手札與課程只改網址這一欄，不整列覆蓋；社群貼文維持原做法
+        if (kind === 'course') await window.WangzhouCloud.patchItemFields('course', item.id, { link: v });
+        else if (kind === 'article') await window.WangzhouCloud.patchItemFields('article', item.id, { source_url: v });
         else await window.WangzhouCloud.upsertSocialPost(item);
         noteDone('已儲存');
         setTimeout(() => { if (reviewUrlNote.key === unit.key && reviewUrlNote.text === '已儲存') noteDone(''); }, 2500);
@@ -4208,7 +4266,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       site: {
         prev: '← 上一篇', next: '下一篇 →',
         empty: '🌊 目前沒有待審的手札或課程。新的草稿會出現在這裡。',
-        decision: '<div>✅ 可以發：立即上架到網站，到此結束。</div><div>❌ 不要發：從網站撤下並標為未採用。</div>'
+        decision: '<div>可以發：前台立刻展出。</div><div>不要發：從網站撤下，標為未採用。</div>'
       },
       social: {
         prev: '← 上一則', next: '下一則 →',
@@ -4216,6 +4274,259 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         decision: '<div>✅ 可以發：接著選發文時間、送 Buffer。</div><div>❌ 不要發：不會送進 Buffer，也不會排時間。</div>'
       }
     };
+
+    // =====================================================================
+    // 自動上架：倒數、需你確認、開關、待抽查清單、讀者回報
+    // =====================================================================
+    const ISSUE_LABELS = { deadline_wrong: '截止日不對', link_broken: '連結打不開', fee_or_eligibility: '費用或資格不對', full_or_cancelled: '已額滿或停辦', other: '其他' };
+    const reportsOpen = new Set();
+    const spotDone = {};          // key -> 'down' | 'restored'（這次畫面上剛處理過的，留著顯示結果）
+    let spotConfirm = null;       // { key, act }，3 秒內再點一次才執行
+    let spotConfirmTimer = null;
+    let spotCollapsed = false;
+    const AUTO_STALE_MS = 3 * 3600 * 1000;
+
+    function autoPublishOn() {
+      return !SITE_DATA.autoPublish || SITE_DATA.autoPublish.enabled !== false;
+    }
+
+    // 還沒處理的讀者回報（status = unread）；已標為已處理的不計
+    function reportsOf(courseId) {
+      return (SITE_DATA.submissions || []).filter(s => s.courseId && s.courseId === courseId && s.status === 'unread');
+    }
+
+    function fmtTaipeiShort(iso) {
+      const t = wzTaipeiParts(iso);
+      if (!t) return '';
+      const n = wzTaipeiParts(new Date().toISOString());
+      const two = x => String(x).padStart(2, '0');
+      const same = n && n.year === t.year && n.month === t.month && n.day === t.day;
+      return `${same ? '今天' : two(t.month) + '/' + two(t.day)} ${t.hour}:${t.minute}`;
+    }
+
+    function countdownText(iso) {
+      const t = Date.parse(iso || '');
+      if (isNaN(t)) return '';
+      const hours = Math.max(0, Math.floor((t - Date.now()) / 3600000));
+      if (t - Date.now() < 3600000) return '不到 1 小時自動上架';
+      if (hours >= 24) return `還有 ${Math.floor(hours / 24)} 天 ${hours % 24} 小時自動上架`;
+      return `還有 ${hours} 小時自動上架`;
+    }
+
+    // 課程報名截止不到 5 天（台灣時間）：自動上架改等 24 小時
+    function courseNearDeadline(c) {
+      if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(c.deadline || '')) return false;
+      const end = Date.parse(`${c.deadline}T${/^\d{2}:\d{2}$/.test(c.deadlineTime || '') ? c.deadlineTime + ':00' : '23:59:59'}+08:00`);
+      return !isNaN(end) && end > Date.now() && end - Date.now() < 5 * 86400000;
+    }
+
+    // 審稿卡右上角的狀態：{ html, hold, timer }
+    function autoStatusInfo(unit) {
+      const { kind, item, state } = unit;
+      if (state !== 'pending' || kind === 'social') return { html: `<span class="desk-status">${REVIEW_LABELS[state]}</span>`, hold: false, timer: false };
+      if (item.holdForOwner) return { html: '<span class="desk-status is-hold">需你確認，不會自動上架</span>', hold: true, timer: false };
+      if (!autoPublishOn()) return { html: '<span class="desk-status is-paused">自動上架已暫停</span>', hold: false, timer: false };
+      const text = countdownText(item.autoPublishAt);
+      if (!text) return { html: `<span class="desk-status">${REVIEW_LABELS.pending}</span>`, hold: false, timer: false };
+      const soon = Date.parse(item.autoPublishAt) - Date.now() < 12 * 3600000;
+      return { html: `<span class="desk-status${soon ? ' is-soon' : ''}">${text}</span>`, hold: false, timer: true };
+    }
+
+    function reviewButtonLabel(u) {
+      if (u.state !== 'pending') return REVIEW_LABELS[u.state];
+      const hold = u.kind !== 'social' && u.item.holdForOwner;
+      const flag = u.kind === 'course' && reportsOf(u.item.id).length ? ' 🚩' : '';
+      return (hold ? '<span class="hold-dot">●</span> 待審' : REVIEW_LABELS.pending) + flag;
+    }
+
+    function needsOwnerLook(u) {
+      return u.state === 'pending' && u.kind !== 'social' && (u.item.holdForOwner || (u.kind === 'course' && reportsOf(u.item.id).length > 0));
+    }
+
+    // 🚩 讀者回報：旗標＋就地展開的清單（沒有未處理回報就什麼都不顯示）
+    function reportsBlockHtml(courseId) {
+      const list = reportsOf(courseId);
+      if (!list.length) return '';
+      const sid = wzSafeId(courseId);
+      const open = reportsOpen.has(courseId);
+      const rows = list.map(r => {
+        const label = ISSUE_LABELS[r.issueType] || '其他';
+        const note = r.content && r.content !== label ? `　「${escapeHtml(String(r.content).slice(0, 100))}」` : '';
+        const when = r.createdAt ? `　${escapeHtml(r.createdAt.slice(5, 10).replace('-', '/'))}` : '';
+        return `<div class="rep-row">${escapeHtml(label)}${when}${note}</div>`;
+      }).join('');
+      return `<button type="button" class="rep-flag" aria-expanded="${open}" onclick="toggleReports('${sid}')">🚩 ${list.length}</button>` +
+        (open ? `<div class="rep-panel"><div style="font-weight:600;">讀者回報（${list.length}）</div>${rows}<div style="text-align:right; margin-top:4px;"><button type="button" class="btn-table-sm" onclick="markReportsDone('${sid}')">標為已處理</button></div></div>` : '');
+    }
+
+    function toggleReports(sid) {
+      const c = courseBySafeId(sid);
+      if (!c) return;
+      if (reportsOpen.has(c.id)) reportsOpen.delete(c.id); else reportsOpen.add(c.id);
+      refreshAdminView();
+    }
+
+    async function markReportsDone(sid) {
+      const c = courseBySafeId(sid);
+      if (!c) return;
+      const list = reportsOf(c.id);
+      reportsOpen.delete(c.id);
+      try {
+        for (const r of list) {
+          await window.WangzhouCloud.updateSubmissionStatus(r.id, 'reviewed');
+          r.status = 'reviewed';
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
+      saveDataToLocalStorage();
+      refreshAdminView();
+    }
+
+    // 開關列：自動上架 [開] 上次檢查：今天 14:00
+    function renderAutoBar() {
+      const box = document.getElementById('autoBar-site');
+      if (!box) return;
+      const a = SITE_DATA.autoPublish || { enabled: true, lastCheckAt: '' };
+      const on = a.enabled !== false;
+      const last = Date.parse(a.lastCheckAt || '');
+      const stale = on && !isNaN(last) && Date.now() - last > AUTO_STALE_MS;
+      box.className = 'auto-bar' + (on ? '' : ' is-off') + (stale ? ' is-stale' : '');
+      const note = !on ? '自動上架已暫停，待審稿不會自動上架。'
+        : stale ? '已超過 3 小時沒有檢查自動上架，稿件暫時不會自動上架，可以先手動審稿。'
+        : `上次檢查：${isNaN(last) ? '尚未檢查' : fmtTaipeiShort(a.lastCheckAt)}`;
+      box.innerHTML = `<span class="auto-name">自動上架</span>
+        <button type="button" class="auto-toggle${on ? '' : ' is-off'}" role="switch" aria-checked="${on}" onclick="toggleAutoPublish()">${on ? '● 開' : '○ 關'}</button>
+        <span class="auto-saved" id="autoSaved" aria-live="polite"></span>
+        <span class="auto-note">${note}</span>`;
+    }
+
+    async function toggleAutoPublish() {
+      if (!SITE_DATA.autoPublish) SITE_DATA.autoPublish = { enabled: true, lastCheckAt: '' };
+      const a = SITE_DATA.autoPublish;
+      const next = a.enabled === false;
+      a.enabled = next;
+      renderReviewDesk();
+      try {
+        await window.WangzhouCloud.upsertSiteConfig('auto_publish_enabled', { enabled: next });
+        const el = document.getElementById('autoSaved');
+        if (el) { el.textContent = '已儲存'; setTimeout(() => { const e2 = document.getElementById('autoSaved'); if (e2) e2.textContent = ''; }, 1500); }
+      } catch (err) {
+        console.error(err);
+        a.enabled = !next;
+        renderReviewDesk();
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
+    }
+
+    // 自動上架，待抽查：最近 7 天內自動上架的手札與課程
+    function spotRows() {
+      const cut = Date.now() - 7 * 86400000;
+      const out = [];
+      [['course', deskList('course')], ['article', deskList('article')]].forEach(([kind, list]) => list.forEach(item => {
+        const key = `${kind}:${item.id}`;
+        const live = kind === 'course' ? item.active : item.status === 'active';
+        const at = Date.parse(item.autoPublishedAt || '');
+        if (spotDone[key] || (item.autoPublished && live && !isNaN(at) && at > cut)) out.push({ kind, item, key, at: isNaN(at) ? 0 : at });
+      }));
+      return out.sort((x, y) => y.at - x.at);
+    }
+
+    function canRestoreVersion(item) {
+      const prev = item.revisionPrevPayload;
+      const at = prev && Date.parse(prev.replaced_at || '');
+      return !!prev && !isNaN(at) && Date.now() - at < 7 * 86400000;
+    }
+
+    function renderAutoSpot() {
+      const box = document.getElementById('autoSpot-site');
+      if (!box) return;
+      const rows = spotRows();
+      if (!rows.length) { box.innerHTML = ''; return; }
+      const kindLabel = { course: '課程', article: '手札' };
+      const btnHtml = (r, act, text) => {
+        const asking = spotConfirm && spotConfirm.key === r.key && spotConfirm.act === act;
+        if (!asking) return `<button type="button" class="btn-table-sm" onclick="spotAsk('${r.key}', '${act}')">${text}</button>`;
+        const q = act === 'restore' ? '還原為舊版？' : '確定下架？';
+        return `<button type="button" class="btn-table-sm" style="background:#B87D4B; color:#FFF; border-color:#B87D4B;" onclick="spotDo('${r.key}', '${act}')">${q}</button><button type="button" class="btn-table-sm" onclick="spotCancel()">取消</button>`;
+      };
+      const list = rows.map(r => {
+        const title = escapeHtml(r.item.title || '（無標題）');
+        if (spotDone[r.key]) {
+          return `<div class="spot-row is-done"><span class="sub-badge" style="background:#EDF2F7; color:#718096;">${kindLabel[r.kind]}</span><span class="spot-title">${title}</span><span class="spot-note">${spotDone[r.key] === 'restored' ? '已還原舊版' : '已下架，退回待審'}</span></div>`;
+        }
+        const page = r.kind === 'course' ? 'resources.html' : 'articles.html';
+        const btns = `<a class="btn-table-sm" href="${page}" target="_blank" rel="noopener" style="text-decoration:none;">開啟前台</a>` +
+          btnHtml(r, 'down', '下架') +
+          (r.kind === 'course' && canRestoreVersion(r.item) ? btnHtml(r, 'restore', '還原舊版') : '') +
+          `<button type="button" class="btn-table-sm" onclick="spotSeen('${r.key}')">看過了</button>`;
+        return `<div class="spot-row"><span class="sub-badge" style="background:#EDF2F7; color:#2D3748;">${kindLabel[r.kind]}</span><span class="spot-title">${title}</span><span class="spot-time">${escapeHtml(fmtTaipeiShort(r.item.autoPublishedAt))} 上架</span><span class="spot-btns">${btns}</span></div>`;
+      }).join('');
+      box.innerHTML = `<details class="spot-box"${spotCollapsed ? '' : ' open'} ontoggle="spotCollapsed = !this.open"><summary>自動上架，待抽查（${rows.filter(r => !spotDone[r.key]).length}）</summary>${list}</details>`;
+    }
+
+    function spotFind(key) {
+      const sep = key.indexOf(':');
+      return { kind: key.slice(0, sep), item: deskFind(key.slice(0, sep), key.slice(sep + 1)) };
+    }
+
+    function spotAsk(key, act) {
+      spotConfirm = { key, act };
+      clearTimeout(spotConfirmTimer);
+      spotConfirmTimer = setTimeout(spotCancel, 3000);
+      renderAutoSpot();
+    }
+
+    function spotCancel() {
+      clearTimeout(spotConfirmTimer);
+      spotConfirm = null;
+      renderAutoSpot();
+    }
+
+    async function spotDo(key, act) {
+      clearTimeout(spotConfirmTimer);
+      spotConfirm = null;
+      const { kind, item } = spotFind(key);
+      if (!item) return;
+      try {
+        if (act === 'down') {
+          // 下架＝退回待審並標「需主理人確認」（資料庫的防呆會同時清掉自動上架標記與時間）
+          await window.WangzhouCloud.patchReviewItemGuarded(kind, item.id,
+            { status: cloudStatusOf(kind, item), reviewStatus: item.reviewStatus || '' },
+            { status: 'draft', review_status: 'pending', hold_for_owner: true });
+          item.isDraft = true; item.active = false; item.status = 'draft';
+          item.reviewStatus = 'pending'; item.holdForOwner = true; item.autoPublished = false; item.autoPublishAt = '';
+          spotDone[key] = 'down';
+        } else {
+          const ok = await window.WangzhouCloud.restoreCourseVersion(item.id);
+          if (!ok) { showToast('⚠️ 這門課現在沒有可以還原的舊版，請按「從雲端同步」重新整理後再看。', 5000); return; }
+          const rows = await window.WangzhouCloud.request(`courses?id=eq.${encodeURIComponent(item.id)}&select=*`);
+          if (Array.isArray(rows) && rows[0]) Object.assign(item, wzCourseFromRow(rows[0]));
+          spotDone[key] = 'restored';
+        }
+        saveDataToLocalStorage();
+        refreshAdminView();
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message, 6000);
+        renderAutoSpot();
+      }
+    }
+
+    async function spotSeen(key) {
+      const { kind, item } = spotFind(key);
+      if (!item) return;
+      try {
+        await window.WangzhouCloud.patchItemFields(kind, item.id, { auto_published: false });
+        item.autoPublished = false;
+        saveDataToLocalStorage();
+        refreshAdminView();
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
+    }
 
     function scrollDeskTo(id) {
       const el = document.getElementById(id);
@@ -4266,8 +4577,13 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (reviewCursor[line] < 0) reviewCursor[line] = 0;
       const cursor = reviewCursor[line];
 
-      progress.innerHTML = `<span style="font-size:0.82rem; color:#4A5568; margin-right:4px;">${line === 'site' ? `待審 ${pendingCount} 篇：` : '審稿：'}</span>` +
-        pool.map((u, i) => `<button type="button" class="btn-table-sm" style="${i === cursor ? 'background:#2B4C65; color:#FFF; border-color:#2B4C65;' : ''}" onclick="gotoReview('${line}', ${i})">${i + 1}. ${REVIEW_LABELS[u.state]}</button>`).join('') +
+      const attnCount = line === 'site' ? pool.filter(needsOwnerLook).length : 0;
+      progress.innerHTML = `<span style="font-size:0.82rem; color:#4A5568; margin-right:4px;">${line === 'site' ? `待審 ${pendingCount} 篇${attnCount ? `（${attnCount} 篇需你確認）` : ''}：` : '審稿：'}</span>` +
+        pool.map((u, i) => {
+          const hold = line === 'site' && u.state === 'pending' && u.kind !== 'social' && u.item.holdForOwner;
+          const style = i === cursor ? 'background:#2B4C65; color:#FFF; border-color:#2B4C65;' : hold ? 'border-color:#B87D4B;' : '';
+          return `<button type="button" class="btn-table-sm" style="${style}" onclick="gotoReview('${line}', ${i})">${i + 1}. ${reviewButtonLabel(u)}</button>`;
+        }).join('') +
         (waiting > 0 ? `<span style="font-size:0.78rem; color:#A0AEC0; margin-left:6px;">另有 ${waiting} 則排在下週</span>` : '');
 
       const unit = pool[cursor];
@@ -4304,15 +4620,20 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         ? `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D;">${reviewNotice[line]}</div>`
         : '';
 
+      const st = autoStatusInfo(unit);
+      const nearNote = st.timer && kind === 'course' && courseNearDeadline(item) ? '<div class="desk-sub-note">報名快截止，提早上架</div>' : '';
+      const repBlock = kind === 'course' ? reportsBlockHtml(item.id) : '';
       card.innerHTML = `
         ${doneHtml}
         ${noticeHtml}
-        <div style="background:#FAF8F5; border:1px solid #E2E8F0; border-radius:12px; padding:18px;">
+        <div class="${st.hold ? 'desk-card-hold' : ''}" style="background:#FAF8F5; border:1px solid #E2E8F0; border-radius:12px; padding:18px;">
           <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
             <span class="sub-badge" style="background:#EDF2F7; color:#2D3748;">${REVIEW_KIND_LABELS[kind]}</span>
-            <span style="margin-left:auto; font-size:0.82rem; font-weight:600; color:#2B4C65;">${REVIEW_LABELS[unit.state]}</span>
+            ${st.html}
           </div>
-          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 14px;">${escapeHtml(item.title || '（無標題）')}</h3>
+          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 ${nearNote || repBlock ? '8' : '14'}px;">${escapeHtml(item.title || '（無標題）')}</h3>
+          ${nearNote}
+          ${repBlock ? `<div style="margin:0 0 12px;">${repBlock}</div>` : ''}
 
           <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px; margin-bottom:10px; font-size:0.84rem; line-height:1.7;"><strong>🛡️ 預先稽核與風險提示</strong>${auditHtml}</div>
           ${sourceHtml}
@@ -4375,9 +4696,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       applyReviewNoteLocal(line);
       delete reviewNoteDirty[line];
       if (d.item.reviewNote === d.base || !window.WangzhouCloud) return;
-      const fn = d.kind === 'social' ? 'upsertSocialPost' : d.kind === 'article' ? 'upsertArticle' : 'upsertCourse';
       try {
-        await window.WangzhouCloud[fn](d.item);
+        if (d.kind === 'social') await window.WangzhouCloud.upsertSocialPost(d.item);
+        else await window.WangzhouCloud.patchReviewItemGuarded(d.kind, d.item.id,
+          { status: cloudStatusOf(d.kind, d.item), reviewStatus: d.item.reviewStatus || '' },
+          { review_note: d.item.reviewNote || null });
       } catch (err) {
         console.error(err);
         showToast('⚠️ 修改意見雲端儲存失敗：' + err.message);
@@ -4420,16 +4743,19 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         item.reviewNote = note;
         tasks.push(() => window.WangzhouCloud.upsertSocialPost(item));
       } else if (itemOpen) {
+        const before = { status: cloudStatusOf(kind, item), reviewStatus: item.reviewStatus || '' };
         item.reviewStatus = decision;
         item.reviewNote = note;
         if (kind === 'article') {
           item.status = decision === 'approved' ? 'active' : decision === 'rejected' ? 'retired' : 'draft';
           item.isDraft = item.status === 'draft';
-          tasks.push(() => window.WangzhouCloud.upsertArticle(item));
+          tasks.push(() => window.WangzhouCloud.patchReviewItemGuarded('article', item.id, before,
+            { review_status: decision, review_note: note || null, status: item.status }));
         } else {
           item.isDraft = decision === 'revise';
           item.active = decision === 'approved';
-          tasks.push(() => window.WangzhouCloud.upsertCourse(item));
+          tasks.push(() => window.WangzhouCloud.patchReviewItemGuarded('course', item.id, before,
+            { review_status: decision, review_note: note || null, status: cloudStatusOf('course', item) }));
         }
       }
       return tasks;
@@ -4486,15 +4812,27 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       // 網站線才處理課程：重做中、已開放待複查、草稿要修改；已在重做的不重複列進 🔔，新版待審與尚未開放不複製
       const redo = isSite ? courses.filter(c => courseIsLive(c) && c.revisionState === 'requested') : [];
       const bells = isSite ? courses.filter(c => courseNeedsRegCheck(c) && !c.revisionState) : [];
-      const draftRevise = isSite ? draftReviseCourses().map(c => ({ kind: 'course', item: c, state: 'revise' })) : [];
-      if (pool.length === 0 && redo.length === 0 && bells.length === 0 && draftRevise.length === 0) {
+      // 以資料本身存的狀態為準：不管這次頁面有沒有開過那張卡，所有「要修改」都列入
+      const poolKeys = new Set(pool.map(u => u.key));
+      const draftRevise = [];
+      (isSite ? ['course', 'article'] : ['social']).forEach(kind => deskList(kind).forEach(item => {
+        const key = `${kind}:${item.id}`;
+        if (poolKeys.has(key) || itemReviewState(kind, item) !== 'revise') return;
+        if (kind === 'social' && !isReviewable(item)) return;
+        draftRevise.push({ key, kind, item, state: 'revise' });
+      }));
+      // 讀者回報：依課程聚合；已處理的不列入，不列信箱
+      const reportGroups = {};
+      if (isSite) (SITE_DATA.submissions || []).filter(r => r.courseId && r.status === 'unread').forEach(r => { (reportGroups[r.courseId] = reportGroups[r.courseId] || []).push(r); });
+      const reportIds = Object.keys(reportGroups);
+      if (pool.length === 0 && redo.length === 0 && bells.length === 0 && draftRevise.length === 0 && reportIds.length === 0) {
         alert('沒有資料可以複製。');
         return;
       }
       const groups = { approved: [], revise: [], rejected: [], pending: [] };
       pool.forEach(u => groups[u.state].push(u));
       groups.revise.push(...draftRevise);
-      const label = u => `[${REVIEW_KIND_LABELS[u.kind]}] ${u.item.title || '（無標題）'}`;
+      const label = u => `[${REVIEW_KIND_LABELS[u.kind]}] ${u.item.title || '（無標題）'}（id：${u.item.id}）`;
       const noteOf = u => u.item.reviewNote || '';
       const today = new Date().toLocaleDateString('zh-TW');
       const lines = [`望舟小棧${isSite ? '網站內容' : '社群貼文'}審稿結果（${today}）`];
@@ -4522,10 +4860,27 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         lines.push('', '🔔 已開放報名，請複查官方頁面（有變動請回報要改哪裡；沒有變動請回「無變動」）：');
         bells.forEach(c => lines.push(`・[課程] ${c.title || '（無標題）'}（課程 id：${c.id}）`, `  開放時間：${wzToDatetimeLocal(c.regOpenDate).replace('T', ' ')}`, `  官方連結：${c.url || '（未填）'}`));
       }
+      if (reportIds.length) {
+        lines.push('', '【讀者回報】');
+        reportIds.forEach(cid => {
+          const list = reportGroups[cid];
+          const c = (SITE_DATA.courses || []).find(x => x.id === cid);
+          const counts = {};
+          list.forEach(r => { const l = ISSUE_LABELS[r.issueType] || '其他'; counts[l] = (counts[l] || 0) + 1; });
+          const notes = [...new Set(list.map(r => (r.content || '').trim()).filter(t => t && !Object.values(ISSUE_LABELS).includes(t)))];
+          lines.push(`- ${c ? c.title : cid}（${cid}）：${list.length} 筆`, `  ${Object.entries(counts).map(([l, n]) => `${l} ×${n}`).join('、')}`);
+          notes.slice(0, 5).forEach(t => lines.push(`  補充：「${t.slice(0, 100)}」`));
+          lines.push('  請企劃回官方頁複查，再交文案更新，品審通過後才改。');
+        });
+      }
       const text = lines.join('\n');
       try {
         await navigator.clipboard.writeText(text);
-        showToast(`📋 已複製${isSite ? '網站內容' : '社群貼文'}審稿結果，可以直接貼給 AI`);
+        const all = [...groups.approved, ...groups.revise, ...groups.rejected, ...groups.pending];
+        const total = all.length + redo.length + bells.length;
+        const withNote = all.filter(u => noteOf(u)).length + redo.filter(c => c.revisionNote).length;
+        const missing = groups.revise.filter(u => !noteOf(u)).length + redo.filter(c => !c.revisionNote).length;
+        showToast(`📋 已複製 ${total} 筆，其中 ${withNote} 筆有備註` + (missing ? `；另有 ${missing} 筆標了要修改，還沒寫意見` : ''));
       } catch (e) {
         alert(text);
       }

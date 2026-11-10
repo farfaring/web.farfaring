@@ -292,6 +292,12 @@ function wzCourseFromRow(c) {
     revisionNote: c.revision_note || '',
     revisionPayload: c.revision_payload || null,
     revisionSubmittedAt: c.revision_submitted_at || '',
+    revisionPrevPayload: c.revision_prev_payload || null,
+    // 自動上架相關（只有後台讀得到；前台的欄位清單沒有它們，值會是空的）
+    autoPublishAt: c.auto_publish_at || '',
+    autoPublished: c.auto_published === true,
+    autoPublishedAt: c.auto_published_at || '',
+    holdForOwner: c.hold_for_owner === true,
     createdAt: c.created_at || ''
   };
 }
@@ -327,7 +333,7 @@ const WangzhouCloud = {
   async getArticles() {
     return await this.request('articles?select=*&order=created_at.desc');
   },
-  async upsertArticle(article) {
+  _articlePayload(article) {
     const payload = {
       id: article.id,
       cat_key: article.catKey || article.cat_key || 'career',
@@ -343,6 +349,10 @@ const WangzhouCloud = {
       audit_note: article.auditNote,
       source_url: article.sourceUrl
     });
+    return payload;
+  },
+  async upsertArticle(article) {
+    const payload = this._articlePayload(article);
     return await this.request('articles', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
@@ -359,7 +369,7 @@ const WangzhouCloud = {
   async getCourses() {
     return await this.request('courses?select=*&order=created_at.desc');
   },
-  async upsertCourse(course) {
+  _coursePayload(course) {
     const payload = {
       id: course.id,
       name: course.title || course.name,
@@ -386,6 +396,10 @@ const WangzhouCloud = {
       // 沒填開放報名日存成 null；沒帶這個欄位的舊物件不動雲端的值
       reg_open_date: course.regOpenDate === undefined ? undefined : wzToCloudTime(course.regOpenDate)
     });
+    return payload;
+  },
+  async upsertCourse(course) {
+    const payload = this._coursePayload(course);
     return await this.request('courses', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
@@ -466,6 +480,7 @@ const WangzhouCloud = {
       status: 'active',
       review_status: 'approved',
       reg_checked_at: new Date().toISOString(),
+      auto_published: false,  // 主理人親自核准，不是「自動上架、待抽查」
       revision_state: null,
       revision_note: null,
       revision_payload: null,
@@ -475,6 +490,53 @@ const WangzhouCloud = {
   // 開放報名後主理人確認「沒有變動」：只記下複查時間
   async markCourseRegChecked(id) {
     return await this.patchCourseGuarded(id, [], { reg_checked_at: new Date().toISOString() });
+  },
+
+  // 審稿台專用（手札與課程）：只 PATCH 必要欄位，並帶「讀到的狀態」當條件。
+  // 不用整列覆蓋，避免把「剛被自動上架」或「AI 剛重送」的新內容蓋回瀏覽器裡的舊內容。
+  // before = { status, reviewStatus }（畫面上讀到的狀態）；條件不符就不寫入並丟出錯誤。
+  // 暫定提示字句（待品審）：「這篇稿件的狀態剛剛有變動……請按「從雲端同步」重新整理後再試。」
+  async patchReviewItemGuarded(kind, id, before, body) {
+    const table = kind === 'course' ? 'courses' : 'articles';
+    const b = before || {};
+    const q = [`id=eq.${encodeURIComponent(id)}`];
+    q.push(b.status ? `status=eq.${encodeURIComponent(b.status)}` : 'status=is.null');
+    q.push(b.reviewStatus ? `review_status=eq.${encodeURIComponent(b.reviewStatus)}` : 'review_status=is.null');
+    const rows = await this.request(`${table}?${q.join('&')}&select=id`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(body)
+    });
+    if (!Array.isArray(rows) || rows.length !== 1) {
+      throw new Error('這篇稿件的狀態剛剛有變動（可能已自動上架，或有新版稿件送達），請按「從雲端同步」重新整理後再試。');
+    }
+    return rows[0];
+  },
+  // 只改單一內容欄位（例如網址），不帶狀態條件、不碰其他欄位
+  async patchItemFields(kind, id, body) {
+    const table = kind === 'course' ? 'courses' : 'articles';
+    return await this.request(`${table}?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+  },
+
+  // 編輯表單或上下架切換：只寫表單實際欄位（不含修改意見），並帶「讀到的狀態」當條件；
+  // 狀態不符（例如剛被自動上架）就不寫入並提示重新整理。新增稿件（雲端還沒有這一列）才用 upsert。
+  async saveItemGuarded(kind, item, before) {
+    const payload = kind === 'course' ? this._coursePayload(item) : this._articlePayload(item);
+    delete payload.id;
+    delete payload.review_note;
+    return await this.patchReviewItemGuarded(kind, item.id, before, payload);
+  },
+
+  // 一鍵還原：把剛被自動替換的課程換回舊版（資料庫函數 restore_course_prev_version，只有主理人登入後才能執行）；回傳 false 代表沒有可還原的舊版
+  async restoreCourseVersion(id) {
+    return await this.request('rpc/restore_course_prev_version', {
+      method: 'POST',
+      body: JSON.stringify({ p_id: id })
+    });
   },
 
   // 3. 木棧板小語 (Planks)
@@ -521,6 +583,11 @@ const WangzhouCloud = {
       extra: clip(sub.extra, 2000),
       status: 'unread'
     };
+    // 讀者回報課程問題：兩欄要一起帶（資料庫也這樣檢查）；一般投稿不帶，不受影響
+    if (sub.courseId && sub.issueType) {
+      payload.course_id = clip(sub.courseId, 80);
+      payload.issue_type = sub.issueType;
+    }
     return await this.request('submissions', {
       method: 'POST',
       headers: { 'Prefer': 'return=minimal' },
@@ -751,7 +818,7 @@ const WangzhouCloud = {
   async syncToLocal({ includePrivate = false } = {}) {
     try {
       const skip = Promise.resolve(null);
-      const [articles, courses, submissions, posts, planks, aboutConfig] = await Promise.all([
+      const [articles, courses, submissions, posts, planks, aboutConfig, autoEnabledCfg, autoCheckCfg] = await Promise.all([
         (includePrivate ? this.getArticles() : this.request(`articles?select=${WZ_PUBLIC_ARTICLE_COLUMNS}&status=eq.active&order=created_at.desc`))
           .catch(err => { console.warn('Articles sync failed:', err); return null; }),
         (includePrivate ? this.getCourses() : this.request(`courses?select=${WZ_PUBLIC_COURSE_COLUMNS}&status=eq.active&order=created_at.desc`))
@@ -759,8 +826,18 @@ const WangzhouCloud = {
         includePrivate ? this.getSubmissions().catch(err => { console.warn('Submissions sync failed:', err); return null; }) : skip,
         includePrivate ? this.getSocialPosts().catch(err => { console.warn('Social posts sync failed:', err); return null; }) : skip,
         this.getPlanks().catch(err => { console.warn('Planks sync failed (using local fallback):', err); return null; }),
-        this.getSiteConfig('about').catch(err => { console.warn('About config sync failed (using local fallback):', err); return null; })
+        this.getSiteConfig('about').catch(err => { console.warn('About config sync failed (using local fallback):', err); return null; }),
+        includePrivate ? this.getSiteConfig('auto_publish_enabled').catch(() => null) : skip,
+        includePrivate ? this.getSiteConfig('auto_publish_last_check').catch(() => null) : skip
       ]);
+
+      // 後台：自動上架開關與上次檢查紀錄（沒讀到就維持 null，畫面不顯示警示）
+      if (includePrivate) {
+        SITE_DATA.autoPublish = {
+          enabled: autoEnabledCfg && typeof autoEnabledCfg === 'object' ? autoEnabledCfg.enabled !== false : true,
+          lastCheckAt: autoCheckCfg && autoCheckCfg.at ? autoCheckCfg.at : ''
+        };
+      }
 
       let changed = false;
 
@@ -791,6 +868,10 @@ const WangzhouCloud = {
           reviewNote: a.review_note || '',
           auditNote: a.audit_note || '',
           sourceUrl: a.source_url || '',
+          autoPublishAt: a.auto_publish_at || '',
+          autoPublished: a.auto_published === true,
+          autoPublishedAt: a.auto_published_at || '',
+          holdForOwner: a.hold_for_owner === true,
           createdAt: a.created_at || ''
         }));
         changed = true;
@@ -811,6 +892,8 @@ const WangzhouCloud = {
           contact: s.contact,
           content: s.content,
           extra: s.extra,
+          courseId: s.course_id || '',
+          issueType: s.issue_type || '',
           status: s.status,
           createdAt: s.created_at ? s.created_at.replace('T', ' ').substring(0, 16) : ''
         }));

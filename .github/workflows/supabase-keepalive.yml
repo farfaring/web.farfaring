@@ -1,4 +1,8 @@
-# 倉庫巡邏員：每 3 天讀一筆前台本來就公開的資料，避免 Supabase 免費專案閒置 7 天被暫停。
+# 倉庫巡邏員，兩項工作（都只用前台公開金鑰，不需要新增任何 secret）：
+#   1. ping：每 3 天讀一筆前台本來就公開的資料，避免 Supabase 免費專案閒置 7 天被暫停。
+#   2. auto-publish：每小時呼叫資料庫函數 auto_publish_due()，把「送進審稿台 72 小時主理人沒審」的手札與課程自動上架。
+#      函數不收參數、只做時間到了本來就要做的事；開關、每日上限、扣住（hold）與截止判斷都在函數裡。
+#      主理人可在後台關閉自動上架開關，函數看到開關關閉就什麼都不做。
 #
 # 用的是前台公開的唯讀金鑰（anon / publishable key，與 data.js 的 SUPABASE_CONFIG 相同）。
 # 絕不放 service_role 或任何私密金鑰。若日後 data.js 換了金鑰，這裡也要一起改。
@@ -18,6 +22,8 @@ on:
   schedule:
     # cron 用 UTC。02:17 UTC = 台灣上午 10:17；避開整點以減少 GitHub 排隊延遲。
     - cron: "17 2 */3 * *"
+    # 每小時一次的自動上架檢查（UTC，第 23 分；GitHub 排程可能延遲數分鐘到數十分鐘，所以上架時間是「約」）
+    - cron: "23 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -25,6 +31,8 @@ permissions:
 
 jobs:
   ping:
+    # 每小時那支排程不跑這項（只跑自動上架）；每 3 天那支與手動執行才跑
+    if: github.event_name != 'schedule' || github.event.schedule == '17 2 */3 * *'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -45,3 +53,22 @@ jobs:
             exit 1
           fi
           echo "資料庫有回應，讀取成功"
+
+  auto-publish:
+    if: github.event_name != 'schedule' || github.event.schedule == '23 * * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run auto_publish_due()
+        env:
+          SUPABASE_URL: https://zqkcnarvyklsifrqhfhd.supabase.co
+          ANON_KEY: sb_publishable_czCscDq--2300rOfRMsMOA_kJVBXeUa
+        run: |
+          code=$(curl -sS -o result.json -w '%{http_code}'             --max-time 30 --retry 2 --retry-delay 10 --retry-all-errors             -X POST             -H "apikey: $ANON_KEY"             -H "Authorization: Bearer $ANON_KEY"             -H "Content-Type: application/json"             -d '{}'             "$SUPABASE_URL/rest/v1/rpc/auto_publish_due") || code="000"
+          echo "HTTP status: $code"
+          cat result.json 2>/dev/null || true
+          echo
+          if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+            echo "::error::自動上架檢查失敗（狀態 $code）。404 代表資料庫還沒執行自動上架那段 SQL；其他請看上方回應。"
+            exit 1
+          fi

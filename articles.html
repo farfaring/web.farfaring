@@ -127,7 +127,31 @@
       line-height: 1.7;
     }
 
-    .editorial-layout { padding-bottom: 48px; }
+    .article-byline {
+      margin: 0.75rem 0 0;
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--ink-muted);
+    }
+    .article-byline.no-source {
+      border-top: 1px solid var(--hairline);
+      margin-top: 1.6em;
+      padding-top: 1em;
+    }
+
+    main.page-wrap.article-page { padding-bottom: 48px; }
+    @media (max-width: 768px) {
+      main.page-wrap.article-page { padding-bottom: 32px; }
+    }
+
+    .page-footnote {
+      max-width: 720px;
+      margin: 32px auto 0;
+      font-size: 0.8rem;
+      line-height: 1.8;
+      color: var(--ink-muted);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -158,7 +182,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="page-wrap">
+  <main class="page-wrap article-page">
 
     <!-- 搜尋與文章分類（三大實務觀察分類：職場觀察、職涯探索、生活步調） -->
     <div class="search-filter-box" style="margin-bottom:32px;">
@@ -194,6 +218,8 @@
         <!-- 動態渲染當前文章 -->
       </article>
     </div>
+
+    <p class="page-footnote" id="articleFootnote" hidden>✦ 手札引用的文章與報告，請以原文出處為準。</p>
 
   </main>
 
@@ -386,7 +412,11 @@
         <div class="article-meta">${wzEscape(active.cat)} ｜ ${wzEscape(active.date)}</div>
         <h2 class="article-main-title">${wzEscape(active.title)}</h2>
         <div class="article-prose">${wzArticleProse(active.prose)}</div>
+        <div class="article-byline"><span>AI協作整理｜望舟小棧</span></div>
       `;
+      const hasSource = !!canvas.querySelector(".article-source");
+      canvas.querySelector(".article-byline").classList.toggle("no-source", !hasSource);
+      document.getElementById("articleFootnote").hidden = !hasSource;
     }
 
     function openStoryModal() {

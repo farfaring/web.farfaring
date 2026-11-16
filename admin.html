@@ -380,6 +380,15 @@
     .auto-bar.is-stale { background:#FDF3E7; border-color:#E8C9A0; color:#8F5C30; }
     .auto-bar .auto-name { font-weight:600; color:#2D3748; }
     .auto-bar.is-off .auto-name { color:#718096; }
+    .auto-skips { flex-basis:100%; font-size:0.78rem; color:#718096; }
+    .auto-skips summary { cursor:pointer; }
+    .auto-skips div { margin-top:4px; line-height:1.7; }
+    .breaker-box { background:#FFF5F5; border:1px solid #FEB2B2; border-left:4px solid #C53030; border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:0.86rem; color:#742A2A; }
+    .breaker-head { font-weight:700; }
+    .breaker-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .breaker-title { flex:1 1 200px; min-width:0; color:#2D3748; }
+    .desk-fail-note { font-size:0.82rem; color:#C53030; margin:0 0 10px; }
+    .btn-submit-action.is-muted { opacity:0.85; }
     .auto-toggle { border:1px solid #CBD5E0; background:#FFF; border-radius:999px; padding:3px 12px; font:inherit; font-size:0.82rem; cursor:pointer; min-height:32px; color:#466D56; }
     .auto-toggle.is-off { color:#718096; }
     .auto-saved { font-size:0.78rem; color:#466D56; }
@@ -907,7 +916,7 @@
           <strong>2. ✍️ 主理人逐一審稿：</strong>進入審稿工作台逐篇審閱；稿件需要修改時，標「要修改」並複製審稿結果給 AI，改好的新版會再回到審稿台。
         </p>
         <p style="margin:4px 0; color:#4A5568;">
-          <strong>3. 🚀 上架：</strong>按「可以發」，前台立刻展出。沒空審的稿件，72 小時後會自動上架。
+          <strong>3. 🚀 上架：</strong>網站：按「可以發」，前台立刻展出；沒空審，24 小時後自動上架。社群：按「可以發」或 24 小時沒審，系統自動排時間送 Buffer。
         </p>
       </div>
     </main>
@@ -923,11 +932,11 @@
       <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
         <div class="desk-tab-wrap">
           <button type="button" id="deskTabBtn-site" class="btn-table-sm" style="background:#2B4C65; color:#FFF;" onclick="switchDeskTab('site')">🌊 網站上架審稿 <span id="badgeSitePending" class="desk-tab-badge" style="display:none;" title="待審篇數">0</span></button>
-          <div class="desk-tab-sub">手札與課程，按「可以發」就上架網站。</div>
+          <div class="desk-tab-sub">手札與課程。沒空審，24 小時後自動上架。</div>
         </div>
         <div class="desk-tab-wrap">
           <button type="button" id="deskTabBtn-social" class="btn-table-sm" onclick="switchDeskTab('social')">📣 社群貼文 <span id="badgeSocialPending" class="desk-tab-badge" style="display:none;" title="待審則數">0</span></button>
-          <div class="desk-tab-sub">每週 4 則，審完後選發文時間、送 Buffer。</div>
+          <div class="desk-tab-sub">按「可以發」或 24 小時沒審，系統自動排時間送 Buffer。</div>
         </div>
       </div>
       <div id="deskTab-site">
@@ -942,19 +951,22 @@
         <div id="handedBox-site"></div>
       </div>
       <div id="deskTab-social" style="display:none;">
+        <div id="breaker-social"></div>
         <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
           <button type="button" class="btn-table-sm" id="deskCopyBtn-social" onclick="copySocialResults()" title="把社群貼文的審稿結果複製起來，貼給 AI 修改">📋 複製審稿結果給 AI</button>
         </div>
+        <div id="autoBar-social" class="auto-bar"></div>
         <div id="socialStages" class="social-stages"></div>
         <div id="reviewProgress-social" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px;"></div>
         <div id="reviewCard-social"></div>
         <div id="handedBox-social"></div>
         <div id="socialScheduleSection" style="margin-top:22px;">
-          <h3 class="desk-section-title">🕒 選發文時間</h3>
+          <h3 class="desk-section-title">🕒 自己指定時間（選用）</h3>
+          <p class="desk-sub-note" style="margin:0 0 10px;">不指定也會由系統排。</p>
           <div id="scheduleBoard"></div>
         </div>
         <div id="socialSentSection" style="margin-top:22px;">
-          <h3 class="desk-section-title">📬 已送進 Buffer</h3>
+          <h3 class="desk-section-title">📬 已排進 Buffer</h3>
           <div id="sentBoard"></div>
         </div>
       </div>
@@ -1633,6 +1645,7 @@
               <option value="noon">🍱 午休片刻 (12:15)</option>
               <option value="evening" selected>🌙 晚間靠岸 (21:00)</option>
               <option value="weekend">☕ 週末午後 (15:00)</option>
+              <option value="afternoon">🌤 下午 (15:00)</option>
               <option value="custom">⏱️ 自訂時間</option>
             </select>
           </div>
@@ -1765,7 +1778,7 @@
   <script>window.WANGZHOU_ADMIN_MODE = true;</script>
 
   <!-- 引用共享核心數據 -->
-  <script src="./data.js?v=20261110b"></script>
+  <script src="./data.js?v=20261116a"></script>
 
   <script>
     // 切換面板
@@ -3515,6 +3528,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           noon: '🍱 午休 (12:15)',
           evening: '🌙 晚間 (21:00)',
           weekend: '☕ 週末 (15:00)',
+          afternoon: '🌤 下午 (15:00)',
           custom: '⏱️ 自訂時間'
         };
         const timeSlotText = timeSlotMap[post.scheduledTimeSlot] || post.timeSlotLabel || '';
@@ -4038,10 +4052,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     // =====================================================================
     // 📝 審稿工作台：兩條線
     // 🌊 網站上架審稿：手札與課程（含課程修訂卡），不設篇數上限，按「可以發」就上架網站
-    // 📣 社群貼文：每週 4 則，審稿 ➔ 選發文時間 ➔ 送進 Buffer；審過的留在本週，按「開始下週」才換下一批
+    // 📣 社群貼文：待審隨進隨審，不設篇數上限；按「可以發」後由系統自動排時間送進 Buffer（也可自己指定時間）
     // 兩條線的資料互不牽動：網站線的決定不會改動社群貼文的審稿狀態
     // =====================================================================
-    const SOCIAL_WEEKLY_QUOTA = 4;
     const REVIEW_LABELS = { pending: '⏳ 待審', approved: '✅ 可以發', revise: '✏️ 要修改', rejected: '❌ 不要發' };
     const REVIEW_KIND_LABELS = { article: '📖 水岸手札', course: '📋 課程活動', social: '📱 社群貼文' };
     const REVISE_TAGS = ['🛶 語氣更溫暖', '✂️ 篇幅縮短', '💡 重點更聚焦', '🔍 資訊需再查證', '📋 資訊不夠完整'];
@@ -4050,7 +4063,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       morning: { label: '☀️ 晨間通勤 08:30', time: '08:30' },
       noon: { label: '🍱 午休片刻 12:15', time: '12:15' },
       evening: { label: '🌙 晚間靠岸 21:00', time: '21:00' },
-      weekend: { label: '☕ 週末午後 15:00', time: '15:00' }
+      weekend: { label: '☕ 週末午後 15:00', time: '15:00' },
+      afternoon: { label: '🌤 下午 15:00', time: '15:00' }   // 手動建議時段：避開系統自動時段 08:30／12:15／21:00
     };
     const PLATFORM_TEXT_LIMITS = { threads: 500, instagram: 2196 };
     const IG_MAX_IMAGES = 10;
@@ -4241,13 +4255,10 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         .map(f => f.key);
     }
 
-    // 審稿池：順序固定。網站線不設上限，所有待審都在池中；社群線不足 4 則時由最早的待審補上
+    // 審稿池：順序固定。兩條線都不設上限，所有待審都在池中
     function getReviewPool(line) {
       reviewPoolKeys[line] = reviewPoolKeys[line].filter(k => { const u = buildReviewUnit(k); return u && unitHandedState(u) !== 'handed'; });
-      if (line === 'site') reviewPoolKeys.site.push(...pendingReviewKeys('site'));
-      else if (reviewPoolKeys.social.length < SOCIAL_WEEKLY_QUOTA) {
-        reviewPoolKeys.social.push(...pendingReviewKeys('social').slice(0, SOCIAL_WEEKLY_QUOTA - reviewPoolKeys.social.length));
-      }
+      reviewPoolKeys[line].push(...pendingReviewKeys(line));
       return reviewPoolKeys[line].map(buildReviewUnit);
     }
     const getSitePool = () => getReviewPool('site');
@@ -4267,6 +4278,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     function renderReviewDesk() {
       renderAutoBar();
+      renderSocialAutoBar();
+      renderSocialBreaker();
       renderAutoSpot();
       renderRevisionCards();
       renderReviewStep('site');
@@ -4478,8 +4491,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       },
       social: {
         prev: '← 上一則', next: '下一則 →',
-        empty: '目前沒有待審的社群貼文。貼文來源：課程管理的「📱 擬定社群貼文」，或每週 AI 送來的稿。',
-        decision: '<div>✅ 可以發：接著選發文時間、送 Buffer。</div><div>❌ 不要發：不會送進 Buffer，也不會排時間。</div>'
+        empty: '目前沒有待審的社群貼文。貼文來源：課程管理的「📱 擬定社群貼文」，或 AI 送來的稿。',
+        decision: '<div>✅ 可以發：通過後系統自動排時間送出。</div><div>❌ 不要發：不會送進 Buffer，也不會排時間。</div>'
       }
     };
 
@@ -4509,29 +4522,71 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const n = wzTaipeiParts(new Date().toISOString());
       const two = x => String(x).padStart(2, '0');
       const same = n && n.year === t.year && n.month === t.month && n.day === t.day;
-      return `${same ? '今天' : two(t.month) + '/' + two(t.day)} ${t.hour}:${t.minute}`;
+      const y = n ? new Date(Date.UTC(Number(n.year), Number(n.month) - 1, Number(n.day) - 1)) : null;
+      const yest = y && Number(t.year) === y.getUTCFullYear() && Number(t.month) === y.getUTCMonth() + 1 && Number(t.day) === y.getUTCDate();
+      return `${same ? '今天' : yest ? '昨天' : two(t.month) + '/' + two(t.day)} ${t.hour}:${t.minute}`;
     }
 
-    function countdownText(iso) {
+    function countdownText(iso, verb = '自動上架') {
       const t = Date.parse(iso || '');
       if (isNaN(t)) return '';
       const hours = Math.max(0, Math.floor((t - Date.now()) / 3600000));
-      if (t - Date.now() < 3600000) return '不到 1 小時自動上架';
-      if (hours >= 24) return `還有 ${Math.floor(hours / 24)} 天 ${hours % 24} 小時自動上架`;
-      return `還有 ${hours} 小時自動上架`;
+      if (t - Date.now() < 3600000) return `不到 1 小時${verb}`;
+      if (hours >= 24) return `還有 ${Math.floor(hours / 24)} 天 ${hours % 24} 小時${verb}`;
+      return `還有 ${hours} 小時${verb}`;
     }
 
-    // 課程報名截止不到 5 天（台灣時間）：自動上架改等 24 小時
-    function courseNearDeadline(c) {
-      if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(c.deadline || '')) return false;
-      const end = Date.parse(`${c.deadline}T${/^\d{2}:\d{2}$/.test(c.deadlineTime || '') ? c.deadlineTime + ':00' : '23:59:59'}+08:00`);
-      return !isNaN(end) && end > Date.now() && end - Date.now() < 5 * 86400000;
+    // ---- 社群自動送出：狀態判斷（讀 SITE_DATA.socialAuto、SITE_DATA.socialSends） ----
+    function socialAutoState() {
+      return SITE_DATA.socialAuto || { enabled: false, lastRunAt: '', summary: {}, tripped: false, trippedReason: '' };
+    }
+
+    // 開著但太久沒執行（與開關列同一個判斷）：自動送出暫時不會動
+    function socialAutoStale() {
+      const a = socialAutoState();
+      const last = Date.parse(a.lastRunAt || '');
+      return a.enabled === true && !a.tripped && !isNaN(last) && Date.now() - last > AUTO_STALE_MS;
+    }
+
+    function sendsOfPost(p) {
+      return (SITE_DATA.socialSends || []).filter(s => s.post_id === p.id);
+    }
+
+    // 已排進 Buffer（有送出紀錄、或貼文本身已有 Buffer 編號）
+    function isScheduledInBuffer(p) {
+      return sendsOfPost(p).some(s => s.state === 'scheduled' || s.state === 'sent') || (p.bufferPostIds && Object.keys(p.bufferPostIds).some(k => k !== 'coverOnly' && p.bufferPostIds[k]));
+    }
+
+    function failedSendOf(p) {
+      return sendsOfPost(p).find(s => s.state === 'failed') || null;
+    }
+
+    function socialStatusInfo(unit) {
+      const p = unit.item;
+      if (isScheduledInBuffer(p)) return { html: '<span class="desk-status is-soon">已排進 Buffer，要撤回請到 Buffer 刪除</span>', hold: false, timer: false, sent: true };
+      if (unit.state !== 'pending') return { html: `<span class="desk-status">${REVIEW_LABELS[unit.state]}</span>`, hold: false, timer: false };
+      if (p.holdForOwner) return { html: '<span class="desk-status is-hold">需你確認，不會自動送出</span>', hold: true, timer: false };
+      const a = socialAutoState();
+      if (a.tripped) return { html: '<span class="desk-status is-paused">自動送出已暫停</span>', hold: false, timer: false };
+      if (!a.enabled) return { html: '<span class="desk-status is-paused">自動送出已關閉</span>', hold: false, timer: false };
+      if (socialAutoStale()) return { html: '<span class="desk-status is-paused">自動送出已暫停</span>', hold: false, timer: false };
+      const text = countdownText(p.autoPublishAt, '自動送出');
+      if (!text) return { html: `<span class="desk-status">${REVIEW_LABELS.pending}</span>`, hold: false, timer: false };
+      const soon = Date.parse(p.autoPublishAt) - Date.now() < 12 * 3600000;
+      return { html: `<span class="desk-status${soon ? ' is-soon' : ''}">${text}</span>`, hold: false, timer: true };
+    }
+
+    // 逾時要說「已 X 小時」；X 取整數小時
+    function staleHours(iso) {
+      const t = Date.parse(iso || '');
+      return isNaN(t) ? 0 : Math.floor((Date.now() - t) / 3600000);
     }
 
     // 審稿卡右上角的狀態：{ html, hold, timer }
     function autoStatusInfo(unit) {
       const { kind, item, state } = unit;
-      if (state !== 'pending' || kind === 'social') return { html: `<span class="desk-status">${REVIEW_LABELS[state]}</span>`, hold: false, timer: false };
+      if (kind === 'social') return socialStatusInfo(unit);
+      if (state !== 'pending') return { html: `<span class="desk-status">${REVIEW_LABELS[state]}</span>`, hold: false, timer: false };
       if (item.holdForOwner) return { html: '<span class="desk-status is-hold">需你確認，不會自動上架</span>', hold: true, timer: false };
       if (!autoPublishOn()) return { html: '<span class="desk-status is-paused">自動上架已暫停</span>', hold: false, timer: false };
       const text = countdownText(item.autoPublishAt);
@@ -4541,6 +4596,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     }
 
     function reviewButtonLabel(u) {
+      if (u.kind === 'social' && isScheduledInBuffer(u.item)) return '已排進 Buffer';
       if (u.state !== 'pending') return REVIEW_LABELS[u.state];
       const hold = u.kind !== 'social' && u.item.holdForOwner;
       const flag = u.kind === 'course' && reportsOf(u.item.id).length ? ' 🚩' : '';
@@ -4602,12 +4658,117 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const stale = on && !isNaN(last) && Date.now() - last > AUTO_STALE_MS;
       box.className = 'auto-bar' + (on ? '' : ' is-off') + (stale ? ' is-stale' : '');
       const note = !on ? '自動上架已暫停，待審稿不會自動上架。'
-        : stale ? '已超過 3 小時沒有檢查自動上架，稿件暫時不會自動上架，可以先手動審稿。'
-        : `上次檢查：${isNaN(last) ? '尚未檢查' : fmtTaipeiShort(a.lastCheckAt)}`;
+        : stale ? `已 ${staleHours(a.lastCheckAt)} 小時沒檢查，暫不自動上架，可先手動審`
+        : `上次檢查 ${isNaN(last) ? '尚未檢查' : fmtTaipeiShort(a.lastCheckAt)}`;
       box.innerHTML = `<span class="auto-name">自動上架</span>
         <button type="button" class="auto-toggle${on ? '' : ' is-off'}" role="switch" aria-checked="${on}" onclick="toggleAutoPublish()">${on ? '● 開' : '○ 關'}</button>
         <span class="auto-saved" id="autoSaved" aria-live="polite"></span>
         <span class="auto-note">${note}</span>`;
+    }
+
+    // 社群自動送出的略過原因（備份在 site_configs.social_auto_last_run.summary.skipped，查看時才展開）
+    const SKIP_LABELS = { daily_cap: '今天的課程貼文已滿 3 則，順延', claim_refused: '暫不送出' };
+    function skipReasonsHtml(summary) {
+      const sk = summary && summary.skipped && typeof summary.skipped === 'object' ? summary.skipped : {};
+      const rows = [];
+      let fmt = 0;
+      Object.keys(sk).forEach(k => {
+        if (k.indexOf('format_') === 0) fmt += Number(sk[k]) || 0;
+        else if (SKIP_LABELS[k]) rows.push(`${SKIP_LABELS[k]}（${Number(sk[k]) || 0}）`);
+      });
+      if (fmt) rows.unshift(`格式不符，未送出（${fmt}）`);
+      if (summary && summary.note) rows.push(String(summary.note));
+      if (!rows.length) return '';
+      return `<details class="auto-skips"><summary>查看</summary><div>${rows.map(r => escapeHtml(r)).join('<br>')}</div></details>`;
+    }
+
+    // 社群自動送出開關列：社群自動送出 [關／開]　上次執行 14:05，排入 2 則
+    function renderSocialAutoBar() {
+      const box = document.getElementById('autoBar-social');
+      if (!box) return;
+      const a = socialAutoState();
+      const on = a.enabled === true;
+      const last = Date.parse(a.lastRunAt || '');
+      const stale = socialAutoStale();
+      box.className = 'auto-bar' + (on ? '' : ' is-off') + (stale ? ' is-stale' : '');
+      const sentN = Number((a.summary || {}).sent) || 0;
+      const note = !on ? '自動送出已關閉，貼文不會自動排進 Buffer。'
+        : stale ? `已 ${staleHours(a.lastRunAt)} 小時沒執行，暫不自動送出，可先自己指定時間`
+        : isNaN(last) ? '上次執行 尚未執行'
+        : `上次執行 ${fmtTaipeiShort(a.lastRunAt)}，排入 ${sentN} 則`;
+      box.innerHTML = `<span class="auto-name">社群自動送出</span>
+        <button type="button" class="auto-toggle${on ? '' : ' is-off'}" role="switch" aria-checked="${on}" onclick="toggleSocialAuto()">${on ? '● 開' : '○ 關'}</button>
+        <span class="auto-saved" id="autoSavedSocial" aria-live="polite"></span>
+        <span class="auto-note">${note}</span>
+        ${on ? skipReasonsHtml(a.summary) : ''}`;
+    }
+
+    async function toggleSocialAuto() {
+      if (!SITE_DATA.socialAuto) SITE_DATA.socialAuto = { enabled: false, lastRunAt: '', summary: {}, tripped: false, trippedReason: '' };
+      const a = SITE_DATA.socialAuto;
+      const next = a.enabled !== true;
+      a.enabled = next;
+      renderReviewDesk();
+      try {
+        await window.WangzhouCloud.upsertSiteConfig('social_auto_send_enabled', { enabled: next });
+        const el = document.getElementById('autoSavedSocial');
+        if (el) { el.textContent = '已儲存'; setTimeout(() => { const e2 = document.getElementById('autoSavedSocial'); if (e2) e2.textContent = ''; }, 1500); }
+      } catch (err) {
+        console.error(err);
+        a.enabled = !next;
+        renderReviewDesk();
+        showToast('⚠️ 雲端儲存失敗：' + err.message);
+      }
+    }
+
+    // 熔斷：整條轉紅並置頂。結果不明時，要先逐則處理完才能解除暫停
+    function renderSocialBreaker() {
+      const box = document.getElementById('breaker-social');
+      if (!box) return;
+      const a = socialAutoState();
+      if (!a.tripped) { box.innerHTML = ''; return; }
+      const unknowns = (SITE_DATA.socialSends || []).filter(s => s.state === 'unknown');
+      const isUnknown = a.trippedReason === 'unknown' || unknowns.length > 0;
+      const head = isUnknown ? '自動送出已暫停：有貼文結果不明，請先到 Buffer 逐則確認' : '自動送出已暫停：連續送出失敗。請看貼文卡上的原因，處理後按「解除暫停」';
+      const rows = unknowns.map(s => {
+        const p = (SITE_DATA.socialPosts || []).find(x => x.id === s.post_id);
+        const title = p ? p.title : s.post_id;
+        const pid = escapeHtml(String(s.post_id)).replace(/'/g, '&#39;');
+        const plat = escapeHtml(String(s.platform)).replace(/'/g, '&#39;');
+        return `<div class="breaker-row">
+          <span class="breaker-title">${escapeHtml(title || '（無標題）')}</span>
+          <button type="button" class="btn-table-sm" onclick="resolveSend('${pid}', '${plat}', 'not_sent')">Buffer 上沒有，重新排</button>
+          <button type="button" class="btn-table-sm" onclick="resolveSend('${pid}', '${plat}', 'sent')">Buffer 上已有</button>
+        </div>`;
+      }).join('');
+      const blocked = unknowns.length > 0;
+      box.innerHTML = `<div class="breaker-box" role="alert">
+        <div class="breaker-head">${head}</div>
+        ${rows}
+        <div style="margin-top:8px;"><button type="button" class="btn-table-sm" ${blocked ? 'disabled title="先處理上面的結果不明"' : ''} onclick="resetSocialBreaker()">解除暫停</button></div>
+      </div>`;
+    }
+
+    async function resolveSend(postId, platform, resolution) {
+      try {
+        await window.WangzhouCloud.resolveSocialSend(postId, platform, resolution);
+        await window.WangzhouCloud.syncToLocal({ includePrivate: true });
+        refreshAdminView();
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 沒有處理成功：' + err.message);
+      }
+    }
+
+    async function resetSocialBreaker() {
+      try {
+        await window.WangzhouCloud.resetSocialBreaker();
+        await window.WangzhouCloud.syncToLocal({ includePrivate: true });
+        refreshAdminView();
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ 沒有解除成功：' + err.message);
+      }
     }
 
     async function toggleAutoPublish() {
@@ -4741,14 +4902,16 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // 社群線三段式進度：審稿 → 排時間 → 已送 Buffer（只是狀態指示，點各段捲到對應區塊）
+    // 社群線流程字：待審 N → 已通過 N → 已排進 Buffer N（只是狀態指示，點各段捲到對應區塊）
     function renderSocialProgress(pool, pendingCount) {
       const box = document.getElementById('socialStages');
       if (!box) return;
-      const stage = pendingCount > 0 ? 0 : scheduleCandidates().length > 0 ? 1 : upcomingSentPosts().length > 0 ? 2 : 0;
-      const steps = [['審稿', 'reviewCard-social'], ['排時間', 'socialScheduleSection'], ['已送 Buffer', 'socialSentSection']];
-      box.innerHTML = `<span class="stage-count">本週 ${pool.length} / ${SOCIAL_WEEKLY_QUOTA}</span>` +
-        steps.map((s, i) => `${i > 0 ? '<span class="stage-line">━━━</span>' : ''}<button type="button" class="stage-btn${i === stage ? ' is-on' : ''}" onclick="scrollDeskTo('${s[1]}')">${s[0]} ${i <= stage ? '●' : '○'}</button>`).join('');
+      const steps = [
+        ['待審', pendingCount, 'reviewCard-social'],
+        ['已通過', scheduleCandidates().length, 'socialScheduleSection'],
+        ['已排進 Buffer', upcomingSentPosts().length, 'socialSentSection']
+      ];
+      box.innerHTML = steps.map((s, i) => `${i > 0 ? '<span class="stage-line">→</span>' : ''}<button type="button" class="stage-btn${s[1] > 0 ? ' is-on' : ''}" onclick="scrollDeskTo('${s[2]}')">${s[0]} ${s[1]}</button>`).join('');
     }
 
     function renderReviewStep(line) {
@@ -4758,8 +4921,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const T = LINE_TEXT[line];
 
       const pool = getReviewPool(line);
-      const pendingCount = pool.filter(u => u.state === 'pending').length;
-      const waiting = line === 'social' ? pendingReviewKeys('social').length : 0;
+      const pendingCount = pool.filter(u => u.state === 'pending' && !(u.kind === 'social' && isScheduledInBuffer(u.item))).length;
       // 課程新版待審也算待審（徽章、空狀態都要算進去）
       const revCount = line === 'site' ? pendingRevisionCourses().length : 0;
       const chipN = copyPlan(line).draftRevise.length;
@@ -4796,7 +4958,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           const style = i === cursor ? 'background:#2B4C65; color:#FFF; border-color:#2B4C65;' : hold ? 'border-color:#B87D4B;' : '';
           return `<button type="button" class="btn-table-sm" style="${style}" onclick="gotoReview('${line}', ${i})">${i + 1}. ${reviewButtonLabel(u)}</button>`;
         }).join('') +
-        (waiting > 0 ? `<span style="font-size:0.78rem; color:#A0AEC0; margin-left:6px;">另有 ${waiting} 則排在下週</span>` : '') + chipHtml;
+        chipHtml;
 
       const unit = pool[cursor];
       const { kind, item } = unit;
@@ -4820,20 +4982,19 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const doneHtml = pendingCount === 0
         ? (line === 'site'
           ? `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D;">🎉 待審的都處理完了，內容都已在網站上。</div>`
-          : `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-              <span>🎉 本週 ${pool.length} 則都審完了，往下選發文時間。</span>
-              <span style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button type="button" class="btn-table-sm" onclick="scrollDeskTo('socialScheduleSection')">前往選時間</button>
-                ${waiting > 0 ? '<button type="button" class="btn-table-sm" onclick="startNextSocialRound()">開始下週 →</button>' : ''}
-              </span>
-            </div>`)
+          : `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:12px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D;">🎉 待審的都處理完了，通過的貼文由系統自動排時間送出。</div>`)
         : '';
       const noticeHtml = reviewNotice[line]
         ? `<div style="background:#F0FFF4; border:1px solid #C6F6D5; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:0.86rem; color:#22543D;">${reviewNotice[line]}</div>`
         : '';
 
       const st = autoStatusInfo(unit);
-      const nearNote = st.timer && kind === 'course' && courseNearDeadline(item) ? '<div class="desk-sub-note">報名快截止，提早上架</div>' : '';
+      const failedSend = kind === 'social' ? failedSendOf(item) : null;
+      const failN = failedSend ? Math.max(1, Math.min(3, Number(failedSend.attempts) || 1)) : 0;
+      const sa = socialAutoState();
+      const autoRunning = sa.enabled && !sa.tripped;
+      const failNote = failedSend ? `<div class="desk-fail-note">${failN >= 3 ? '送出失敗（3/3），不再自動重試' : autoRunning ? `送出失敗（第 ${failN}/3 次），會自動重試` : `送出失敗（第 ${failN}/3 次），自動送出暫停中，不會自動重試`}：${escapeHtml(String(failedSend.error || '原因不明'))}</div>` : '';
+      const sentLocked = !!st.sent;
       const repBlock = kind === 'course' ? reportsBlockHtml(item.id) : '';
       card.innerHTML = `
         ${doneHtml}
@@ -4844,8 +5005,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
             ${st.html}
             ${unitHandedState(unit) === 'aiEdited' ? '<span class="row-tag row-ai-edited">AI 已修改</span>' : ''}
           </div>
-          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 ${nearNote || repBlock ? '8' : '14'}px;">${escapeHtml(item.title || '（無標題）')}</h3>
-          ${nearNote}
+          <h3 style="font-family:'Noto Serif TC',serif; font-size:1.2rem; color:#1E242B; margin:0 0 ${failNote || repBlock ? '8' : '14'}px;">${escapeHtml(item.title || '（無標題）')}</h3>
+          ${failNote}
           ${repBlock ? `<div style="margin:0 0 12px;">${repBlock}</div>` : ''}
 
           <div style="background:#FFFDF7; border:1px solid #F6E05E; border-radius:8px; padding:10px 12px; margin-bottom:10px; font-size:0.84rem; line-height:1.7;"><strong>🛡️ 預先稽核與風險提示</strong>${auditHtml}</div>
@@ -4862,11 +5023,13 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           </div>
 
           <div class="review-decision-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px;">
-            <button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideReview('${line}', 'approved')">✅ 可以發</button>
-            <button type="button" class="btn-submit-action" style="margin:0; background:#B87D4B;" onclick="decideReview('${line}', 'revise')">✏️ 要修改</button>
-            <button type="button" class="btn-submit-action" style="margin:0; background:#718096;" onclick="decideReview('${line}', 'rejected')">❌ 不要發</button>
+            ${sentLocked
+              ? '<button type="button" class="btn-submit-action is-muted" style="margin:0; background:#A0AEC0;" disabled>已排進 Buffer</button>'
+              : `<button type="button" class="btn-submit-action" style="margin:0; background:#466D56;" onclick="decideReview('${line}', 'approved')">✅ 可以發</button>`}
+            <button type="button" class="btn-submit-action${sentLocked ? ' is-muted' : ''}" style="margin:0; background:${sentLocked ? '#A0AEC0' : '#B87D4B'};" onclick="decideReview('${line}', 'revise')">✏️ 要修改</button>
+            <button type="button" class="btn-submit-action${sentLocked ? ' is-muted' : ''}" style="margin:0; background:${sentLocked ? '#A0AEC0' : '#718096'};" onclick="decideReview('${line}', 'rejected')">❌ 不要發</button>
           </div>
-          <div style="font-size:0.78rem; color:#718096; margin-bottom:10px;">${T.decision}</div>
+          <div style="font-size:0.78rem; color:#718096; margin-bottom:10px;">${sentLocked ? '<div>按「要修改」或「不要發」不會撤回 Buffer 上的貼文；要撤回請到 Buffer 刪除。</div>' : T.decision}</div>
           ${linkedCount > 0 ? `<div style="font-size:0.78rem; color:#718096; margin-bottom:10px;">這門課另有 ${linkedCount} 則社群貼文，在『📣 社群貼文』頁處理。</div>` : ''}
 
           <div style="display:flex; justify-content:space-between; gap:8px;">
@@ -4934,17 +5097,6 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       box.value = box.value.trim() ? `${box.value.trim()}；${tag}` : tag;
     }
 
-    // 社群線：只把已做出決定的貼文移出本週；被改回待審的會留下
-    function startNextSocialRound() {
-      reviewPoolKeys.social = reviewPoolKeys.social.filter(k => {
-        const unit = buildReviewUnit(k);
-        return unit && unit.state === 'pending';
-      });
-      reviewCursor.social = 0;
-      reviewNotice.social = '';
-      renderReviewDesk();
-    }
-
     // 手札／課程：只有還在審稿中的才跟著決定上下架；已上架的舊內容不會因為新貼文被撤下
     // 這裡只改這一張卡本身，不連帶改動任何社群貼文
     function applyItemDecision(unit, decision, note) {
@@ -4980,6 +5132,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const pool = getReviewPool(line);
       const unit = pool[reviewCursor[line]];
       if (!unit) return;
+      if (unit.kind === 'social' && decision !== 'approved' && isScheduledInBuffer(unit.item) &&
+          !confirm('按「要修改」或「不要發」不會撤回 Buffer 上的貼文；要撤回請到 Buffer 刪除。')) return;
       clearTimeout(reviewNoteTimers[line]);
       delete reviewNoteDirty[line];
       const noteBox = document.getElementById('reviewNoteInput-' + line);
@@ -4995,7 +5149,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       saveDataToLocalStorage();
 
       reviewNotice[line] = decision !== 'approved' ? ''
-        : line === 'site' ? '✅ 已上架網站。' : '✅ 已通過，請到下方選發文時間。';
+        : line === 'site' ? '✅ 已上架網站。' : '✅ 已通過，系統會自動排時間送出。';
 
       // 自動跳到下一張待審
       const updated = getReviewPool(line);
@@ -5009,7 +5163,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       try {
         for (const task of tasks) await task();
         showToast(decision === 'approved'
-          ? (line === 'site' ? '✅ 已上架網站' : '✅ 已通過，請到下方選發文時間')
+          ? (line === 'site' ? '✅ 已上架網站' : '✅ 已通過，系統會自動排時間送出')
           : `${REVIEW_LABELS[decision]}：已儲存「${unit.item.title || '（無標題）'}」`);
       } catch (err) {
         console.error(err);
@@ -5257,11 +5411,6 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       return d.toISOString().slice(0, 10);
     }
 
-    function isWeekendDate(dateStr) {
-      const day = new Date(dateStr + 'T00:00:00Z').getUTCDay();
-      return day === 0 || day === 6;
-    }
-
     function postDeadline(p) {
       if (p.sourceType !== 'course') return null;
       const c = deskFind('course', p.sourceId);
@@ -5275,16 +5424,16 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     // 已通過審稿、還沒全部送進 Buffer 的社群貼文
     function scheduleCandidates() {
-      return (SITE_DATA.socialPosts || []).filter(p => reviewStatusOf(p) === 'approved' && p.status !== 'published' && !isFullySent(p));
+      return (SITE_DATA.socialPosts || []).filter(p => reviewStatusOf(p) === 'approved' && p.status !== 'published' && !isFullySent(p) && !isScheduledInBuffer(p));
     }
 
     function upcomingSentPosts() {
       return (SITE_DATA.socialPosts || [])
-        .filter(p => isFullySent(p) && p.scheduledAt && Date.parse(p.scheduledAt) > Date.now() - 24 * 3600 * 1000)
+        .filter(p => (isFullySent(p) || isScheduledInBuffer(p)) && p.scheduledAt && Date.parse(p.scheduledAt) > Date.now() - 24 * 3600 * 1000)
         .sort((a, b) => Date.parse(a.scheduledAt) - Date.parse(b.scheduledAt));
     }
 
-    // 建議時段：有報名截止日的先排；一天一篇，平日晚間 21:00、週末午後 15:00
+    // 建議時段：有報名截止日的先排；一天一篇，一律下午 15:00（避開系統自動時段 08:30／12:15／21:00）
     // 主理人自己選過的日期保留不動；系統建議的每次重新計算，新的急件才排得進截止日前
     function suggestSchedule(list) {
       const today = taipeiToday();
@@ -5299,7 +5448,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       todo.forEach(p => {
         while (taken.has(day)) day = addDays(day, 1);
         p.scheduledDate = day;
-        p.scheduledTimeSlot = isWeekendDate(day) ? 'weekend' : 'evening';
+        p.scheduledTimeSlot = 'afternoon';
         p.scheduleSuggested = true;
         taken.add(day);
       });
@@ -5366,19 +5515,20 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           const d = new Date(Date.parse(p.scheduledAt) + 8 * 3600 * 1000);
           const pad = n => String(n).padStart(2, '0');
           const when = `${d.getUTCMonth() + 1}/${d.getUTCDate()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
-          return `<div style="font-size:0.85rem; color:#4A5568; padding:6px 0; border-bottom:1px dashed #E2E8F0;">✅ 已送進 Buffer，預定 ${when}｜${escapeHtml(p.title || '（無標題）')}｜${platformsOf(p).map(pl => (pl === 'threads' ? 'Threads' : ((p.bufferPostIds || {}).coverOnly ? 'IG（只有封面）' : 'IG'))).join('、')}</div>`;
+          const bySystem = sendsOfPost(p).some(s => s.origin === 'auto');
+          return `<div style="font-size:0.85rem; color:#4A5568; padding:6px 0; border-bottom:1px dashed #E2E8F0;">✅ 已排進 Buffer，預定 ${when}｜${bySystem ? '<span class="sub-badge" style="background:#EDF2F7; color:#4A5568;">系統</span> ' : ''}${escapeHtml(p.title || '（無標題）')}｜${platformsOf(p).map(pl => (pl === 'threads' ? 'Threads' : ((p.bufferPostIds || {}).coverOnly ? 'IG（只有封面）' : 'IG'))).join('、')}</div>`;
         }).join('')
-        : '<div style="font-size:0.84rem; color:#A0AEC0;">還沒有送進 Buffer 的貼文。</div>';
+        : '<div style="font-size:0.84rem; color:#A0AEC0;">還沒有排進 Buffer 的貼文。</div>';
 
       const waitingReview = (SITE_DATA.socialPosts || []).filter(p => reviewStatusOf(p) === 'pending' && isReviewable(p)).length;
       const emptyText = waitingReview > 0
-        ? `還有 ${waitingReview} 則貼文待審，審完按『可以發』後會出現在這裡。`
+        ? `還有 ${waitingReview} 則貼文待審。按「可以發」後系統會自動排時間；想自己指定時間，再回到這裡設定。`
         : '目前沒有等著排時間的貼文。';
-      board.innerHTML = list.length
-        ? `<p style="font-size:0.84rem; color:#718096; margin:0 0 12px;">已通過審稿的社群貼文。時間是系統建議的（有截止日的課程排在前面），可以直接修改。送出後由 Buffer 在排定時間自動發布。</p>
+      board.innerHTML = (list.length
+        ? `<p style="font-size:0.84rem; color:#718096; margin:0 0 12px;">已通過審稿、還沒排入的社群貼文。時間是系統建議的（有截止日的課程排在前面），可以直接修改。送出後由 Buffer 在排定時間自動發布。</p>
            ${rows}
            <button type="button" id="btnSendToBuffer" class="btn-submit-action" style="background:#2C7A7B;" onclick="sendScheduledToBuffer()">🚀 送進 Buffer（${list.length} 則）</button>`
-        : `<div style="font-size:0.84rem; color:#A0AEC0;">${emptyText}</div>`;
+        : `<div style="font-size:0.84rem; color:#A0AEC0;">${emptyText}</div>`);
     }
 
     async function setPostSchedule(id, field, value) {
@@ -5427,6 +5577,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       renderScheduleStep();
     }
 
+    // 轉送站回「已經排進 Buffer」（409）時，換成不會讓人以為出錯的說法
+    function relayErrorText(err) {
+      const msg = String((err && err.message) || err || '');
+      return /已經排進 Buffer/.test(msg) ? '這一則已經排進 Buffer，不會重複送出' : msg;
+    }
+
     // bufferError 是「平台：原因；平台：原因」的一行字；取出 IG 那段的原因（沒有 IG 失敗就回傳 null）。
     function splitBufferError(p) {
       const parts = String(p.bufferError || '').split('；').filter(Boolean);
@@ -5454,6 +5610,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       try {
         const result = await window.WangzhouCloud.bufferRelay({
           action: 'create',
+          postId: p.id,
           platform: 'instagram',
           text: postTextFor(p, 'instagram'),
           dueAt: postDueIso(p),
@@ -5464,10 +5621,10 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         p.bufferError = prev.others.join('；');
         p.scheduledAt = new Date(Date.parse(postDueIso(p))).toISOString();
         if (isFullySent(p)) p.status = 'scheduled';
-        showToast('IG 已送進 Buffer（只有封面）');
+        showToast('IG 已排進 Buffer（只有封面）');
       } catch (err) {
-        p.bufferError = [...prev.others, `IG：${err.message}`].join('；');
-        showToast('⚠️ IG 沒有送成：' + err.message);
+        p.bufferError = [...prev.others, `IG：${relayErrorText(err)}`].join('；');
+        showToast('⚠️ IG 沒有送成：' + relayErrorText(err));
       }
       try {
         await window.WangzhouCloud.upsertSocialPost(p);
@@ -5503,7 +5660,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         alert('還不能送出：\n\n' + problems.join('\n'));
         return;
       }
-      if (!confirm(`即將把 ${list.length} 則貼文送進 Buffer，到排定時間會自動發布到 Threads／Instagram。\n確定送出嗎？`)) return;
+      if (!confirm(`即將把 ${list.length} 則貼文送進 Buffer，到排定時間會自動發布到 Threads／Instagram。\n通常由系統自動排，只有想自己指定時間時才手動送。\n確定送出嗎？`)) return;
 
       const btn = document.getElementById('btnSendToBuffer');
       if (btn) {
@@ -5512,6 +5669,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       }
       let ok = 0;
       let failed = 0;
+      let needSync = false;
       for (const p of list) {
         p.bufferPostIds = { ...(p.bufferPostIds || {}) };
         const errors = [];
@@ -5520,6 +5678,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           try {
             const result = await window.WangzhouCloud.bufferRelay({
               action: 'create',
+              postId: p.id,
               platform: pl,
               text: postTextFor(p, pl),
               dueAt: postDueIso(p),
@@ -5527,7 +5686,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
             });
             p.bufferPostIds[pl] = result.postId;
           } catch (err) {
-            errors.push(`${pl === 'threads' ? 'Threads' : 'IG'}：${err.message}`);
+            if (/已經排進 Buffer/.test(String(err.message))) needSync = true;
+            errors.push(`${pl === 'threads' ? 'Threads' : 'IG'}：${relayErrorText(err)}`);
           }
         }
         p.bufferError = errors.join('；');
@@ -5545,6 +5705,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         }
       }
       saveDataToLocalStorage();
+      if (needSync) await window.WangzhouCloud.syncToLocal({ includePrivate: true });
       refreshAdminView();
       alert(failed ? `完成 ${ok} 則，${failed} 則有問題，原因已標在該則下方，修正後可再按一次送出（已成功的平台不會重複送）。` : `🎉 ${ok} 則都已排進 Buffer！`);
     }
@@ -5580,6 +5741,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         noon: '🍱 午休片刻 (12:15)',
         evening: '🌙 晚間靠岸 (21:00)',
         weekend: '☕ 週末午後 (15:00)',
+        afternoon: '🌤 下午 (15:00)',
         custom: '⏱️ 自訂時間'
       };
       const timeSlotVal = document.getElementById('socTimeSlotInput').value;

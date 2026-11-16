@@ -635,7 +635,7 @@ NOTIFY pgrst, 'reload schema';
 --
 -- 規則（CLAUDE.md 4-1）：
 --   ・只有「待審」（review_status = pending 且 status = draft）會自動上架；要修改、不要發一律不動
---   ・送進審稿台 72 小時沒審就上架；距截止不到 5 天的課程改 24 小時；已截止的不上架
+--   ・送進審稿台 24 小時沒審就上架（2026-11-16 起，原為 72 小時；既有待審稿的升級在第 11 節）；已截止的不上架
 --   ・hold_for_owner = true 的稿件不自動上架（AI 標「需主理人確認」，或主理人自己扣住）
 --   ・已上架課程的「重做新版」到期也照同規則，以新版替換舊版
 --   ・每個台灣日最多自動上架 10 篇；開關（site_configs 的 auto_publish_enabled）關閉就整個停
@@ -673,7 +673,7 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.course_deadline_at(text, text) FROM PUBLIC, anon, authenticated;
 
--- 新增欄位；第一次新增時，順便替「已在審稿台待審」的稿件排時間（從現在起算 72 小時，課程距截止不到 5 天為 24 小時）。
+-- 新增欄位；第一次新增時，順便替「已在審稿台待審」的稿件排時間（從現在起算 24 小時）。
 -- 只在欄位還不存在時做一次，重複執行不會重新起算。
 DO $$
 BEGIN
@@ -687,19 +687,16 @@ BEGIN
     ALTER TABLE public.courses  ADD COLUMN IF NOT EXISTS hold_for_owner boolean NOT NULL DEFAULT false;
 
     UPDATE public.articles
-       SET auto_publish_at = now() + interval '72 hours'
+       SET auto_publish_at = now() + interval '24 hours'
      WHERE review_status = 'pending' AND status = 'draft';
 
     UPDATE public.courses
-       SET auto_publish_at = now() + CASE
-             WHEN public.course_deadline_at(deadline, deadline_time) IS NOT NULL
-              AND public.course_deadline_at(deadline, deadline_time) < now() + interval '5 days'
-             THEN interval '24 hours' ELSE interval '72 hours' END
+       SET auto_publish_at = now() + interval '24 hours'
      WHERE review_status = 'pending' AND status = 'draft';
 
-    -- 已上架、新版待審的課程：新版從現在起算 72 小時
+    -- 已上架、新版待審的課程：新版從現在起算 24 小時
     UPDATE public.courses
-       SET auto_publish_at = now() + interval '72 hours'
+       SET auto_publish_at = now() + interval '24 hours'
      WHERE status = 'active' AND revision_state = 'submitted';
 
     -- 稽核欄第一行寫了「官方頁面未載明：」的待審稿（費用、資格等官方沒寫，需主理人確認）先扣住，不自動上架。
@@ -739,7 +736,8 @@ AS $$
 DECLARE
   v_changed boolean;
 BEGIN
-  IF NEW.status IS DISTINCT FROM 'active' THEN
+  -- 社群貼文的 status 不是上架狀態（draft／scheduled／published），不套「離開上架就歸零」
+  IF TG_TABLE_NAME <> 'social_posts' AND NEW.status IS DISTINCT FROM 'active' THEN
     NEW.auto_published := false;
   END IF;
 
@@ -1134,3 +1132,452 @@ CREATE TRIGGER trg_courses_touch_last_updated
 
 NOTIFY pgrst, 'reload schema';
 -- ======================= 第 10 節結束 =======================
+
+
+-- =======================================================
+-- 11. 社群貼文自動送出（Threads，2026-11-16；升級段落，可重複執行）
+--
+-- 規則（CLAUDE.md 4-1、第六節第 0 點）：
+--   ・送進審稿台 24 小時主理人沒審，或主理人按「可以發」且尚未手動排程的 Threads 貼文，
+--     由 GitHub Actions 每小時呼叫 Edge Function social-dispatch，排進未來 24 小時內的空時段送 Buffer
+--   ・「社群自動送出」開關預設關閉（site_configs.social_auto_send_enabled）
+--   ・時段存在 site_configs.social_auto_slots（預設 08:30、12:15、21:00，台灣時間）；每天最多 3 篇
+--   ・送出記錄只寫在子表 social_post_sends（主鍵 貼文＋平台），只有 service_role 能寫，主理人只能讀
+--   ・Edge Function 只透過下面幾個 SECURITY DEFINER 函數碰資料庫：只讀合法候選、只寫子表與排程時間欄
+--   ・結果不明（逾時、5xx、寫庫失敗）一律標 unknown 鎖住、不重送；有 unknown 或連續失敗就熔斷
+--   ・升級 24 小時：既有待審稿的自動上架時間只縮短、不延長，且至少留 6 小時緩衝
+--   ・每天 3 篇的上限只算「課程」；手札的 Threads 同樣 24 小時規則，但只補課程沒用到的空時段、不占課程名額
+--   ・手動排程（後台經 buffer-relay）與自動送出共用同一張子表與同一把原子鎖，同一則貼文同一平台只可能送一次
+--   ・後台舊快取不能把系統寫的 buffer_post_ids、scheduled_at 洗掉（觸發器保護）
+--   ・自動送出成功後 status 改 scheduled（離開「待審草稿」計數）；review_status 不動，「已自動送出」的判斷看 auto_published
+--   ・既有的社群貼文不會被補上自動送出時間（auto_publish_at 留空）；要自動送出請由收件匣重新送稿
+-- =======================================================
+
+-- 24 小時升級（只做一次：用 site_configs 的標記記住已升級）
+DO $$
+DECLARE v_done int;
+BEGIN
+  INSERT INTO public.site_configs (key, value) VALUES ('auto_publish_hours_v24', jsonb_build_object('at', now()))
+  ON CONFLICT (key) DO NOTHING;
+  GET DIAGNOSTICS v_done = ROW_COUNT;
+  IF v_done = 1 THEN
+    UPDATE public.articles
+       SET auto_publish_at = least(auto_publish_at, greatest(auto_publish_at - interval '48 hours', now() + interval '6 hours'))
+     WHERE auto_publish_at IS NOT NULL;
+    UPDATE public.courses
+       SET auto_publish_at = least(auto_publish_at, greatest(auto_publish_at - interval '48 hours', now() + interval '6 hours'))
+     WHERE auto_publish_at IS NOT NULL;
+  END IF;
+END $$;
+
+-- 社群貼文補欄位（與手札、課程同名同義）
+ALTER TABLE public.social_posts ADD COLUMN IF NOT EXISTS hold_for_owner boolean NOT NULL DEFAULT false;
+ALTER TABLE public.social_posts ADD COLUMN IF NOT EXISTS auto_publish_at timestamptz;
+ALTER TABLE public.social_posts ADD COLUMN IF NOT EXISTS auto_published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.social_posts ADD COLUMN IF NOT EXISTS auto_published_at timestamptz;
+CREATE INDEX IF NOT EXISTS idx_social_posts_auto_due ON public.social_posts(auto_publish_at) WHERE auto_publish_at IS NOT NULL;
+
+DROP TRIGGER IF EXISTS trg_social_posts_reset_auto_publish ON public.social_posts;
+CREATE TRIGGER trg_social_posts_reset_auto_publish
+  BEFORE UPDATE ON public.social_posts
+  FOR EACH ROW EXECUTE FUNCTION public.reset_auto_publish_marks();
+
+-- 開關與時段（site_configs 訪客讀得到，內容只有開關、時段、時間與數量，沒有敏感資料）
+INSERT INTO public.site_configs (key, value) VALUES
+  ('social_auto_send_enabled', '{"enabled": false}'::jsonb),
+  ('social_auto_slots', '{"slots": ["08:30", "12:15", "21:00"]}'::jsonb),
+  ('social_auto_last_run', '{}'::jsonb)
+ON CONFLICT (key) DO NOTHING;
+
+-- 送出記錄子表
+CREATE TABLE IF NOT EXISTS public.social_post_sends (
+  post_id        text NOT NULL REFERENCES public.social_posts(id) ON DELETE CASCADE,
+  platform       text NOT NULL,
+  state          text NOT NULL CHECK (state IN ('sending', 'scheduled', 'unknown', 'failed', 'sent')),
+  send_ref       uuid NOT NULL DEFAULT gen_random_uuid(),
+  due_at         timestamptz NOT NULL,
+  buffer_post_id text,
+  attempts       int NOT NULL DEFAULT 1,
+  error          text,                 -- Buffer 回的原文只放這裡（主理人才讀得到）
+  origin         text NOT NULL DEFAULT 'auto',   -- auto＝系統自動送出，manual＝主理人在後台手動送
+  sent_text      text,                 -- 實際送出的文字，對帳時用它比對
+  started_at     timestamptz NOT NULL DEFAULT now(),
+  updated_at     timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (post_id, platform)
+);
+ALTER TABLE public.social_post_sends ADD COLUMN IF NOT EXISTS origin text NOT NULL DEFAULT 'auto';
+ALTER TABLE public.social_post_sends ADD COLUMN IF NOT EXISTS sent_text text;
+ALTER TABLE public.social_post_sends DROP CONSTRAINT IF EXISTS social_post_sends_platform_check;
+ALTER TABLE public.social_post_sends ADD CONSTRAINT social_post_sends_platform_check CHECK (platform IN ('threads', 'instagram'));
+ALTER TABLE public.social_post_sends DROP CONSTRAINT IF EXISTS social_post_sends_origin_check;
+ALTER TABLE public.social_post_sends ADD CONSTRAINT social_post_sends_origin_check CHECK (origin IN ('auto', 'manual'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_social_post_sends_buffer
+  ON public.social_post_sends(platform, buffer_post_id) WHERE buffer_post_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_social_post_sends_due ON public.social_post_sends(due_at);
+
+ALTER TABLE public.social_post_sends ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Owner read social_post_sends" ON public.social_post_sends;
+CREATE POLICY "Owner read social_post_sends" ON public.social_post_sends FOR SELECT TO authenticated
+  USING (public.is_wangzhou_owner());
+REVOKE ALL ON public.social_post_sends FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.social_post_sends TO authenticated;
+GRANT ALL ON public.social_post_sends TO service_role;
+
+-- ---------- 函數 1：開始一輪（15 分鐘冷卻、sending 逾 90 秒轉 unknown、回傳設定與狀態） ----------
+CREATE OR REPLACE FUNCTION public.social_dispatch_begin()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_enabled boolean;
+  v_slots jsonb;
+  v_run jsonb;
+BEGIN
+  INSERT INTO public.site_configs (key, value) VALUES ('social_auto_last_run', '{}'::jsonb) ON CONFLICT (key) DO NOTHING;
+
+  UPDATE public.site_configs
+     SET value = value || jsonb_build_object('started_at', now()), updated_at = now()
+   WHERE key = 'social_auto_last_run'
+     AND (value ->> 'started_at' IS NULL OR (value ->> 'started_at')::timestamptz <= now() - interval '15 minutes');
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('ok', true, 'skipped', 'cooldown');
+  END IF;
+
+  UPDATE public.social_post_sends SET state = 'unknown', updated_at = now()
+   WHERE state = 'sending' AND started_at < now() - interval '90 seconds';
+
+  SELECT coalesce((value ->> 'enabled')::boolean, false) INTO v_enabled
+    FROM public.site_configs WHERE key = 'social_auto_send_enabled';
+  SELECT value -> 'slots' INTO v_slots FROM public.site_configs WHERE key = 'social_auto_slots';
+  SELECT value INTO v_run FROM public.site_configs WHERE key = 'social_auto_last_run';
+
+  RETURN jsonb_build_object(
+    'ok', true,
+    'enabled', coalesce(v_enabled, false),
+    'slots', coalesce(v_slots, '["08:30","12:15","21:00"]'::jsonb),
+    'tripped', coalesce((v_run ->> 'tripped')::boolean, false),
+    'tripped_reason', v_run ->> 'tripped_reason',
+    -- 結果不明的送出：由函式內對帳
+    'unknown', coalesce((
+      SELECT jsonb_agg(jsonb_build_object('post_id', s.post_id, 'platform', s.platform, 'due_at', s.due_at,
+                                         'started_at', s.started_at, 'text', s.sent_text))
+        FROM public.social_post_sends s
+       WHERE s.state = 'unknown'), '[]'::jsonb),
+    -- 已占用的時間與來源類型（空時段看全部，每天 3 篇上限只算課程）
+    'occupied', coalesce((
+      SELECT jsonb_agg(jsonb_build_object('due_at', s.due_at, 'source_type', p.source_type))
+        FROM public.social_post_sends s JOIN public.social_posts p ON p.id = s.post_id
+       WHERE s.state IN ('sending', 'scheduled', 'sent', 'unknown') AND s.due_at > now() - interval '2 days'), '[]'::jsonb)
+  );
+END;
+$$;
+
+-- ---------- 函數 2：結束一輪，記錄摘要與熔斷狀態 ----------
+CREATE OR REPLACE FUNCTION public.social_dispatch_end(p_summary jsonb, p_tripped boolean, p_reason text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  UPDATE public.site_configs
+     SET value = value || jsonb_build_object(
+           'finished_at', now(),
+           'summary', coalesce(p_summary, '{}'::jsonb),
+           'tripped', coalesce(p_tripped, false),
+           'tripped_reason', CASE WHEN p_tripped THEN left(p_reason, 80) ELSE NULL END,
+           'tripped_at', CASE WHEN p_tripped AND NOT coalesce((value ->> 'tripped')::boolean, false) THEN now()::text ELSE value ->> 'tripped_at' END),
+         updated_at = now()
+   WHERE key = 'social_auto_last_run';
+END;
+$$;
+
+-- ---------- 函數 3：只撈合法候選（Threads、已審或超時待審、沒扣住、來源已上架） ----------
+-- 截止時間、開放報名與文字格式依預計發文時間而定，由 Edge Function 逐時段判斷
+CREATE OR REPLACE FUNCTION public.social_dispatch_candidates()
+RETURNS jsonb
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.deadline_ts NULLS LAST, q.created_at, q.id), '[]'::jsonb)
+  FROM (
+    SELECT sp.id, sp.source_type, sp.source_id, sp.versions ->> 'threads' AS text,
+           sp.created_at,
+           c.link AS course_link,
+           public.course_deadline_at(c.deadline, c.deadline_time) AS deadline_ts,
+           c.reg_open_date,
+           CASE WHEN sp.source_type = 'course'
+                THEN (SELECT count(*) FROM public.submissions s WHERE s.course_id = c.id AND s.status = 'unread')
+                ELSE 0 END AS open_reports
+      FROM public.social_posts sp
+      LEFT JOIN public.courses  c ON sp.source_type = 'course'  AND c.id = sp.source_id
+      LEFT JOIN public.articles a ON sp.source_type = 'article' AND a.id = sp.source_id
+     WHERE 'threads' = ANY (sp.target_platforms)
+       AND coalesce(sp.versions ->> 'threads', '') <> ''
+       AND (sp.review_status = 'approved'
+            OR (sp.review_status = 'pending' AND sp.auto_publish_at IS NOT NULL AND sp.auto_publish_at <= now()))
+       AND sp.hold_for_owner = false
+       AND sp.status NOT IN ('published', 'retired')
+       AND sp.scheduled_at IS NULL
+       AND coalesce(sp.buffer_post_ids ->> 'threads', '') = ''
+       -- 來源必須已在網站上架、沒被扣住
+       AND ((sp.source_type = 'course'  AND c.status = 'active' AND c.hold_for_owner = false)
+         OR (sp.source_type = 'article' AND a.status = 'active' AND a.hold_for_owner = false))
+       -- 還沒有送出記錄，或上次明確失敗且未滿 3 次、已隔 1 小時
+       AND NOT EXISTS (
+         SELECT 1 FROM public.social_post_sends s
+          WHERE s.post_id = sp.id AND s.platform = 'threads'
+            AND NOT (s.state = 'failed' AND s.attempts < 3 AND s.updated_at < now() - interval '1 hour'))
+       -- 一門課（一篇手札）只發一次：同來源已有排程、已發或結果不明的貼文就不再選
+       AND NOT EXISTS (
+         SELECT 1 FROM public.social_post_sends s2 JOIN public.social_posts p2 ON p2.id = s2.post_id
+          WHERE p2.source_type = sp.source_type AND p2.source_id = sp.source_id AND p2.id <> sp.id
+            AND s2.platform = 'threads' AND s2.state IN ('sending', 'scheduled', 'sent', 'unknown'))
+       AND NOT EXISTS (
+         SELECT 1 FROM public.social_posts p3
+          WHERE p3.source_type = sp.source_type AND p3.source_id = sp.source_id AND p3.id <> sp.id
+            AND coalesce(p3.buffer_post_ids ->> 'threads', '') <> '')
+  ) q;
+$$;
+
+-- ---------- 函數 4：原子搶鎖（單一條件寫入，寫不進去＝別人已在送或不該送，回傳 null） ----------
+-- 自動送出用：貼文必須沒被扣住、沒被手動排程；p_text 是實際要送的文字，存起來供對帳
+DROP FUNCTION IF EXISTS public.social_send_claim(text, text, timestamptz);
+CREATE OR REPLACE FUNCTION public.social_send_claim(p_post_id text, p_platform text, p_due_at timestamptz, p_text text)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_ref uuid;
+BEGIN
+  IF p_platform <> 'threads' THEN RETURN NULL; END IF;
+  PERFORM 1 FROM public.social_posts
+   WHERE id = p_post_id AND hold_for_owner = false AND scheduled_at IS NULL
+     AND status NOT IN ('published', 'retired')
+     AND coalesce(buffer_post_ids ->> p_platform, '') = ''
+   FOR UPDATE;
+  IF NOT FOUND THEN RETURN NULL; END IF;
+
+  INSERT INTO public.social_post_sends AS s (post_id, platform, state, due_at, started_at, attempts, origin, sent_text)
+  VALUES (p_post_id, p_platform, 'sending', p_due_at, now(), 1, 'auto', p_text)
+  ON CONFLICT (post_id, platform) DO UPDATE
+     SET state = 'sending', due_at = EXCLUDED.due_at, started_at = now(), updated_at = now(),
+         attempts = s.attempts + 1, error = NULL, buffer_post_id = NULL, send_ref = gen_random_uuid(),
+         origin = 'auto', sent_text = EXCLUDED.sent_text
+   WHERE s.state = 'failed' AND s.attempts < 3
+  RETURNING s.send_ref INTO v_ref;
+  IF v_ref IS NULL THEN RETURN NULL; END IF;
+
+  -- 排程時間先寫上，讓後台的手動排程看得到這篇已被占用（觸發器保護區：函數內明確放行）
+  PERFORM set_config('farfaring.allow_send_edit', '1', true);
+  UPDATE public.social_posts
+     SET scheduled_at = p_due_at,
+         scheduled_date = (p_due_at AT TIME ZONE 'Asia/Taipei')::date
+   WHERE id = p_post_id;
+  RETURN v_ref;
+END;
+$$;
+
+-- 手動送出用（buffer-relay 呼叫，relay 已先確認呼叫者是主理人）：與自動送出共用同一張子表與同一把鎖。
+-- 回傳 { ok: true } 或 { ok: false, reason: already_sent | busy | unknown | not_found }
+CREATE OR REPLACE FUNCTION public.social_send_claim_manual(p_post_id text, p_platform text, p_due_at timestamptz, p_text text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_ref uuid;
+  v_state text;
+BEGIN
+  IF p_platform NOT IN ('threads', 'instagram') THEN RETURN jsonb_build_object('ok', false, 'reason', 'not_found'); END IF;
+  PERFORM 1 FROM public.social_posts WHERE id = p_post_id FOR UPDATE;
+  IF NOT FOUND THEN RETURN jsonb_build_object('ok', false, 'reason', 'not_found'); END IF;
+  IF EXISTS (SELECT 1 FROM public.social_posts WHERE id = p_post_id AND coalesce(buffer_post_ids ->> p_platform, '') <> '') THEN
+    RETURN jsonb_build_object('ok', false, 'reason', 'already_sent');
+  END IF;
+
+  INSERT INTO public.social_post_sends AS s (post_id, platform, state, due_at, started_at, attempts, origin, sent_text)
+  VALUES (p_post_id, p_platform, 'sending', p_due_at, now(), 1, 'manual', p_text)
+  ON CONFLICT (post_id, platform) DO UPDATE
+     SET state = 'sending', due_at = EXCLUDED.due_at, started_at = now(), updated_at = now(),
+         attempts = s.attempts + 1, error = NULL, buffer_post_id = NULL, send_ref = gen_random_uuid(),
+         origin = 'manual', sent_text = EXCLUDED.sent_text
+   WHERE s.state = 'failed'
+  RETURNING s.send_ref INTO v_ref;
+  IF v_ref IS NULL THEN
+    SELECT state INTO v_state FROM public.social_post_sends WHERE post_id = p_post_id AND platform = p_platform;
+    RETURN jsonb_build_object('ok', false, 'reason',
+      CASE WHEN v_state = 'unknown' THEN 'unknown' WHEN v_state = 'sending' THEN 'busy' ELSE 'already_sent' END);
+  END IF;
+
+  PERFORM set_config('farfaring.allow_send_edit', '1', true);
+  UPDATE public.social_posts
+     SET scheduled_at = p_due_at,
+         scheduled_date = (p_due_at AT TIME ZONE 'Asia/Taipei')::date
+   WHERE id = p_post_id;
+  RETURN jsonb_build_object('ok', true, 'send_ref', v_ref);
+END;
+$$;
+
+-- ---------- 函數 5：寫回結果（scheduled／failed／unknown）；只動子表、排程欄與 status（draft→scheduled） ----------
+CREATE OR REPLACE FUNCTION public.social_send_finish(p_post_id text, p_platform text, p_state text,
+                                                     p_buffer_post_id text, p_error text)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_origin text;
+BEGIN
+  IF p_state NOT IN ('scheduled', 'failed', 'unknown') THEN RAISE EXCEPTION '狀態不合法'; END IF;
+  UPDATE public.social_post_sends
+     SET state = p_state,
+         buffer_post_id = CASE WHEN p_state = 'scheduled' THEN p_buffer_post_id ELSE buffer_post_id END,
+         error = left(p_error, 500), updated_at = now()
+   WHERE post_id = p_post_id AND platform = p_platform AND state IN ('sending', 'unknown')
+  RETURNING origin INTO v_origin;
+  IF NOT FOUND THEN RETURN false; END IF;
+
+  PERFORM set_config('farfaring.allow_send_edit', '1', true);
+  IF p_state = 'scheduled' THEN
+    -- status 改 scheduled：離開「待審草稿」，不再算進收件匣的 30 篇上限（與手動送出一致）
+    UPDATE public.social_posts
+       SET buffer_post_ids = coalesce(buffer_post_ids, '{}'::jsonb) || jsonb_build_object(p_platform, p_buffer_post_id),
+           buffer_error = NULL,
+           status = CASE WHEN status = 'draft' THEN 'scheduled' ELSE status END,
+           auto_published = (auto_published OR v_origin = 'auto'),
+           auto_published_at = CASE WHEN v_origin = 'auto' THEN now() ELSE auto_published_at END,
+           auto_publish_at = NULL
+     WHERE id = p_post_id;
+  ELSIF p_state = 'failed' THEN
+    -- 明確失敗：放開排程時間，等下一輪重試（自動最多 3 次）；Buffer 原文只放子表與貼文的錯誤欄（主理人才讀得到）
+    UPDATE public.social_posts SET buffer_error = left(p_error, 200), scheduled_at = NULL, scheduled_date = NULL
+     WHERE id = p_post_id;
+  END IF;
+  RETURN true;
+END;
+$$;
+
+-- 後台舊畫面存檔時，不能洗掉系統寫的送出紀錄：
+--   ・buffer_post_ids 已經有的編號，不准被改回空
+--   ・已有送出紀錄（送出中／已排入／結果不明／已發出）的貼文，排程時間不准被改
+--   ・已排入的貼文，status 不准被舊畫面改回 draft
+-- 系統自己的函數（claim、finish、resolve）會用 farfaring.allow_send_edit 明確放行。
+CREATE OR REPLACE FUNCTION public.protect_social_send_marks()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  k text;
+  v jsonb;
+BEGIN
+  IF coalesce(current_setting('farfaring.allow_send_edit', true), '') = '1' THEN
+    RETURN NEW;
+  END IF;
+  IF OLD.buffer_post_ids IS NOT NULL AND jsonb_typeof(OLD.buffer_post_ids) = 'object' THEN
+    FOR k, v IN SELECT key, value FROM jsonb_each(OLD.buffer_post_ids) LOOP
+      IF v NOT IN ('""'::jsonb, 'null'::jsonb) AND coalesce(NEW.buffer_post_ids ->> k, '') = '' THEN
+        NEW.buffer_post_ids := coalesce(NEW.buffer_post_ids, '{}'::jsonb) || jsonb_build_object(k, v);
+      END IF;
+    END LOOP;
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.social_post_sends s
+              WHERE s.post_id = NEW.id AND s.state IN ('sending', 'scheduled', 'unknown', 'sent')) THEN
+    NEW.scheduled_at := OLD.scheduled_at;
+    NEW.scheduled_date := OLD.scheduled_date;
+    IF OLD.status IN ('scheduled', 'published') AND NEW.status = 'draft' THEN
+      NEW.status := OLD.status;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.protect_social_send_marks() FROM PUBLIC, anon, authenticated, service_role;
+
+DROP TRIGGER IF EXISTS trg_social_posts_protect_send ON public.social_posts;
+CREATE TRIGGER trg_social_posts_protect_send
+  BEFORE UPDATE ON public.social_posts
+  FOR EACH ROW EXECUTE FUNCTION public.protect_social_send_marks();
+
+-- ---------- 函數 6、7：主理人處理結果不明與熔斷（只有主理人能呼叫，後台按鈕之後再做） ----------
+-- 確認 Buffer 端沒有這篇：p_resolution = 'not_sent'（刪除記錄，貼文會重新成為候選）；
+-- 確認 Buffer 端已有：p_resolution = 'sent'（標為已排入，可附 Buffer 貼文編號）
+CREATE OR REPLACE FUNCTION public.social_send_resolve(p_post_id text, p_platform text, p_resolution text, p_buffer_post_id text DEFAULT NULL)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  IF NOT public.is_wangzhou_owner() THEN RAISE EXCEPTION '未授權'; END IF;
+  PERFORM set_config('farfaring.allow_send_edit', '1', true);
+  IF p_resolution = 'not_sent' THEN
+    DELETE FROM public.social_post_sends WHERE post_id = p_post_id AND platform = p_platform AND state IN ('unknown', 'failed');
+    IF FOUND THEN
+      UPDATE public.social_posts SET scheduled_at = NULL, scheduled_date = NULL WHERE id = p_post_id;
+      RETURN true;
+    END IF;
+    RETURN false;
+  ELSIF p_resolution = 'sent' THEN
+    UPDATE public.social_post_sends SET state = 'scheduled', buffer_post_id = nullif(p_buffer_post_id, ''), updated_at = now()
+     WHERE post_id = p_post_id AND platform = p_platform AND state = 'unknown';
+    IF NOT FOUND THEN RETURN false; END IF;
+    -- 有提供 Buffer 貼文編號時，同步寫回貼文（沒提供就只標子表；之後仍擋重送）
+    IF nullif(p_buffer_post_id, '') IS NOT NULL THEN
+      UPDATE public.social_posts
+         SET buffer_post_ids = coalesce(buffer_post_ids, '{}'::jsonb) || jsonb_build_object(p_platform, p_buffer_post_id),
+             buffer_error = NULL,
+             status = CASE WHEN status = 'draft' THEN 'scheduled' ELSE status END
+       WHERE id = p_post_id;
+    ELSE
+      UPDATE public.social_posts SET status = CASE WHEN status = 'draft' THEN 'scheduled' ELSE status END WHERE id = p_post_id;
+    END IF;
+    RETURN true;
+  END IF;
+  RAISE EXCEPTION 'p_resolution 只能是 not_sent 或 sent';
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.social_auto_reset_breaker()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  IF NOT public.is_wangzhou_owner() THEN RAISE EXCEPTION '未授權'; END IF;
+  UPDATE public.site_configs
+     SET value = value || jsonb_build_object('tripped', false, 'tripped_reason', NULL), updated_at = now()
+   WHERE key = 'social_auto_last_run';
+END;
+$$;
+
+-- 權限：Supabase 預設會開放給 anon，先全部收回再單獨授權
+REVOKE ALL ON FUNCTION public.social_dispatch_begin() FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.social_dispatch_end(jsonb, boolean, text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.social_dispatch_candidates() FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.social_send_claim(text, text, timestamptz, text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.social_send_claim_manual(text, text, timestamptz, text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.social_send_finish(text, text, text, text, text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.social_send_resolve(text, text, text, text) FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.social_auto_reset_breaker() FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.social_dispatch_begin() TO service_role;
+GRANT EXECUTE ON FUNCTION public.social_dispatch_end(jsonb, boolean, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.social_dispatch_candidates() TO service_role;
+GRANT EXECUTE ON FUNCTION public.social_send_claim(text, text, timestamptz, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.social_send_claim_manual(text, text, timestamptz, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.social_send_finish(text, text, text, text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.social_send_resolve(text, text, text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.social_auto_reset_breaker() TO authenticated;
+
+NOTIFY pgrst, 'reload schema';
+-- ======================= 第 11 節結束 =======================

@@ -655,6 +655,33 @@ const WangzhouCloud = {
     });
   },
 
+  // 社群自動送出：每個平台的送出紀錄（只有主理人讀得到）與結果不明／熔斷的處理
+  async getSocialSends() {
+    const cols = 'post_id,platform,state,due_at,buffer_post_id,attempts,error,origin,updated_at';
+    // 最新 200 筆之外，unknown／failed 一定另外抓（避免較舊的結果不明被漏掉）
+    const [recent, open] = await Promise.all([
+      this.request(`social_post_sends?select=${cols}&order=updated_at.desc&limit=200`),
+      this.request(`social_post_sends?select=${cols}&state=in.(unknown,failed)&order=updated_at.desc&limit=200`)
+    ]);
+    const seen = new Set();
+    return [...(open || []), ...(recent || [])].filter(r => {
+      const k = r.post_id + '|' + r.platform;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  },
+  // resolution：'not_sent'（Buffer 上沒有，重新排）或 'sent'（Buffer 上已有）
+  async resolveSocialSend(postId, platform, resolution) {
+    return await this.request('rpc/social_send_resolve', {
+      method: 'POST',
+      body: JSON.stringify({ p_post_id: postId, p_platform: platform, p_resolution: resolution })
+    });
+  },
+  async resetSocialBreaker() {
+    return await this.request('rpc/social_auto_reset_breaker', { method: 'POST', body: '{}' });
+  },
+
   // Buffer 排程轉送站（Supabase Edge Function：buffer-relay）；只有主理人登入後能用
   async bufferRelay(payload) {
     const token = typeof this.getAccessToken === 'function' ? await this.getAccessToken() : null;
@@ -841,7 +868,7 @@ const WangzhouCloud = {
   async syncToLocal({ includePrivate = false } = {}) {
     try {
       const skip = Promise.resolve(null);
-      const [articles, courses, submissions, posts, planks, aboutConfig, autoEnabledCfg, autoCheckCfg, lastUpdatedText] = await Promise.all([
+      const [articles, courses, submissions, posts, planks, aboutConfig, autoEnabledCfg, autoCheckCfg, lastUpdatedText, socialEnabledCfg, socialRunCfg, socialSends] = await Promise.all([
         (includePrivate ? this.getArticles() : this.request(`articles?select=${WZ_PUBLIC_ARTICLE_COLUMNS}&status=eq.active&order=created_at.desc`))
           .catch(err => { console.warn('Articles sync failed:', err); return null; }),
         (includePrivate ? this.getCourses() : this.request(`courses?select=${WZ_PUBLIC_COURSE_COLUMNS}&status=eq.active&order=created_at.desc`))
@@ -852,7 +879,10 @@ const WangzhouCloud = {
         this.getSiteConfig('about').catch(err => { console.warn('About config sync failed (using local fallback):', err); return null; }),
         includePrivate ? this.getSiteConfig('auto_publish_enabled').catch(() => null) : skip,
         includePrivate ? this.getSiteConfig('auto_publish_last_check').catch(() => null) : skip,
-        includePrivate ? this.getLastUpdatedText() : skip
+        includePrivate ? this.getLastUpdatedText() : skip,
+        includePrivate ? this.getSiteConfig('social_auto_send_enabled').catch(() => null) : skip,
+        includePrivate ? this.getSiteConfig('social_auto_last_run').catch(() => null) : skip,
+        includePrivate ? this.getSocialSends().catch(() => null) : skip
       ]);
 
       // 後台：最後維護日期以雲端為準（讀不到就維持原值）
@@ -864,6 +894,16 @@ const WangzhouCloud = {
           enabled: autoEnabledCfg && typeof autoEnabledCfg === 'object' ? autoEnabledCfg.enabled !== false : true,
           lastCheckAt: autoCheckCfg && autoCheckCfg.at ? autoCheckCfg.at : ''
         };
+        // 社群自動送出：開關預設關閉；上次執行摘要與熔斷狀態
+        const run = socialRunCfg && typeof socialRunCfg === 'object' ? socialRunCfg : {};
+        SITE_DATA.socialAuto = {
+          enabled: !!(socialEnabledCfg && typeof socialEnabledCfg === 'object' && socialEnabledCfg.enabled === true),
+          lastRunAt: run.finished_at || run.started_at || '',
+          summary: run.summary && typeof run.summary === 'object' ? run.summary : {},
+          tripped: run.tripped === true,
+          trippedReason: run.tripped_reason || ''
+        };
+        if (Array.isArray(socialSends)) SITE_DATA.socialSends = socialSends;
       }
 
       let changed = false;
@@ -956,6 +996,10 @@ const WangzhouCloud = {
           scheduledAt: p.scheduled_at || null,
           bufferPostIds: p.buffer_post_ids || {},
           bufferError: p.buffer_error || '',
+          holdForOwner: p.hold_for_owner === true,
+          autoPublishAt: p.auto_publish_at || '',
+          autoPublished: p.auto_published === true,
+          autoPublishedAt: p.auto_published_at || '',
           createdAt: p.created_at || ''
         }));
         changed = true;

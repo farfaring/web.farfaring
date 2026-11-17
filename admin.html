@@ -4064,8 +4064,10 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       noon: { label: '🍱 午休片刻 12:15', time: '12:15' },
       evening: { label: '🌙 晚間靠岸 21:00', time: '21:00' },
       weekend: { label: '☕ 週末午後 15:00', time: '15:00' },
-      afternoon: { label: '🌤 下午 15:00', time: '15:00' }   // 手動建議時段：避開系統自動時段 08:30／12:15／21:00
+      afternoon: { label: '🌤 下午 15:00', time: '15:00' },  // 手動建議時段：避開系統自動時段 08:30／12:15／21:00
+      custom: { label: '⏱ 自訂時間', time: null }           // 自訂：時刻記在 timeSlotLabel（例：⏱ 自訂 19:00），不需要改資料庫
     };
+    const MIN_LEAD_MINUTES = 10;   // 自己指定發文時間：至少要比現在晚這麼多分鐘
     const PLATFORM_TEXT_LIMITS = { threads: 500, instagram: 2196 };
     const IG_MAX_IMAGES = 10;
     const reviewPoolKeys = { site: [], social: [] };
@@ -5419,7 +5421,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     function postDueIso(p) {
       const slot = DESK_SLOTS[p.scheduledTimeSlot] || DESK_SLOTS.evening;
-      return `${p.scheduledDate}T${slot.time}:00+08:00`;
+      const time = slot.time || customTimeOf(p);
+      return `${p.scheduledDate}T${time}:00+08:00`;
+    }
+
+    // 自訂時間的時刻（台灣時間 HH:MM），記在 timeSlotLabel 裡；沒有就預設 19:00
+    function customTimeOf(p) {
+      const m = /(\d{2}:\d{2})/.exec(String(p.timeSlotLabel || ''));
+      return m ? m[1] : '19:00';
     }
 
     // 已通過審稿、還沒全部送進 Buffer 的社群貼文
@@ -5438,7 +5447,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     function suggestSchedule(list) {
       const today = taipeiToday();
       const taken = new Set(upcomingSentPosts().map(p => p.scheduledDate).filter(Boolean));
-      const isChosen = p => !p.scheduleSuggested && p.scheduledDate && p.scheduledDate > today;
+      const isChosen = p => !p.scheduleSuggested && p.scheduledDate && p.scheduledDate >= today;
       list.filter(isChosen).forEach(p => taken.add(p.scheduledDate));
       const todo = list
         .filter(p => !isChosen(p))
@@ -5485,6 +5494,8 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
             : `${cover}<button type="button" class="btn-table-sm" style="font-size:0.72rem; margin-top:4px;" onclick="generateCardForPost('${pid}')">🔄 重新產生</button>`;
         }
         const tooMany = needsCard && imgs.length > IG_MAX_IMAGES;
+        const dueMs = Date.parse(postDueIso(p));
+        const tooSoon = !p.scheduledDate || Number.isNaN(dueMs) || dueMs < Date.now() + MIN_LEAD_MINUTES * 60 * 1000;
         const igErr = igErrorReason(p);
         const errHtml = igErr !== null && imgs.length > 1 && !(p.bufferPostIds || {}).instagram
           ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">⚠️ IG 輪播沒有送成：${escapeHtml(igErr)}</div>
@@ -5502,6 +5513,10 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
                 <input type="date" value="${escapeHtml(p.scheduledDate || '')}" min="${taipeiToday()}" onchange="setPostSchedule('${wzSafeId(p.id)}', 'date', this.value)" style="width:auto;">
                 <select onchange="setPostSchedule('${wzSafeId(p.id)}', 'slot', this.value)" style="width:auto;">${slotOptions(p.scheduledTimeSlot)}</select>
+                ${p.scheduledTimeSlot === 'custom' ? `<input type="time" value="${customTimeOf(p)}" onchange="setPostSchedule('${wzSafeId(p.id)}', 'time', this.value)" style="width:auto;" aria-label="自訂發文時刻（台灣時間）">` : ''}
+              </div>
+              ${tooSoon ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">⚠️ 發文時間要比現在晚至少 ${MIN_LEAD_MINUTES} 分鐘，請改個時間。</div>` : ''}
+              <div>
               </div>
               ${tooMany ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">⚠️ 圖卡 ${imgs.length} 張，超過 IG 上限 ${IG_MAX_IMAGES} 張</div>` : ''}
               ${errHtml}
@@ -5536,9 +5551,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       if (!p) return;
       p.scheduleSuggested = false;
       if (field === 'date') p.scheduledDate = value;
-      else {
+      else if (field === 'time') {
+        if (/^\d{2}:\d{2}$/.test(value)) p.timeSlotLabel = `⏱ 自訂 ${value}`;
+      } else {
         p.scheduledTimeSlot = value;
-        p.timeSlotLabel = DESK_SLOTS[value] ? DESK_SLOTS[value].label : '';
+        p.timeSlotLabel = value === 'custom' ? `⏱ 自訂 ${customTimeOf(p)}` : (DESK_SLOTS[value] ? DESK_SLOTS[value].label : '');
       }
       saveDataToLocalStorage();
       renderScheduleStep();
@@ -5643,7 +5660,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       list.forEach(p => {
         const title = p.title || '（無標題）';
         const due = Date.parse(postDueIso(p));
-        if (!p.scheduledDate || Number.isNaN(due) || due < Date.now() + 5 * 60 * 1000) problems.push(`「${title}」的發文時間已經過了或太近`);
+        if (!p.scheduledDate || Number.isNaN(due) || due < Date.now() + MIN_LEAD_MINUTES * 60 * 1000) problems.push(`「${title}」的發文時間已經過了或太近（要比現在晚至少 ${MIN_LEAD_MINUTES} 分鐘）`);
         platformsOf(p).forEach(pl => {
           if ((p.bufferPostIds || {})[pl]) return;
           const text = postTextFor(p, pl);

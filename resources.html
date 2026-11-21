@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261109">
+  <link rel="stylesheet" href="./styles.css?v=20261121">
 </head>
 <body>
 
@@ -43,9 +43,15 @@
     <!-- 搜尋與精準分類篩選 -->
     <div class="search-filter-box">
       <!-- 即時關鍵字搜尋列 -->
-      <div class="search-input-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 搜尋你想學的技能、課程名稱、辦訓單位或地點..." oninput="handleSearch()">
+      <div class="search-row">
+        <div class="search-input-wrapper">
+          <input type="text" id="searchInput" placeholder="🔍 搜尋你想學的技能、課程名稱、辦訓單位或地點..." oninput="handleSearch()">
+        </div>
+        <button type="button" class="filter-toggle-btn" id="filterToggleBtn" aria-expanded="false" aria-controls="filterPanel" onclick="toggleFilterPanel()">
+          <span>篩選</span><span class="filter-badge" id="filterBadge" hidden>0</span>
+        </button>
       </div>
+      <div class="filter-panel" id="filterPanel">
 
       <!-- 類型維度（四大客觀功能分類，杜絕標籤化與生硬名詞） -->
       <div class="filter-row" id="typeFilterRow">
@@ -67,6 +73,11 @@
         <button class="filter-btn" data-region="東部" onclick="filterByRegion('東部', this)">東部</button>
         <button class="filter-btn" data-region="離島" onclick="filterByRegion('離島', this)">離島</button>
       </div>
+      <div class="filter-panel-actions">
+        <button type="button" class="filter-clear-btn" onclick="clearFilters()">清除</button>
+        <button type="button" class="filter-done-btn" onclick="toggleFilterPanel(false)">完成</button>
+      </div>
+      </div>
     </div>
 
     <!-- 客觀中性、不浮誇之收錄說明提示條 -->
@@ -86,7 +97,18 @@
     </div>
 
     <!-- 課程與活動卡片容器 -->
+    <div class="sort-bar">
+      <span class="sort-hint" id="sortHint">依截止日，近的在前</span>
+      <select id="sortSelect" class="sort-select" aria-label="排序" onchange="changeSort(this.value)">
+        <option value="deadline">快截止</option>
+        <option value="newest">最新上架</option>
+      </select>
+    </div>
     <div class="resources-grid" id="resourcesContainer"></div>
+    <div class="load-more-wrap" id="loadMoreWrap" hidden>
+      <button type="button" class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">再看 10 門</button>
+      <div class="load-more-progress" id="loadMoreProgress"></div>
+    </div>
 
   </main>
 
@@ -206,7 +228,7 @@
   </div>
 
   <!-- 引用全站共享數據核心 -->
-  <script src="./data.js?v=20261110b"></script>
+  <script src="./data.js?v=20261121"></script>
 
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
@@ -227,6 +249,9 @@
     let currentType = "all";
     let currentRegion = "all";
     let searchKeyword = "";
+    let sortMode = "deadline";
+    const PAGE_SIZE = 10;
+    let visibleCount = PAGE_SIZE;
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("type")) {
@@ -249,23 +274,71 @@
       return days === null ? Infinity : days;
     }
 
+    function resetAndRender() {
+      visibleCount = PAGE_SIZE;
+      updateFilterBadge();
+      renderResources();
+    }
+
+    function updateFilterBadge() {
+      const n = (currentType !== "all" ? 1 : 0) + (currentRegion !== "all" ? 1 : 0);
+      const badge = document.getElementById("filterBadge");
+      badge.textContent = n;
+      badge.hidden = n === 0;
+    }
+
+    function toggleFilterPanel(force) {
+      const panel = document.getElementById("filterPanel");
+      const open = typeof force === "boolean" ? force : !panel.classList.contains("open");
+      panel.classList.toggle("open", open);
+      document.getElementById("filterToggleBtn").setAttribute("aria-expanded", String(open));
+    }
+
+    function clearFilters() {
+      currentType = "all";
+      currentRegion = "all";
+      document.querySelectorAll("#typeFilterRow .filter-btn, #regionFilterRow .filter-btn").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-type") === "all" || b.getAttribute("data-region") === "all");
+      });
+      resetAndRender();
+    }
+
+    function changeSort(v) {
+      sortMode = v === "newest" ? "newest" : "deadline";
+      document.getElementById("sortHint").textContent = sortMode === "newest" ? "依上架時間，新的在前" : "依截止日，近的在前";
+      resetAndRender();
+    }
+
+    function loadMore() {
+      visibleCount += PAGE_SIZE;
+      renderResources();
+    }
+
+    function toggleCard(btn) {
+      const card = btn.closest(".res-card");
+      const open = !card.classList.contains("expanded");
+      card.classList.toggle("expanded", open);
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "收起" : "看詳情";
+    }
+
     function handleSearch() {
       searchKeyword = document.getElementById("searchInput").value.trim().toLowerCase();
-      renderResources();
+      resetAndRender();
     }
 
     function filterByType(t, btn) {
       currentType = t;
       document.querySelectorAll("#typeFilterRow .filter-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      renderResources();
+      resetAndRender();
     }
 
     function filterByRegion(r, btn) {
       currentRegion = r;
       document.querySelectorAll("#regionFilterRow .filter-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      renderResources();
+      resetAndRender();
     }
 
     function renderResources() {
@@ -285,9 +358,15 @@
         return true;
       });
 
-      filtered.sort((a, b) => sortableDaysLeft(a) - sortableDaysLeft(b));
+      if (sortMode === "newest") {
+        filtered.sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
+      } else {
+        filtered.sort((a, b) => sortableDaysLeft(a) - sortableDaysLeft(b));
+      }
 
+      const loadWrap = document.getElementById("loadMoreWrap");
       if (filtered.length === 0) {
+        loadWrap.hidden = true;
         container.innerHTML = `
           <div style="grid-column:1/-1; text-align:center; padding:64px 20px; color:var(--ink-muted); background:#FFF; border-radius:16px; border:1px solid var(--hairline);">
             <div style="font-size:1.8rem; margin-bottom:12px;">🌊</div>
@@ -300,7 +379,8 @@
         return;
       }
 
-      filtered.forEach(item => {
+      const total = filtered.length;
+      filtered.slice(0, visibleCount).forEach(item => {
         const days = getDaysLeft(item.deadline);
         // 還沒到開放報名時間：不顯示「報名倒數中」，改在下方顯示預計開放時間
         const notYetOpen = wzRegNotYetOpen(item.regOpenDate);
@@ -324,35 +404,40 @@
             <div class="res-top-row">
               ${item.locationLabel ? `<span class="res-type-pill">${wzEscape(item.locationLabel)}</span>` : ''}
               <span class="res-status-pill ${closedToday ? 'status-closed' : isUrgent ? 'status-urgent' : 'status-open'}">
-                ${closedToday ? `今日 ${wzEscape(item.deadlineTime)} 已截止` : isUrgent ? `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）` : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) : ''}`}
+                ${closedToday ? `今日 ${wzEscape(item.deadlineTime)} 已截止` : isUrgent ? (days === 0 ? `⚡ 今天${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) + ' ' : ''}截止` : `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）`) : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) : ''}`}
               </span>
             </div>
             ${notYetOpen ? `<div class="res-open-row">⏳ 預計 ${wzEscape(wzFormatRegOpen(item.regOpenDate, { weekday: true }))} 開放報名</div>` : ''}
 
-            <!-- 辦訓單位 -->
-            <div style="margin-bottom:12px;">
-              <span class="res-provider-badge">
-                <span>🏛️ 辦訓單位：</span>
-                <strong>${wzEscape(item.provider)}</strong>
-              </span>
-            </div>
-
             <!-- 標題 -->
             <h2 class="res-card-title">${wzEscape(item.title)}</h2>
 
-            <!-- 推薦看點（親切短句，去黑話）：空值整塊不顯示 -->
-            ${String(item.whisper || '').trim() ? `<div class="wangzhou-note">
-              <span class="wangzhou-note-label">✦ 推薦看點</span>
-              ${wzEscape(item.whisper)}
-            </div>` : ''}
+            <!-- 辦訓單位 -->
+            <div class="res-provider-line">🏛️ ${wzEscape(item.provider)}</div>
 
-            <!-- 核心資訊：官方頁面沒寫的欄位整列不顯示 -->
-            ${infoRows.length ? `<ul class="res-info-table">${infoRows.join('')}</ul>` : ''}
+            <!-- 精簡摘要：費用、上課時間各一行（展開後改看完整資訊） -->
+            <div class="res-brief">
+              ${item.cost ? `<div class="res-brief-line res-brief-cost">💰 ${wzEscape(item.cost)}</div>` : ''}
+              ${item.timeCycle ? `<div class="res-brief-line">⏰ ${wzEscape(item.timeCycle)}</div>` : ''}
+            </div>
+
+            <!-- 展開才顯示 -->
+            <div class="res-more" id="more-${wzEscape(wzSafeId(item.id))}">
+              <!-- 推薦看點（親切短句，去黑話）：空值整塊不顯示 -->
+              ${String(item.whisper || '').trim() ? `<div class="wangzhou-note">
+                <span class="wangzhou-note-label">✦ 推薦看點</span>
+                ${wzEscape(item.whisper)}
+              </div>` : ''}
+
+              <!-- 核心資訊：官方頁面沒寫的欄位整列不顯示 -->
+              ${infoRows.length ? `<ul class="res-info-table">${infoRows.join('')}</ul>` : ''}
+              <button type="button" class="res-report-link" data-cid="${wzEscape(item.id)}" onclick="openReportModal(this.dataset.cid)">回報這門課的問題</button>
+            </div>
           </div>
 
-          <!-- 底部直通官方按鈕（徹底移除編號字眼） -->
-          <div class="res-card-footer">
-            <button type="button" class="res-report-link" data-cid="${wzEscape(item.id)}" onclick="openReportModal(this.dataset.cid)">回報這門課的問題</button>
+          <!-- 底部：看詳情＋直通官方按鈕 -->
+          <div class="res-card-actions">
+            <button type="button" class="res-expand-btn" aria-expanded="false" aria-controls="more-${wzEscape(wzSafeId(item.id))}" onclick="toggleCard(this)">看詳情</button>
             <a href="${wzEscape(wzSafeUrl(item.url))}" target="_blank" rel="noopener" class="btn-official-link">
               <span>前往官方頁面</span>
               <span>↗</span>
@@ -361,6 +446,11 @@
         `;
         container.appendChild(card);
       });
+
+      const shown = Math.min(visibleCount, total);
+      loadWrap.hidden = shown >= total;
+      document.getElementById("loadMoreBtn").textContent = `再看 ${Math.min(PAGE_SIZE, total - shown)} 門`;
+      document.getElementById("loadMoreProgress").textContent = `已顯示 ${shown} / 共 ${total} 門`;
     }
 
     function openResourceModal(type) {
@@ -579,6 +669,7 @@
       closeResourceModal();
     }
 
+    updateFilterBadge();
     renderResources();
   </script>
 </body>

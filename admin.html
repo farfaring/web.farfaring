@@ -757,7 +757,7 @@
       <div class="admin-nav-item" data-panel="social" onclick="switchPanel('social', this)">
         <span>📱</span>
         <span>社群貼文與排程</span>
-        <span id="badgeSocialScheduled" style="background:#805AD5; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="排程待發數">0</span>
+        <span id="badgeSocialScheduled" style="background:#805AD5; color:#FFF; font-size:0.72rem; padding:1px 7px; border-radius:99px; margin-left:auto; font-weight:700; display:none;" title="待審或出錯的貼文數">0</span>
       </div>
       <div class="admin-nav-item" data-panel="courses" onclick="switchPanel('courses', this)">
         <span>📋</span>
@@ -965,10 +965,10 @@
           <p class="desk-sub-note" style="margin:0 0 10px;">不指定也會由系統排。</p>
           <div id="scheduleBoard"></div>
         </div>
-        <div id="socialSentSection" style="margin-top:22px;">
-          <h3 class="desk-section-title">📬 已排進 Buffer</h3>
-          <div id="sentBoard"></div>
-        </div>
+        <details id="socialSentSection" style="margin-top:22px;">
+          <summary class="desk-section-title" style="cursor:pointer; font-size:1rem; font-weight:700;">📬 已排進 Buffer（<span id="sentCount">0</span> 則）</summary>
+          <div id="sentBoard" style="margin-top:8px;"></div>
+        </details>
       </div>
     </main>
 
@@ -1051,11 +1051,8 @@
       <!-- 次級工具列：狀態過濾與平台選擇（排版規整不再折行擠壓） -->
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#F8FAFC; border:1px solid #E2E8F0; padding:8px 12px; border-radius:8px;">
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-          <span style="font-size:0.78rem; color:#718096; font-weight:600; margin-right:4px;">狀態：</span>
-          <button class="btn-table-sm active" id="socFilter-all" onclick="filterSocialStatus('all')">全部 (<span id="cnt-soc-all">0</span>)</button>
-          <button class="btn-table-sm" id="socFilter-scheduled" onclick="filterSocialStatus('scheduled')">🟡 預約排程 (<span id="cnt-soc-sched">0</span>)</button>
-          <button class="btn-table-sm" id="socFilter-draft" onclick="filterSocialStatus('draft')">⚪ 構思草稿 (<span id="cnt-soc-draft">0</span>)</button>
-          <button class="btn-table-sm" id="socFilter-published" onclick="filterSocialStatus('published')">🟢 已發布 (<span id="cnt-soc-pub">0</span>)</button>
+          <span style="font-size:0.84rem; color:#2D3748; font-weight:700;">待處理（<span id="cnt-soc-todo">0</span> 則）</span>
+          <span style="font-size:0.78rem; color:#718096;">待審、要修改、出錯、已通過還沒排入</span>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
           <span style="font-size:0.78rem; color:#718096; font-weight:600;">發布平台：</span>
@@ -1093,6 +1090,64 @@
           <tbody id="socialTableBody"></tbody>
         </table>
       </div>
+
+      <details id="socQueuedSection" style="margin-top:14px;">
+        <summary style="cursor:pointer; font-weight:700; color:#2D3748;">📬 已排進 Buffer（<span id="cnt-soc-queued">0</span> 則）</summary>
+        <div class="admin-table-container" style="margin-top:8px;">
+          <table class="admin-table">
+            <thead>
+            <tr>
+              <th style="width:115px;">平台與狀態</th>
+              <th style="width:135px;">審核與關聯來源</th>
+              <th>貼文主題與多平台微調文案</th>
+              <th style="width:115px;">預定發布時間</th>
+              <th style="width:130px;">視覺企劃備註</th>
+              <th style="width:185px;">發布操作</th>
+            </tr>
+          </thead>
+            <tbody id="socialQueuedBody"></tbody>
+          </table>
+        </div>
+      </details>
+
+      <details id="socRejectedSection" style="margin-top:14px;">
+        <summary style="cursor:pointer; font-weight:700; color:#2D3748;">🚫 不要發（<span id="cnt-soc-rejected">0</span> 則）</summary>
+        <div class="admin-table-container" style="margin-top:8px;">
+          <table class="admin-table">
+            <thead>
+            <tr>
+              <th style="width:115px;">平台與狀態</th>
+              <th style="width:135px;">審核與關聯來源</th>
+              <th>貼文主題與多平台微調文案</th>
+              <th style="width:115px;">預定發布時間</th>
+              <th style="width:130px;">視覺企劃備註</th>
+              <th style="width:185px;">發布操作</th>
+            </tr>
+          </thead>
+            <tbody id="socialRejectedBody"></tbody>
+          </table>
+        </div>
+      </details>
+
+      <details id="socHistorySection" style="margin-top:14px;">
+        <summary style="cursor:pointer; font-weight:700; color:#2D3748;">🕓 歷史：預定時間已過（<span id="cnt-soc-history">0</span> 則）</summary>
+        <div style="font-size:0.78rem; color:#A0AEC0; margin:6px 0 8px;">以預定時間判斷，實際發文狀況請看 Buffer。只顯示最近 30 則，其餘資料都還在。</div>
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+            <tr>
+              <th style="width:115px;">平台與狀態</th>
+              <th style="width:135px;">審核與關聯來源</th>
+              <th>貼文主題與多平台微調文案</th>
+              <th style="width:115px;">預定發布時間</th>
+              <th style="width:130px;">視覺企劃備註</th>
+              <th style="width:185px;">發布操作</th>
+            </tr>
+          </thead>
+            <tbody id="socialHistoryBody"></tbody>
+          </table>
+        </div>
+      </details>
     </main>
 
     <!-- 主面板 5: 課程活動管理（兼具審稿與過期過濾） -->
@@ -1836,7 +1891,6 @@
     })();
     const handedOpen = { site: false, social: false };
     let currentArticleFilter = 'all';
-    let currentSocialFilter = 'all';
     let currentSocialPlatform = 'all';
 
     // 開啟輸入框裡的網址（只認 http/https，新分頁）
@@ -1917,7 +1971,7 @@
       document.getElementById('statArticlesCount').innerText = SITE_DATA.articles.length;
       document.getElementById('statPlanksCount').innerText = SITE_DATA.planks.length;
       const statSocEl = document.getElementById('statSocialCount');
-      if (statSocEl) statSocEl.innerText = (SITE_DATA.socialPosts || []).filter(s => s.status === 'scheduled').length;
+      if (statSocEl) statSocEl.innerText = (SITE_DATA.socialPosts || []).filter(s => socialBucket(s) === 'queued').length;
 
       // 計算投稿統計
       const subs = SITE_DATA.submissions || [];
@@ -2013,25 +2067,20 @@
 
       // 6. 社群貼文數據統計與排程計算
       const socAll = SITE_DATA.socialPosts || [];
-      const socSched = socAll.filter(s => s.status === 'scheduled');
-      const socDrafts = socAll.filter(s => s.status === 'draft');
-      const socPubs = socAll.filter(s => s.status === 'published');
-      setCnt('cnt-soc-all', socAll.length);
-      setCnt('cnt-soc-sched', socSched.length);
-      setCnt('cnt-soc-draft', socDrafts.length);
-      setCnt('cnt-soc-pub', socPubs.length);
+      const socSched = socAll.filter(s => socialBucket(s) === 'queued');   // 已排進 Buffer、預定時間還沒到
+      const socNeedMe = socAll.filter(s => socialBucket(s) === 'todo' && (reviewStatusOf(s) === 'pending' || s.bufferError));   // 待審＋出錯
 
       const statSocialElem = document.getElementById('statSocialCount');
       if (statSocialElem) statSocialElem.innerText = socSched.length;
 
       const badgeSocialScheduled = document.getElementById('badgeSocialScheduled');
       if (badgeSocialScheduled) {
-        badgeSocialScheduled.innerText = socSched.length;
-        badgeSocialScheduled.style.display = socSched.length > 0 ? 'inline-block' : 'none';
+        badgeSocialScheduled.innerText = socNeedMe.length;
+        badgeSocialScheduled.style.display = socNeedMe.length > 0 ? 'inline-block' : 'none';
       }
 
       // 渲染社群貼文表格
-      renderSocialTable(currentSocialFilter, currentSocialPlatform);
+      renderSocialTable(currentSocialPlatform);
 
       // 渲染審稿工作台
       renderReviewDesk();
@@ -3399,40 +3448,45 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
     // 📱 社群貼文與排程管理
     let currentSocActiveTab = 'threads';
 
-    function filterSocialStatus(val) {
-      currentSocialFilter = val;
-      ['all', 'scheduled', 'draft', 'published'].forEach(s => {
-        const btn = document.getElementById(`socFilter-${s}`);
-        if (btn) {
-          if (s === val) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
-      });
-      renderSocialTable(currentSocialFilter, currentSocialPlatform);
-    }
-
     function filterSocialPlatform(val) {
       currentSocialPlatform = val;
-      renderSocialTable(currentSocialFilter, currentSocialPlatform);
+      renderSocialTable(currentSocialPlatform);
     }
 
-    function renderSocialTable(statusFilter = 'all', platformFilter = 'all') {
-      const tbody = document.getElementById('socialTableBody');
+    function renderSocialTable(platformFilter = 'all') {
+      const HISTORY_LIMIT = 30;
+      const list = SITE_DATA.socialPosts || [];
+      const platOk = (post) => {
+        const plats = post.targetPlatforms || (post.platform ? [post.platform] : ['threads']);
+        return platformFilter === 'all' || plats.includes(platformFilter);
+      };
+      const dueOf = (post) => { const d = Date.parse(post.scheduledAt); return Number.isFinite(d) ? d : 0; };
+      const pick = (bucket) => list.map((post, idx) => ({ post, idx })).filter(x => socialBucket(x.post) === bucket && platOk(x.post));
+      const todo = pick('todo');
+      const queued = pick('queued').sort((a, b) => dueOf(a.post) - dueOf(b.post));
+      const rejected = pick('rejected');
+      const history = pick('history').sort((a, b) => dueOf(b.post) - dueOf(a.post));
+      const setN = (id, n) => { const el = document.getElementById(id); if (el) el.innerText = n; };
+      setN('cnt-soc-todo', todo.length);
+      setN('cnt-soc-queued', queued.length);
+      setN('cnt-soc-rejected', rejected.length);
+      setN('cnt-soc-history', history.length);
+      renderSocialRows('socialTableBody', todo, '目前沒有要處理的社群貼文，點擊右上角「➕ 起草新社群貼文」開始創作');
+      renderSocialRows('socialQueuedBody', queued, '目前沒有已排進 Buffer 的貼文');
+      renderSocialRows('socialRejectedBody', rejected, '沒有標成不要發的貼文');
+      renderSocialRows('socialHistoryBody', history.slice(0, HISTORY_LIMIT), '還沒有預定時間已過的貼文');
+    }
+
+    function renderSocialRows(tbodyId, items, emptyText) {
+      const tbody = document.getElementById(tbodyId);
       if (!tbody) return;
       tbody.innerHTML = '';
-
-      const list = SITE_DATA.socialPosts || [];
       let count = 0;
 
-      list.forEach((post, idx) => {
-        if (statusFilter !== 'all' && post.status !== statusFilter) return;
-        
+      items.forEach(({ post, idx }) => {
+
         // 平台篩選支援多平台陣列與舊版相容
         const targetPlats = post.targetPlatforms || (post.platform ? [post.platform] : ['threads']);
-        if (platformFilter !== 'all') {
-          if (!targetPlats.includes(platformFilter)) return;
-        }
-
         count++;
 
         const tr = document.createElement('tr');
@@ -3451,7 +3505,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
         // 狀態標籤
         let statusBadge = '';
-        if (post.status === 'scheduled') {
+        const bucket = socialBucket(post);
+        if (bucket === 'history') {
+          statusBadge = `<span style="background:#EDF2F7; color:#4A5568; border:1px solid #CBD5E0; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap;">⏱ 預定時間已過</span>`;
+        } else if (bucket === 'rejected') {
+          statusBadge = `<span style="background:#FFF5F5; color:#C53030; border:1px solid #FED7D7; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap;">🚫 不要發</span>`;
+        } else if (bucket === 'queued') {
+          statusBadge = `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap;">📬 已排進 Buffer</span>`;
+        } else if (post.status === 'scheduled') {
           statusBadge = `<span style="background:#FEFCBF; color:#744210; border:1px solid #FAF089; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap; margin-top:3px;">🟡 預約排程</span>`;
         } else if (post.status === 'draft') {
           statusBadge = `<span style="background:#EDF2F7; color:#4A5568; border:1px solid #CBD5E0; padding:2px 6px; border-radius:4px; font-size:0.72rem; font-weight:600; display:inline-block; white-space:nowrap; margin-top:3px;">⚪ 構思草稿</span>`;
@@ -3571,11 +3632,9 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
           </td>
           <td style="width:185px;">
             <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
+              ${bucket === 'todo' ? `<div style="display:flex; gap:4px; align-items:center;">${bufferBtns}</div>` : ''}
               <div style="display:flex; gap:4px; align-items:center;">
-                ${bufferBtns}
-              </div>
-              <div style="display:flex; gap:4px; align-items:center;">
-                ${toggleBtn}
+                ${bucket === 'history' ? '' : toggleBtn}
                 <button class="btn-table-sm" style="padding:4px 8px; font-size:0.75rem;" onclick="editSocialPost(${idx})">編輯</button>
                 <button class="btn-table-sm btn-table-delete" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteSocialPost(${idx})">刪除</button>
               </div>
@@ -3587,7 +3646,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       });
 
       if (count === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:28px; color:#A0AEC0;">目前無符合條件之社群貼文，點擊右上角「➕ 起草新社群貼文」開始創作</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:28px; color:#A0AEC0;">${emptyText}</td></tr>`;
       }
     }
 
@@ -5431,6 +5490,16 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       return m ? m[1] : '19:00';
     }
 
+    // 社群貼文分類：todo＝要主理人處理（待審、要修改、出錯、已通過還沒排入）；rejected＝主理人標了不要發；queued＝已排進 Buffer、預定時間還沒到；
+    // history＝預定時間已過（以預定時間判斷，不代表 Buffer 實際發文結果）
+    function socialBucket(p) {
+      const sent = isFullySent(p) || isScheduledInBuffer(p);
+      if (!sent && p.status !== 'published') return reviewStatusOf(p) === 'rejected' ? 'rejected' : 'todo';
+      const due = Date.parse(p.scheduledAt);
+      if (p.status === 'published' || (Number.isFinite(due) && due <= Date.now())) return 'history';
+      return 'queued';
+    }
+
     // 已通過審稿、還沒全部送進 Buffer 的社群貼文
     function scheduleCandidates() {
       return (SITE_DATA.socialPosts || []).filter(p => reviewStatusOf(p) === 'approved' && p.status !== 'published' && !isFullySent(p) && !isScheduledInBuffer(p));
@@ -5438,7 +5507,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
 
     function upcomingSentPosts() {
       return (SITE_DATA.socialPosts || [])
-        .filter(p => (isFullySent(p) || isScheduledInBuffer(p)) && p.scheduledAt && Date.parse(p.scheduledAt) > Date.now() - 24 * 3600 * 1000)
+        .filter(p => (isFullySent(p) || isScheduledInBuffer(p)) && p.scheduledAt && Date.parse(p.scheduledAt) > Date.now())
         .sort((a, b) => Date.parse(a.scheduledAt) - Date.parse(b.scheduledAt));
     }
 
@@ -5497,6 +5566,7 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         const dueMs = Date.parse(postDueIso(p));
         const tooSoon = !p.scheduledDate || Number.isNaN(dueMs) || dueMs < Date.now() + MIN_LEAD_MINUTES * 60 * 1000;
         const igErr = igErrorReason(p);
+        const fullHtml = p.bufferFull ? '<div style="font-size:0.8rem; color:#B7791F; margin-top:6px;">⏸ Buffer 已滿，有空位後再按一次送出</div>' : '';
         const errHtml = igErr !== null && imgs.length > 1 && !(p.bufferPostIds || {}).instagram
           ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">⚠️ IG 輪播沒有送成：${escapeHtml(igErr)}</div>
              <div style="font-size:0.74rem; color:#718096;">IG 還沒有送出任何內容。</div>
@@ -5519,12 +5589,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
               <div>
               </div>
               ${tooMany ? `<div style="font-size:0.8rem; color:#C53030; margin-top:6px;">⚠️ 圖卡 ${imgs.length} 張，超過 IG 上限 ${IG_MAX_IMAGES} 張</div>` : ''}
-              ${errHtml}
+              ${errHtml}${fullHtml}
             </div>
             <div style="text-align:center;">${cardHtml}</div>
           </div>`;
       }).join('');
 
+      const sentCountEl = document.getElementById('sentCount');
+      if (sentCountEl) sentCountEl.innerText = sent.length;
       sentBoard.innerHTML = sent.length
         ? sent.map(p => {
           const d = new Date(Date.parse(p.scheduledAt) + 8 * 3600 * 1000);
@@ -5652,8 +5724,13 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       refreshAdminView();
     }
 
+    // Buffer 免費方案每個頻道最多排 10 篇；Buffer 回「已滿」類的錯誤字串時也會當作已滿
+    const BUFFER_FREE_LIMIT = 10;
+    const BUFFER_FULL_RE = /limit|full|queue|maximum|exceed|上限|已滿|滿了/i;
+
     async function sendScheduledToBuffer() {
-      const list = scheduleCandidates();
+      // 依預定發文時間由早到晚送（快截止的先排），空位不夠時被擋下的才會是較晚的
+      const list = scheduleCandidates().sort((a, b) => Date.parse(postDueIso(a)) - Date.parse(postDueIso(b)));
       if (list.length === 0) return;
 
       const problems = [];
@@ -5687,7 +5764,20 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       let ok = 0;
       let failed = 0;
       let needSync = false;
+      const okTitles = [];
+      const fullTitles = [];
+      // 各平台 Buffer 還剩幾個空位：上限減掉已排進去、時間還沒到的
+      const room = {};
+      ['threads', 'instagram'].forEach(pl => {
+        room[pl] = BUFFER_FREE_LIMIT - upcomingSentPosts().filter(x => platformsOf(x).includes(pl)).length;
+      });
       for (const p of list) {
+        // 這一則需要的平台有任何一個已經沒空位，就整則先不送（留在列表等有空位再送）
+        if (platformsOf(p).some(pl => !(p.bufferPostIds || {})[pl] && room[pl] <= 0)) {
+          p.bufferFull = true;
+          fullTitles.push(p.title || '（無標題）');
+          continue;
+        }
         p.bufferPostIds = { ...(p.bufferPostIds || {}) };
         const errors = [];
         for (const pl of platformsOf(p)) {
@@ -5702,8 +5792,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
               imageUrls: pl === 'instagram' ? postImagesOf(p) : undefined
             });
             p.bufferPostIds[pl] = result.postId;
+            room[pl]--;
           } catch (err) {
             if (/已經排進 Buffer/.test(String(err.message))) needSync = true;
+            // Buffer 回「已滿」：這個平台不再送，之後的較晚貼文留在列表
+            if (BUFFER_FULL_RE.test(String(err.message))) room[pl] = 0;
             errors.push(`${pl === 'threads' ? 'Threads' : 'IG'}：${relayErrorText(err)}`);
           }
         }
@@ -5711,7 +5804,14 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
         p.scheduledAt = new Date(Date.parse(postDueIso(p))).toISOString();
         if (isFullySent(p)) {
           p.status = 'scheduled';
+          p.bufferFull = false;
           ok++;
+          okTitles.push(p.title || '（無標題）');
+        } else if (errors.length && errors.every(e => BUFFER_FULL_RE.test(e))) {
+          // 這則是被 Buffer 已滿擋下，不算出錯：清掉錯誤字、留在列表等有空位
+          p.bufferError = '';
+          p.bufferFull = true;
+          fullTitles.push(p.title || '（無標題）');
         } else {
           failed++;
         }
@@ -5724,7 +5824,11 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       saveDataToLocalStorage();
       if (needSync) await window.WangzhouCloud.syncToLocal({ includePrivate: true });
       refreshAdminView();
-      alert(failed ? `完成 ${ok} 則，${failed} 則有問題，原因已標在該則下方，修正後可再按一次送出（已成功的平台不會重複送）。` : `🎉 ${ok} 則都已排進 Buffer！`);
+      const lines = [];
+      if (ok) lines.push(`✅ 已排進 Buffer（${ok} 則）：\n` + okTitles.map(x => '・' + x).join('\n'));
+      if (fullTitles.length) lines.push(`⏸ Buffer 已滿，這幾則有空位後再按一次送出（${fullTitles.length} 則）：\n` + fullTitles.map(x => '・' + x).join('\n'));
+      if (failed) lines.push(`⚠️ ${failed} 則有問題，原因已標在該則下方，修正後可再按一次送出（已成功的平台不會重複送）。`);
+      alert(lines.join('\n\n') || '沒有送出任何貼文。');
     }
 
     async function handleSaveSocialPost(e) {

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261109">
+  <link rel="stylesheet" href="./styles.css?v=20261121">
   <style>
     .editorial-layout {
       display: grid;
@@ -297,7 +297,7 @@
   </div>
 
   <!-- 引用全站共享數據核心 -->
-  <script src="./data.js?v=20261110b"></script>
+  <script src="./data.js?v=20261121"></script>
 
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
@@ -350,6 +350,18 @@
       });
     }
 
+    // 摘要：取內文開頭第一段（去掉網址），最多 90 字，CSS 再截成兩行
+    function wzNoteExcerpt(text) {
+      const first = String(text || '').split(/\r?\n\s*\r?\n/).map(p => p.replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim()).find(Boolean) || '';
+      return first.length > 90 ? first.slice(0, 90) + '…' : first;
+    }
+
+    // 閱讀時間：中文字數 ÷ 400 字／分鐘，無條件進位，最少 1 分鐘
+    function wzReadMinutes(text) {
+      const count = (String(text || '').match(/[\u4e00-\u9fff]/g) || []).length;
+      return Math.max(1, Math.ceil(count / 400));
+    }
+
     function renderArticleList() {
       const sidebar = document.getElementById("sidebarList");
       sidebar.innerHTML = "";
@@ -386,6 +398,8 @@
         tab.innerHTML = `
           <div class="note-tab-cat">${wzEscape(n.cat)}</div>
           <div class="note-tab-title">${wzEscape(n.title)}</div>
+          ${wzNoteExcerpt(n.prose) ? `<div class="note-tab-excerpt">${wzEscape(wzNoteExcerpt(n.prose))}</div>` : ''}
+          <div class="note-tab-read">約 ${wzReadMinutes(n.prose)} 分鐘</div>
         `;
         sidebar.appendChild(tab);
       });

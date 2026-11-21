@@ -1406,3 +1406,291 @@ body {
     transform-origin: center;
   }
 }
+
+/* 窄手機 (<= 480px)：導覽項目排成單行，放不下時可橫向捲動 */
+@media (max-width: 480px) {
+  .site-nav {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .nav-links {
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: 100%;
+    gap: 10px;
+    justify-content: safe center;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-links a {
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+}
+
+/* 極窄手機 (<= 340px) */
+@media (max-width: 340px) {
+  .nav-links {
+    gap: 5px;
+  }
+  .nav-links a {
+    font-size: 0.70rem;
+    letter-spacing: 0;
+  }
+}
+
+/* ============================================================
+   課程頁：精簡卡片、排序、載入更多、手機篩選收合（2026-11-21）
+   ============================================================ */
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.search-row .search-input-wrapper { flex: 1; margin-bottom: 0; min-width: 0; }
+.filter-toggle-btn,
+.filter-panel-actions { display: none; }
+.filter-badge[hidden],
+.load-more-wrap[hidden] { display: none; }
+
+.sort-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+.sort-select {
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--ink-black);
+  background: #FFF;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 7px 10px;
+  min-height: 40px;
+}
+.sort-select:focus-visible { outline: 2px solid var(--indigo-water); outline-offset: 2px; }
+
+.resources-grid { align-items: start; }
+.res-provider-line {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  margin: -6px 0 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.res-brief { margin-bottom: 14px; }
+.res-brief-line {
+  font-size: 0.84rem;
+  color: var(--ink-body);
+  line-height: 1.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.res-brief-cost { color: var(--amber-dark); font-weight: 500; }
+.res-card.expanded .res-brief { display: none; }
+.res-more { display: none; }
+.res-card.expanded .res-more { display: block; }
+.res-more .res-report-link { display: block; margin: -8px 0 12px; }
+.res-card-actions {
+  border-top: 1px solid var(--hairline);
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.res-expand-btn {
+  background: none;
+  border: 0;
+  padding: 10px 4px;
+  min-height: 44px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--indigo-water);
+  cursor: pointer;
+}
+.res-expand-btn:hover { color: var(--amber-pier); }
+.res-expand-btn:focus-visible { outline: 2px solid var(--indigo-water); outline-offset: 2px; border-radius: 4px; }
+
+.load-more-wrap { text-align: center; margin-top: 28px; }
+.load-more-btn {
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--indigo-water);
+  background: #FFF;
+  border: 1px solid var(--indigo-water);
+  border-radius: 99px;
+  padding: 10px 28px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.load-more-btn:hover { background: var(--indigo-water); color: #FFF; }
+.load-more-btn:focus-visible { outline: 2px solid var(--indigo-water); outline-offset: 3px; }
+.load-more-progress { margin-top: 10px; font-size: 0.8rem; color: var(--ink-muted); }
+
+@media (max-width: 768px) {
+  .search-row { margin-bottom: 0; }
+  .resources-grid { grid-template-columns: minmax(0, 1fr); }
+  .filter-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font: inherit;
+    font-size: 0.88rem;
+    color: var(--indigo-water);
+    background: #FFF;
+    border: 1px solid var(--indigo-water);
+    border-radius: var(--radius-md);
+    padding: 0 14px;
+    min-height: 42px;
+    cursor: pointer;
+  }
+  .filter-toggle-btn:focus-visible { outline: 2px solid var(--indigo-water); outline-offset: 2px; }
+  .filter-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 99px;
+    background: var(--amber-pier);
+    color: #FFF;
+    font-size: 0.72rem;
+    line-height: 18px;
+    text-align: center;
+  }
+  .filter-panel { display: none; margin-top: 14px; }
+  .filter-panel.open { display: block; }
+  .filter-panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid var(--hairline);
+    padding-top: 12px;
+  }
+  .filter-clear-btn,
+  .filter-done-btn {
+    font: inherit;
+    font-size: 0.88rem;
+    border-radius: 99px;
+    padding: 0 20px;
+    min-height: 40px;
+    cursor: pointer;
+  }
+  .filter-clear-btn { background: none; border: 1px solid var(--hairline); color: var(--ink-muted); }
+  .filter-done-btn { background: var(--indigo-water); border: 1px solid var(--indigo-water); color: #FFF; }
+
+  .notice-strip { padding: 10px 14px; gap: 6px; }
+  .notice-strip-text { font-size: 0.78rem; line-height: 1.55; }
+  .res-card { padding: 16px 16px 8px; }
+  .res-top-row { margin-bottom: 8px; }
+  .res-card-title { font-size: 1.05rem; margin-bottom: 8px; }
+  .res-provider-line { margin: 0 0 8px; }
+  .res-brief { margin-bottom: 8px; }
+}
+
+/* ============================================================
+   首頁：首屏按鈕、快截止預覽；手札清單摘要（2026-11-21）
+   ============================================================ */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 28px;
+  border-radius: 99px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.hero-btn:focus-visible { outline: 2px solid var(--indigo-water); outline-offset: 3px; }
+.hero-btn-primary { background: var(--indigo-water); color: #FFF; border: 1px solid var(--indigo-water); }
+.hero-btn-primary:hover { background: #1F3A4D; }
+.hero-btn-secondary { background: transparent; color: var(--amber-dark); border: 1px solid var(--amber-pier); }
+.hero-btn-secondary:hover { background: var(--amber-light); }
+
+.soon-section { max-width: 1100px; margin: 56px auto 0; }
+.soon-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.soon-title { font-family: 'Noto Serif TC', serif; font-size: 1.25rem; font-weight: 600; color: var(--ink-black); }
+.soon-all { font-size: 0.88rem; color: var(--indigo-water); text-decoration: none; white-space: nowrap; }
+.soon-all:hover { color: var(--amber-pier); }
+.soon-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.soon-card {
+  display: block;
+  background: #FFF;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.soon-card:hover { border-color: rgba(43, 76, 101, 0.28); box-shadow: 0 8px 24px rgba(28, 33, 39, 0.06); }
+.soon-card:focus-visible { outline: 2px solid var(--indigo-water); outline-offset: 2px; }
+.soon-card .res-top-row { margin-bottom: 8px; }
+.soon-card-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink-black);
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.soon-card-provider { font-size: 0.8rem; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.note-tab-excerpt {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin-top: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.note-tab-read { font-size: 0.76rem; color: var(--ink-muted); margin-top: 4px; }
+
+/* 手札清單：手機改單欄、卡片滿版（與搜尋框同寬） */
+@media (max-width: 768px) {
+  .notes-sidebar {
+    flex-direction: column;
+    overflow-x: visible;
+    gap: 12px;
+  }
+  .note-tab {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}

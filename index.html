@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261109">
+  <link rel="stylesheet" href="./styles.css?v=20261121">
   <style>
     .home-hero {
       position: relative;
@@ -176,6 +176,10 @@
         先在水岸邊坐下來歇歇腳，看清了水流的走向<br>
         心裡的帆，自然會知道何時該揚起
       </p>
+      <div class="hero-actions">
+        <a href="./resources.html" class="hero-btn hero-btn-primary">看課程活動</a>
+        <a href="./articles.html" class="hero-btn hero-btn-secondary">慢慢讀手札</a>
+      </div>
     </div>
 
     <!-- 小舟水岸意境舞台（木棧道碼頭 ＋ 水岸邊緣 ＋ 自動隨機自然漂動） -->
@@ -338,6 +342,15 @@
         <div class="compass-go">閱讀水岸手札 →</div>
       </a>
     </div>
+
+    <!-- 快截止的課程：資料來自課程頁同一份載入函式，0 筆時整區不顯示 -->
+    <section class="soon-section" id="soonSection" hidden>
+      <div class="soon-head">
+        <h2 class="soon-title">快截止的課程</h2>
+        <a href="./resources.html" class="soon-all">看全部課程</a>
+      </div>
+      <div class="soon-list" id="soonList"></div>
+    </section>
   </main>
 
   <!-- Footer -->
@@ -414,11 +427,47 @@
   </div>
 
   <!-- 引用全站共享數據核心 -->
-  <script src="./data.js?v=20261110b"></script>
+  <script src="./data.js?v=20261121"></script>
 
   <script>
     // 讀取真實最後維護日期（由主理人在後台真實烙印，絕非讀者端偽造當前時鐘）
     WangzhouCloud.showLastUpdated('autoMonthYear');
+
+    // 快截止預覽：最多 3 筆，排序與課程頁相同（截止日近到遠），排除已截止與尚未開放報名
+    function renderSoonCourses() {
+      const section = document.getElementById('soonSection');
+      const list = document.getElementById('soonList');
+      if (!section || !list) return;
+      const items = [];
+      (SITE_DATA.courses || []).forEach(c => {
+        if (c.isDraft || c.active === false) return;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(c.deadline || '')) return;
+        const days = Math.ceil((new Date(`${c.deadline}T23:59:59+08:00`).getTime() - Date.now()) / 86400000);
+        if (days < 0) return;
+        if (wzRegNotYetOpen(c.regOpenDate)) return;
+        if (wzDeadlineClosedToday(c.deadline, c.deadlineTime)) return;
+        items.push({ c, days });
+      });
+      items.sort((a, b) => a.days - b.days);
+      const top = items.slice(0, 3);
+      section.hidden = top.length === 0;
+      list.innerHTML = top.map(({ c, days }) => {
+        const urgent = days <= 5;
+        const label = urgent
+          ? (days === 0 ? `⚡ 今天${c.deadlineTime ? ' ' + wzEscape(c.deadlineTime) + ' ' : ''}截止` : `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）`)
+          : `📅 報名截止：${wzEscape(c.deadline)}${c.deadlineTime ? ' ' + wzEscape(c.deadlineTime) : ''}`;
+        return `<a href="./resources.html" class="soon-card">
+          <div class="res-top-row">
+            ${c.locationLabel ? `<span class="res-type-pill">${wzEscape(c.locationLabel)}</span>` : ''}
+            <span class="res-status-pill ${urgent ? 'status-urgent' : 'status-open'}">${label}</span>
+          </div>
+          <div class="soon-card-title">${wzEscape(c.title)}</div>
+          <div class="soon-card-provider">🏛️ ${wzEscape(c.provider)}</div>
+        </a>`;
+      }).join('');
+    }
+    renderSoonCourses();
+    window.addEventListener('WangzhouDataSynced', renderSoonCourses);
 
     // 動態渲染漂浮棧板（支援後台隨時增減，採用「水流隨機輪替」機制：每次隨機浮現 3 塊最佳金句）
     function renderBoardwalkPlanks() {

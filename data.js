@@ -740,7 +740,18 @@ const WangzhouCloud = {
     const el = document.getElementById(elId);
     if (!el) return;
     el.innerText = SITE_DATA.siteInfo.lastUpdated;
-    const text = await this.getLastUpdatedText();
+    // 取「後台按更新的日期」與「公開課程、手札最新一筆建立日」三者中最晚的一天
+    const latest = async (table) => {
+      try {
+        const r = await this.request(`${table}?select=created_at&status=eq.active&order=created_at.desc&limit=1`);
+        return (r && r[0] && r[0].created_at) ? Date.parse(r[0].created_at) : NaN;
+      } catch (e) { return NaN; }
+    };
+    let stamp = null;
+    try { const v = await this.getSiteConfig('site_last_updated'); stamp = (v && v.at) ? Date.parse(v.at) : NaN; } catch (e) { stamp = NaN; }
+    const times = [stamp, ...(await Promise.all([latest('courses'), latest('articles')]))].filter(t => isFinite(t));
+    if (!times.length) return;
+    const text = this.formatTaipeiDate(new Date(Math.max(...times)).toISOString());
     if (text) { SITE_DATA.siteInfo.lastUpdated = text; el.innerText = text; }
   },
   async upsertSiteConfig(key, value) {

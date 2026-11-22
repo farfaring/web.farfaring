@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261121">
+  <link rel="stylesheet" href="./styles.css?v=20261121b">
   <style>
     .home-hero {
       position: relative;
@@ -291,9 +291,9 @@
 
     <div class="compass-grid">
       <!-- 卡片 1: 深度培訓 -->
-      <a href="./resources.html?type=deep" class="compass-card">
+      <a href="./resources.html?type=deep" class="compass-card compass-deep">
         <div>
-          <div class="compass-mood">完整體系 ． 扎實培訓</div>
+          <div class="compass-mood"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M7 11.5V16c0 1 2.2 2.5 5 2.5s5-1.5 5-2.5v-4.5"/></svg><span>完整體系 ． 扎實培訓</span></div>
           <h3 class="compass-title">深度培訓</h3>
           <p class="compass-desc">
             適合想投入完整時數深入精通實務專業、考取證照或跨領域培訓。<br>
@@ -304,9 +304,9 @@
       </a>
 
       <!-- 卡片 2: 技能增強 -->
-      <a href="./resources.html?type=upskill" class="compass-card">
+      <a href="./resources.html?type=upskill" class="compass-card compass-upskill">
         <div>
-          <div class="compass-mood">實戰應用 ． 技能擴充</div>
+          <div class="compass-mood"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>實戰應用 ． 技能擴充</span></div>
           <h3 class="compass-title">技能增強</h3>
           <p class="compass-desc">
             持續提升既有職場工具實力，開拓多元第二專長。<br>
@@ -317,9 +317,9 @@
       </a>
 
       <!-- 卡片 3: 講座與工作坊 -->
-      <a href="./resources.html?type=events" class="compass-card">
+      <a href="./resources.html?type=events" class="compass-card compass-events">
         <div>
-          <div class="compass-mood">多元觀點 ． 經驗交流</div>
+          <div class="compass-mood"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v10H9l-5 4V5z"/></svg><span>多元觀點 ． 經驗交流</span></div>
           <h3 class="compass-title">講座工作坊</h3>
           <p class="compass-desc">
             透過專題講座、實務工作坊與交流聚會拓展多元視野。<br>
@@ -330,9 +330,9 @@
       </a>
 
       <!-- 卡片 4: 水岸手札 -->
-      <a href="./articles.html" class="compass-card">
+      <a href="./articles.html" class="compass-card compass-notes">
         <div>
-          <div class="compass-mood">安靜閱讀 ． 思緒梳理</div>
+          <div class="compass-mood"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5V18c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5V5.5z"/><path d="M12 6v12.5"/></svg><span>安靜閱讀 ． 思緒梳理</span></div>
           <h3 class="compass-title">水岸手札</h3>
           <p class="compass-desc">
             聊聊那些職場裡的真心話、生活的留白與好觀點。<br>
@@ -708,9 +708,9 @@
       }
 
       if (isRandomlyAssigned) {
-        alert(`謝謝你的心意！小棧已為你隨機取好名籤「${author}」，棧道留言已妥善送達後台審核箱。`);
+        alert(`謝謝你的心意。小棧替你隨機取了名籤「${author}」，留言已收到，小棧長會親自看過。`);
       } else {
-        alert(`謝謝你（${author}）的心意！小棧長已收到你的棧道留言，已妥善送達後台審核箱。`);
+        alert(`謝謝你（${author}）的心意。留言已收到，小棧長會親自看過。`);
       }
 
       document.getElementById('modalText').value = '';

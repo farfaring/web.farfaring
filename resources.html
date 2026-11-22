@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261121">
+  <link rel="stylesheet" href="./styles.css?v=20261121b">
 </head>
 <body>
 
@@ -27,7 +27,7 @@
   </nav>
 
   <!-- Page Header -->
-  <header class="page-hero">
+  <header class="page-hero page-hero-compact">
     <div class="page-eyebrow">COURSES & WORKSHOPS</div>
     <h1 class="page-title">木棧道・課程活動</h1>
     <!-- 對話感溫柔副標題（標點符號修復：中間逗號，句末驚嘆號） -->
@@ -38,7 +38,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="page-wrap">
+  <main class="page-wrap wide">
 
     <!-- 搜尋與精準分類篩選 -->
     <div class="search-filter-box">
@@ -106,7 +106,7 @@
     </div>
     <div class="resources-grid" id="resourcesContainer"></div>
     <div class="load-more-wrap" id="loadMoreWrap" hidden>
-      <button type="button" class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">再看 10 門</button>
+      <button type="button" class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">再看 12 門</button>
       <div class="load-more-progress" id="loadMoreProgress"></div>
     </div>
 
@@ -241,16 +241,25 @@
       resources = (SITE_DATA.courses || []).filter(c => !c.isDraft);
     }
 
+    let dataReady = resources.length > 0;
     window.addEventListener('WangzhouDataSynced', () => {
+      dataReady = true;
       refreshResources();
       renderResources();
     });
+    // 雲端一直沒回應時，6 秒後改用現有資料顯示，不讓骨架卡一直停著
+    setTimeout(() => { if (!dataReady) { dataReady = true; renderResources(); } }, 6000);
 
     let currentType = "all";
     let currentRegion = "all";
     let searchKeyword = "";
     let sortMode = "deadline";
-    const PAGE_SIZE = 10;
+    const PAGE_SIZE = 12;
+    const WZ_TYPE_NAMES = { deep: '深度培訓', upskill: '技能增強', events: '講座工作坊' };
+    const WZ_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+    const WZ_ICON_PIN = WZ_SVG + '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+    const WZ_ICON_CLOCK = WZ_SVG + '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+    const WZ_ICON_COIN = WZ_SVG + '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7-1.1 1.5-2.5 2-2.5 1-2.5 2 1.1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/></svg>';
     let visibleCount = PAGE_SIZE;
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -320,7 +329,23 @@
       card.classList.toggle("expanded", open);
       btn.setAttribute("aria-expanded", String(open));
       btn.textContent = open ? "收起" : "看詳情";
+      equalizeCards();
     }
+
+    // 同列未展開的卡維持同高；展開的那張自己變高，不撐開鄰居
+    function equalizeCards() {
+      const grid = document.getElementById("resourcesContainer");
+      const cards = [...grid.querySelectorAll(".res-card:not(.res-skel)")];
+      cards.forEach(c => { c.style.minHeight = ""; });
+      const cols = getComputedStyle(grid).gridTemplateColumns.split(" ").length || 1;
+      for (let i = 0; i < cards.length; i += cols) {
+        const row = cards.slice(i, i + cols).filter(c => !c.classList.contains("expanded"));
+        const h = Math.max(0, ...row.map(c => c.offsetHeight));
+        row.forEach(c => { c.style.minHeight = h + "px"; });
+      }
+    }
+    let eqTimer;
+    window.addEventListener("resize", () => { clearTimeout(eqTimer); eqTimer = setTimeout(equalizeCards, 150); });
 
     function handleSearch() {
       searchKeyword = document.getElementById("searchInput").value.trim().toLowerCase();
@@ -344,6 +369,11 @@
     function renderResources() {
       const container = document.getElementById("resourcesContainer");
       container.innerHTML = "";
+      if (!dataReady) {
+        document.getElementById("loadMoreWrap").hidden = true;
+        container.innerHTML = '<div class="res-card res-skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div>'.repeat(6);
+        return;
+      }
 
       const filtered = resources.filter(item => {
         if (item.active === false) return false;
@@ -384,9 +414,16 @@
         const days = getDaysLeft(item.deadline);
         // 還沒到開放報名時間：不顯示「報名倒數中」，改在下方顯示預計開放時間
         const notYetOpen = wzRegNotYetOpen(item.regOpenDate);
-        // 截止時刻今天已過：標籤改灰色「今日 HH:MM 已截止」（午夜才會下架）
+        // 截止時刻今天已過：標籤改灰色「今天 HH:MM 已截止」（午夜才會下架）
         const closedToday = wzDeadlineClosedToday(item.deadline, item.deadlineTime);
         const isUrgent = !notYetOpen && !closedToday && days !== null && days <= 5;
+        const isSoon = !notYetOpen && !closedToday && days !== null && days <= 7;
+        const typeKey = (item.types || []).find(t => WZ_TYPE_NAMES[t]) || '';
+        const factParts = [
+          item.locationLabel ? `<span class="res-fact">${WZ_ICON_PIN}${wzEscape(item.locationLabel)}</span>` : '',
+          item.timeCycle ? `<span class="res-fact">${WZ_ICON_CLOCK}${wzEscape(item.timeCycle)}</span>` : '',
+          item.cost ? `<span class="res-fact res-brief-cost">${WZ_ICON_COIN}${wzEscape(item.cost)}</span>` : ''
+        ].filter(Boolean);
         const infoRows = [
           item.cost ? `<li class="res-info-item"><span class="res-info-label">💰 費用說明：</span><span style="color:var(--amber-dark); font-weight:500;">${wzEscape(item.cost)}</span></li>` : '',
           item.timeCycle ? `<li class="res-info-item"><span class="res-info-label">⏰ 上課時間：</span><span>${wzEscape(item.timeCycle)}</span></li>` : '',
@@ -396,15 +433,15 @@
           item.how ? `<li class="res-info-item"><span class="res-info-label">🧭 報名途徑：</span><span>${wzLinkify(item.how)}</span></li>` : ''
         ].filter(Boolean);
         const card = document.createElement("article");
-        card.className = "res-card";
+        card.className = "res-card" + (typeKey ? ` type-${typeKey}` : '') + (isSoon ? ' is-soon' : '');
 
         card.innerHTML = `
           <div>
             <!-- 頂部標籤 -->
             <div class="res-top-row">
-              ${item.locationLabel ? `<span class="res-type-pill">${wzEscape(item.locationLabel)}</span>` : ''}
-              <span class="res-status-pill ${closedToday ? 'status-closed' : isUrgent ? 'status-urgent' : 'status-open'}">
-                ${closedToday ? `今日 ${wzEscape(item.deadlineTime)} 已截止` : isUrgent ? (days === 0 ? `⚡ 今天${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) + ' ' : ''}截止` : `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）`) : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) : ''}`}
+              ${typeKey ? `<span class="res-type-pill">${WZ_TYPE_NAMES[typeKey]}</span>` : '<span></span>'}
+              <span class="res-status-pill ${closedToday ? 'status-closed' : isSoon ? 'status-soon' : 'status-open'}">
+                ${closedToday ? `今天 ${wzEscape(item.deadlineTime)} 已截止` : isUrgent ? (days === 0 ? `⚡ 今天${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) + ' ' : ''}截止` : `⚡ 報名倒數中（剩 ${wzEscape(days)} 天）`) : days === null ? `📅 報名期限依主辦單位公告` : `📅 報名截止：${wzEscape(item.deadline)}${item.deadlineTime ? ' ' + wzEscape(item.deadlineTime) : ''}`}
               </span>
             </div>
             ${notYetOpen ? `<div class="res-open-row">⏳ 預計 ${wzEscape(wzFormatRegOpen(item.regOpenDate, { weekday: true }))} 開放報名</div>` : ''}
@@ -417,8 +454,7 @@
 
             <!-- 精簡摘要：費用、上課時間各一行（展開後改看完整資訊） -->
             <div class="res-brief">
-              ${item.cost ? `<div class="res-brief-line res-brief-cost">💰 ${wzEscape(item.cost)}</div>` : ''}
-              ${item.timeCycle ? `<div class="res-brief-line">⏰ ${wzEscape(item.timeCycle)}</div>` : ''}
+              ${factParts.length ? `<div class="res-brief-line res-brief-facts">${factParts.join('<span class="res-fact-sep" aria-hidden="true">．</span>')}</div>` : ''}
             </div>
 
             <!-- 展開才顯示 -->
@@ -447,6 +483,7 @@
         container.appendChild(card);
       });
 
+      equalizeCards();
       const shown = Math.min(visibleCount, total);
       loadWrap.hidden = shown >= total;
       document.getElementById("loadMoreBtn").textContent = `再看 ${Math.min(PAGE_SIZE, total - shown)} 門`;
@@ -658,7 +695,7 @@
       if (submitType === 'error') {
         alert(`謝謝你的回報，小棧長會前往核對「${target}」。`);
       } else {
-        alert(`非常感謝你的熱心推薦！小棧長已收到關於「${target}」的課程推薦，資料已妥善送達後台審核箱。`);
+        alert(`謝謝你的推薦。關於「${target}」的課程資料已收到，小棧長會看過。`);
       }
 
       document.getElementById('resTargetName').value = '';

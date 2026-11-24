@@ -5767,17 +5767,31 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       const okTitles = [];
       const fullTitles = [];
       // 各平台 Buffer 還剩幾個空位：上限減掉已排進去、時間還沒到的
+      // 先向 Buffer 查真實已排數量；查不到才退回用網站紀錄估算
       const room = {};
-      ['threads', 'instagram'].forEach(pl => {
-        room[pl] = BUFFER_FREE_LIMIT - upcomingSentPosts().filter(x => platformsOf(x).includes(pl)).length;
-      });
+      const used = {};
+      let estimated = false;
+      try {
+        const q = await window.WangzhouCloud.bufferRelay({ action: 'queue' });
+        ['threads', 'instagram'].forEach(pl => { used[pl] = Number((q.counts || {})[pl]) || 0; });
+      } catch (err) {
+        estimated = true;
+        ['threads', 'instagram'].forEach(pl => {
+          used[pl] = upcomingSentPosts().filter(x => platformsOf(x).includes(pl)).length;
+        });
+      }
+      ['threads', 'instagram'].forEach(pl => { room[pl] = BUFFER_FREE_LIMIT - used[pl]; });
+      const fullInfo = new Set();
       for (const p of list) {
         // 這一則需要的平台有任何一個已經沒空位，就整則先不送（留在列表等有空位再送）
-        if (platformsOf(p).some(pl => !(p.bufferPostIds || {})[pl] && room[pl] <= 0)) {
+        const fullPl = platformsOf(p).filter(pl => !(p.bufferPostIds || {})[pl] && room[pl] <= 0);
+        if (fullPl.length) {
+          fullPl.forEach(pl => fullInfo.add(pl));
           p.bufferFull = true;
           fullTitles.push(p.title || '（無標題）');
           continue;
         }
+        p.bufferFull = false; // 有空位了，清掉先前的「已滿」標記
         p.bufferPostIds = { ...(p.bufferPostIds || {}) };
         const errors = [];
         for (const pl of platformsOf(p)) {
@@ -5826,7 +5840,12 @@ const SITE_DATA = ${JSON.stringify(SITE_DATA, null, 2)};
       refreshAdminView();
       const lines = [];
       if (ok) lines.push(`✅ 已排進 Buffer（${ok} 則）：\n` + okTitles.map(x => '・' + x).join('\n'));
-      if (fullTitles.length) lines.push(`⏸ Buffer 已滿，這幾則有空位後再按一次送出（${fullTitles.length} 則）：\n` + fullTitles.map(x => '・' + x).join('\n'));
+      if (fullTitles.length) {
+        const names = { threads: 'Threads', instagram: 'Instagram' };
+        const nums = [...fullInfo].map(pl => `Buffer ${names[pl]} 已排 ${Math.max(used[pl], BUFFER_FREE_LIMIT)}/${BUFFER_FREE_LIMIT}`).join('、');
+        lines.push(`⏸ ${nums || 'Buffer 已滿'}，這幾則有空位後再按一次送出（${fullTitles.length} 則）：\n` + fullTitles.map(x => '・' + x).join('\n'));
+      }
+      if (estimated) lines.push('ℹ️ 無法向 Buffer 查詢，用網站紀錄估算空位。');
       if (failed) lines.push(`⚠️ ${failed} 則有問題，原因已標在該則下方，修正後可再按一次送出（已成功的平台不會重複送）。`);
       alert(lines.join('\n\n') || '沒有送出任何貼文。');
     }
